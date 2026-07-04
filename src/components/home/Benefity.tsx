@@ -10,7 +10,7 @@ import {
   ShieldCheck,
   Router,
   Gamepad2,
-} from "lucide-react";  
+} from "lucide-react";
 
 const benefits = [
   {
@@ -74,7 +74,7 @@ const item: Variants = {
 export default function Benefity() {
   return (
     <section className="py-20 px-8" style={{ backgroundColor: "#0B2A3D" }}>
-      <div className="mx-auto max-w-305">
+      <div className="mx-auto max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.6fr] gap-10">
           {/* Left column */}
           <motion.div
@@ -116,7 +116,7 @@ export default function Benefity() {
                 variants={item}
                 whileHover={{ y: -4 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="rounded-xl border border-white/10 bg-white/[0.03] p-6 hover:border-teal-400/40 transition-colors"
+                className="rounded-xl border border-white/10 bg-[#0d1f31] p-6 hover:border-teal-400/40 transition-colors"
               >
                 <Icon className="h-7 w-7 text-teal-400 mb-4" strokeWidth={1.75} />
                 <p className="text-white font-semibold leading-snug mb-3">
@@ -134,7 +134,7 @@ export default function Benefity() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.15 }}
-          className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 rounded-xl border border-white/10 bg-white/[0.02] p-6"
+          className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 rounded-xl border border-white/10 bg-[#0d1f31] p-6"
         >
           {stats.map(({ icon: Icon, text, subtext }) => (
             <div key={text} className="flex items-start gap-3">

@@ -231,6 +231,7 @@ export default function Oferty() {
             <span className="flex items-center gap-2">
               <Gamepad2 className="h-4 w-4 text-teal-400" /> Giangrywarka w wybranych pakietach
             </span>
+
           </m.div>
         </div>
       </section>
