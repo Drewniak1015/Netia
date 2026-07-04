@@ -54,7 +54,7 @@ export default function Hero() {
       >
         {!reduceMotion && <FiberLinesBackground />}
 
-        <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-5 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8 lg:px-8 lg:py-28">
+        <div className="relative z-10 mx-auto grid max-w-320 grid-cols-1 items-center gap-10 px-5 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8 lg:px-8 lg:py-28">
           {/* Kolumna tekstowa */}
           <div className="relative z-10 text-center lg:text-left">
             {/* Badge */}
@@ -72,15 +72,9 @@ export default function Hero() {
             </m.div>
 
             {/* LCP element: bez opacity w animacji, tylko h1 statyczny */}
-<m.h1
-  initial={reduceMotion ? false : "hidden"}
-  animate="visible"
-  variants={fadeUp}
-  transition={{ duration: 0.6, ease: "easeOut", delay: 0 }}
-  className="text-2xl font-extrabold leading-[1.15] tracking-tight text-white sm:text-3xl lg:text-4xl"
->
+<h1 className="animate-fade-up text-2xl font-extrabold ...">
   Internet i telewizja, które po prostu działają.
-</m.h1>
+</h1>
             <m.h2
               initial={reduceMotion ? false : "hidden"}
               animate="visible"

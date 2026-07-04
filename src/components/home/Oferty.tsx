@@ -172,7 +172,10 @@ export default function Oferty() {
     // client bundle down to ~6kb by loading only the "domAnimation" feature
     // set (transform/opacity/gestures) instead of the full animation engine.
     <LazyMotion features={domAnimation} strict>
-      <section className="relative w-full bg-[#0a1a2b] py-20 px-6 overflow-hidden">
+      <section
+        className="relative w-full py-20 px-8 overflow-hidden"
+        style={{ backgroundColor: "#0B2A3D" }}
+      >
         {/* ambient background lines, consistent with hero */}
         <div
           aria-hidden
@@ -183,7 +186,7 @@ export default function Oferty() {
           }}
         />
 
-        <div className="relative max-w-6xl mx-auto">
+        <div className="relative max-w-305 mx-auto">
           <div className="text-center mb-12">
             <span className="inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wide text-teal-300">
               <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
