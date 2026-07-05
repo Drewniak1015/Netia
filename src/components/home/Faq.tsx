@@ -9,7 +9,14 @@ import {
   ShieldCheck,
   Clock,
   FileX,
-  Wrench,
+  FileText,
+  Undo2,
+  TrendingDown,
+  Zap,
+  MapPin,
+  Timer,
+  Monitor,
+  Infinity as InfinityIcon,
 } from "lucide-react";
 import type { ElementType } from "react";
 
@@ -21,24 +28,59 @@ type FaqItem = {
 
 const FAQ_ITEMS: FaqItem[] = [
   {
+    icon: FileText,
+    q: "Czy muszę podpisywać umowę na 2 lata?",
+    a: "Nie. Możesz wybrać krótszy okres — dopasowujemy warunki do Twojej sytuacji. Jeśli umowę zawierasz poza lokalem firmy (telefon, online), masz też ustawowe 14 dni na odstąpienie bez podawania przyczyny.",
+  },
+  {
     icon: FileX,
-    q: "Mam umowę z obecnym operatorem — czy zapłacę karę?",
-    a: "W większości przypadków pomożemy Ci to sprawdzić telefonicznie, zanim cokolwiek podpiszesz. Doradca oceni Twoją obecną umowę i powie wprost, czy przejście się opłaca — bez zobowiązań z Twojej strony.",
+    q: "Co jeśli mam jeszcze aktywną umowę u obecnego operatora?",
+    a: "Sprawdzimy termin jej zakończenia i pomożemy dobrać moment przejścia tak, żebyś nie płacił podwójnie i nie miał przerwy w dostępie do sieci.",
   },
   {
     icon: Clock,
-    q: "Ile trwa przeniesienie numeru i instalacja?",
-    a: "Instalację umawiamy najczęściej w ciągu 24 godzin roboczych od potwierdzenia dostępności. Przeniesienie numeru odbywa się równolegle i nie wymaga przerwy w działaniu usług.",
+    q: "Czy podczas zmiany zostanę bez internetu?",
+    a: "Przełączenie planujemy tak, by przerwa była jak najkrótsza — zwykle to kwestia godzin, nie dni.",
+  },
+  {
+    icon: Undo2,
+    q: "Czy mogę zrezygnować, jeśli zmienię zdanie?",
+    a: "Tak. Przy umowie zawartej poza lokalem przedsiębiorstwa przysługuje Ci ustawowe prawo odstąpienia w ciągu 14 dni — bez podawania przyczyny.",
   },
   {
     icon: ShieldCheck,
-    q: "Co jeśli internet nie będzie działał tak, jak obiecano?",
-    a: "Zgłoś to naszemu wsparciu technicznemu dostępnemu 24/7. Jeśli w pierwszych dniach usługa nie spełnia parametrów z oferty, doradca zaproponuje rozwiązanie — od razu, telefonicznie.",
+    q: "Czy są jakieś ukryte opłaty?",
+    a: "Nie. Wszystkie opłaty są przedstawione przed podpisaniem umowy i zapisane w dokumentach — bez drobnego druczku.",
   },
   {
-    icon: Wrench,
-    q: "Czy muszę być w domu podczas instalacji?",
-    a: "Tak, potrzebujemy Twojej obecności na czas montażu routera i ewentualnego dekodera — zwykle zajmuje to od 30 do 60 minut. Termin ustalisz bezpośrednio z technikiem po telefonie do nas.",
+    icon: TrendingDown,
+    q: "Co się stanie po zakończeniu okresu promocyjnego?",
+    a: "Cena po promocji jest wskazana w umowie od samego początku, razem z ceną promocyjną. Wiesz, ile zapłacisz, zanim jeszcze podpiszesz.",
+  },
+  {
+    icon: Zap,
+    q: "Jakie prędkości internetu oferuje Netia?",
+    a: "Do 2 Gbps symetrycznie na światłowodzie Orange (FTTH/XGS-PON) — zarówno pobieranie, jak i wysyłanie danych działa z taką samą prędkością.",
+  },
+  {
+    icon: MapPin,
+    q: "Czy mogę sprawdzić dostępność światłowodu w mojej lokalizacji?",
+    a: "Tak, sprawdzenie dostępności to pierwszy, niezobowiązujący krok — zajmuje chwilę.",
+  },
+  {
+    icon: InfinityIcon,
+    q: "Czy Netia ma limit danych?",
+    a: "Nie, internet działa bez limitu transferu.",
+  },
+  {
+    icon: Timer,
+    q: "Ile czasu trwa instalacja światłowodu?",
+    a: "Zwykle kilka dni od podpisania umowy, w zależności od dostępności terminów techników w Twojej okolicy.",
+  },
+  {
+    icon: Monitor,
+    q: "Czy umowę mogę podpisać online?",
+    a: "Tak, cały proces — od wyboru oferty do podpisania umowy — możesz przeprowadzić online, bez wizyty w salonie.",
   },
 ];
 

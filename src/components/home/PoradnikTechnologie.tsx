@@ -91,7 +91,7 @@ const ColumnCard = memo(function ColumnCard({
       }`}
     >
       {column.featured && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-teal-400 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#0a1a2b]">
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-teal-400 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#0a1a2b] text-center">
           Technologia Netii
         </span>
       )}

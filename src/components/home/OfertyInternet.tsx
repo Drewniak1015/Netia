@@ -93,7 +93,7 @@ export default function OfertyInternet() {
 
   return (
     <LazyMotion features={domAnimation} strict>
-      <div style={sectionBgStyle} className="pb-6">
+      <div style={sectionBgStyle} className="px-4 sm:px-6 pb-6">
         <div className="pt-6 flex justify-center">
           <m.button
             type="button"
@@ -127,7 +127,7 @@ export default function OfertyInternet() {
             className="overflow-hidden"
           >
             <section className="pt-10">
-              <div className="max-w-7xl mx-auto">
+              <div className="max-w-305 mx-auto">
                 <div className="text-center mb-10">
                   <h3 className="text-2xl md:text-3xl font-extrabold text-white">
                     Internet Netia <span className="text-teal-400">— szybki światłowód dla domu</span>
@@ -155,17 +155,17 @@ export default function OfertyInternet() {
                   * ceny z rabatami przy umowie 24 miesiące
                 </p>
 
-         <div className="mt-6 flex justify-center">
-  <m.a
-    href="tel:+48883334124"
-    whileHover={reduceMotion ? undefined : { scale: 1.01 }}
-    whileTap={reduceMotion ? undefined : { scale: 0.99 }}
-    transition={{ duration: 0.15 }}
-    className="flex items-center justify-center rounded-xl bg-teal-400 px-8 py-2.5 text-sm font-bold text-[#0a1a2b] transition-colors hover:bg-teal-300"
-  >
-    Sprawdź ofertę Internet Netia
-  </m.a>
-</div>
+                <div className="mt-6 flex justify-center">
+                  <m.a
+                    href="tel:+48883334124"
+                    whileHover={reduceMotion ? undefined : { scale: 1.01 }}
+                    whileTap={reduceMotion ? undefined : { scale: 0.99 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex items-center justify-center rounded-xl bg-teal-400 px-8 py-2.5 text-sm font-bold text-[#0a1a2b] transition-colors hover:bg-teal-300"
+                  >
+                    Sprawdź ofertę Internet Netia
+                  </m.a>
+                </div>
               </div>
             </section>
           </m.div>
