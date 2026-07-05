@@ -392,6 +392,7 @@ function isSectionActive(item: NavItem, pathname: string | null): boolean {
 export default function NetiaHeader() {
   const pathname = usePathname();
   const [activeKey, setActiveKey] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState<boolean>(false);
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
   const [mobileActiveKey, setMobileActiveKey] = useState<string | null>(null);
   const headerRef = useRef<HTMLElement>(null);
@@ -421,6 +422,12 @@ export default function NetiaHeader() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+  useEffect(() => {
+  const handleScroll = () => setScrolled(window.scrollY > 8);
+  window.addEventListener("scroll", handleScroll, { passive: true });
+  handleScroll();
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
 
   useEffect(() => {
     return () => {
@@ -438,12 +445,18 @@ export default function NetiaHeader() {
 
   return (
     <div className="font-sans">
-      <header
-        ref={headerRef}
-        className="sticky top-0 z-30 border-b border-white/10"
-        style={{ backgroundColor: "#0B2A3D" }}
-      >
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-10 px-8 py-5">
+<header
+  ref={headerRef}
+  className={`fixed top-0 z-40 w-full border-b transition-all duration-300 ${
+    scrolled
+      ? "border-white/10 shadow-lg shadow-black/20 backdrop-blur-xl backdrop-saturate-150"
+      : "border-white/10 shadow-none"
+  }`}
+  style={{
+    backgroundColor: scrolled ? "rgba(11, 42, 61, 0.72)" : "#0B2A3D",
+  }}
+>
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-10 px-8 py-4">
           <Logo />
 
           <nav className="hidden lg:flex items-center gap-3">

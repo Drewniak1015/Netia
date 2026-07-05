@@ -46,7 +46,7 @@ export default function Hero() {
     <LazyMotion features={domAnimation} strict>
       <section
         style={{ backgroundColor: "#0B2A3D" }}
-        className="relative overflow-hidden font-sans"
+        className="relative overflow-hidden font-sans pt-26"
       >
 
         <div className="relative z-10 mx-auto grid max-w-320 grid-cols-1 items-center gap-10 px-5 py-16 sm:px-6 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8 lg:px-8 lg:py-28">

@@ -39,23 +39,6 @@ const benefits = [
   },
 ];
 
-const stats = [
-  {
-    icon: Router,
-    text: "Router w cenie abonamentu",
-    subtext: "w wybranych pakietach",
-  },
-  {
-    icon: Tv,
-    text: "200+ kanałów, HBO Max i Netflix",
-    subtext: "w wybranych pakietach",
-  },
-  {
-    icon: Gamepad2,
-    text: "Gigagrywarka w wybranych pakietach",
-    subtext: "rozrywka na najwyższym poziomie",
-  },
-];
 
 const container: Variants = {
   hidden: {},
@@ -74,7 +57,7 @@ const item: Variants = {
 export default function Benefity() {
   return (
     <section className="py-16 px-8" style={{ backgroundColor: "#0B2A3D" }}>
-      <div className="mx-auto max-w-7xl">
+ <div className="mx-auto max-w-304">
         <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.6fr] gap-10">
           {/* Left column */}
           <motion.div
@@ -86,9 +69,10 @@ export default function Benefity() {
           >
             <div className="flex items-center gap-3 mb-4">
               <span className="h-px w-8 bg-teal-400" />
-              <span className="text-xs font-semibold tracking-widest text-teal-400 uppercase">
-                Dlaczego Netia?
-              </span>
+         <span className="inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-4 py-1.5 text-xs font-semibold tracking-widest text-teal-400 uppercase">
+  <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
+  Dlaczego Netia?
+</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Korzyści <span className="text-teal-400">dla Ciebie</span>
@@ -128,26 +112,6 @@ export default function Benefity() {
           </motion.div>
         </div>
 
-        {/* Bottom stats bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.5, ease: "easeOut", delay: 0.15 }}
-          className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 rounded-xl border border-white/10 bg-[#0d1f31] p-6"
-        >
-          {stats.map(({ icon: Icon, text, subtext }) => (
-            <div key={text} className="flex items-start gap-3">
-              <Icon className="h-6 w-6 text-teal-400 shrink-0 mt-0.5" strokeWidth={1.75} />
-              <div>
-                <p className="text-white text-sm font-medium leading-snug">
-                  {text}
-                </p>
-                <p className="text-slate-500 text-xs mt-0.5">{subtext}</p>
-              </div>
-            </div>
-          ))}
-        </motion.div>
       </div>
     </section>
   );

@@ -7,11 +7,14 @@ import Opinie from "@/components/home/opinie";
 import CTA from "@/components/home/Cta";
 import Instrukcja from "@/components/home/Instrukcja";
 import Miasta from "@/components/miasta/Miasta";
+import MaxxBanner from "@/components/home/Banner";
+import NetiaFAQ from "@/components/home/Faq";
 
 export default function HomePage() {
   return (
     <>
       <MainHero />
+      <MaxxBanner />
       <Oferty/>
       <OfertyInternet/>
       <PoradnikTechnologie/>
@@ -20,6 +23,7 @@ export default function HomePage() {
       <Opinie/>
       {/* Gwarancja */}
       <CTA/>
+      <NetiaFAQ/>
       <Miasta/>
     </>
   );

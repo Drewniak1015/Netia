@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { LazyMotion, domAnimation, m, useReducedMotion, type Variants } from "framer-motion";
-import { Check, MessageCircle, Phone, Router, Tv, Gamepad2 } from "lucide-react";
+import { Check, MessageCircle, Phone, Router, Wifi, PlayCircle } from "lucide-react";
 
 type Feature = {
   label: string;
@@ -58,12 +58,18 @@ const offers: Offer[] = [
 
 const PHONE = "+48 883 334 124";
 
+// Mini-benefity prezentowane pod siatką ofert — krótkie, "miękkie" hasła
+// wspierające decyzję zakupową bez powtarzania szczegółów z kart ofertowych.
+const miniBenefits = [
+  { icon: Router, label: "Instalacja nawet następnego dnia" },
+  { icon: Wifi, label: "WiFi 7 – zasięg na cały dom" },
+  { icon: PlayCircle, label: "6 miesięcy platform VOD za 0 zł" },
+];
+
 // Variants defined once at module scope so they aren't re-created every render.
 // Only `opacity` and `transform` (y) are animated — both run on the GPU
 // compositor and never trigger layout/paint, keeping scroll-linked
 // animation cheap even on low-end devices.
-// Uwaga: nagłówek h2 nie ma już własnego wariantu wejścia — patrz niżej,
-// dlaczego renderuje się statycznie.
 const gridVariants: Variants = {
   hidden: {},
   visible: {
@@ -78,6 +84,21 @@ const cardVariants: Variants = {
 
 const footerVariants: Variants = {
   hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
+// Basic fade+slide-up animation for the section header (badge, h2, subtext).
+// Uses staggerChildren so the three pieces animate in sequence rather than
+// all at once — a simple, common "basic" entrance pattern.
+const headerGroupVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.1, delayChildren: 0.05 },
+  },
+};
+
+const headerItemVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
@@ -187,21 +208,36 @@ export default function Oferty() {
         />
 
         <div className="relative max-w-305 mx-auto">
-          <div className="text-center mb-12">
-            <span className="inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wide text-teal-300">
+          {/* Header block now animates in on scroll (fade + slide-up, staggered).
+              This section sits below the Hero, so it's not an LCP candidate —
+              safe to animate unlike a hero heading would be. */}
+          <m.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={headerGroupVariants}
+            className="text-center mb-12"
+          >
+            <m.span
+              variants={headerItemVariants}
+              className="inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wide text-teal-300"
+            >
               <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
               ŚWIATŁOWÓD NETII OPARTY O SIEĆ ORANGE
-            </span>
-            {/* Renderowany statycznie: jeśli ta sekcja kiedykolwiek trafi */}
-            {/* above-the-fold (np. inny landing bez Hero), ten h2 stanie  */}
-            {/* się elementem LCP — nie może więc czekać na hydrację JS.   */}
-            <h2 className="mt-6 text-4xl md:text-5xl font-extrabold text-white">
+            </m.span>
+            <m.h2
+              variants={headerItemVariants}
+              className="mt-6 text-4xl md:text-5xl font-extrabold text-white"
+            >
               Popularne <span className="text-teal-400">oferty</span>
-            </h2>
-            <p className="mt-3 text-slate-400 text-base">
+            </m.h2>
+            <m.p
+              variants={headerItemVariants}
+              className="mt-3 text-slate-400 text-base"
+            >
               Jedna stała opłata przez cały okres umowy — bez ukrytych kosztów.
-            </p>
-          </div>
+            </m.p>
+          </m.div>
 
           <m.div
             initial="hidden"
@@ -215,24 +251,49 @@ export default function Oferty() {
             ))}
           </m.div>
 
+          {/* Pasek mini-benefitów: krótkie, "miękkie" hasła wspierające decyzję,
+              oddzielone pionowymi separatorami na desktopie i ikoną w kółku
+              nawiązującą do stylu numerowanych kroków wyżej na stronie. */}
           <m.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-40px" }}
             variants={footerVariants}
-            className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-slate-400"
+            className="mt-10 flex flex-col items-center justify-center gap-4 text-sm text-slate-300 sm:flex-row sm:flex-wrap sm:gap-x-8 sm:gap-y-3"
           >
-            <span className="flex items-center gap-2">
-              <Router className="h-4 w-4 text-teal-400" /> Router w cenie abonamentu
-            </span>
-            <span className="flex items-center gap-2">
-              <Tv className="h-4 w-4 text-teal-400" /> 200+ kanałów, HBO Max i Netflix
-            </span>
-            <span className="flex items-center gap-2">
-              <Gamepad2 className="h-4 w-4 text-teal-400" /> Giangrywarka w wybranych pakietach
-            </span>
-
+            {miniBenefits.map(({ icon: Icon, label }, i) => (
+              <span key={label} className="flex items-center gap-2.5">
+                {i > 0 && (
+                  <span className="hidden h-4 w-px bg-white/10 sm:block sm:-ml-4 sm:mr-4" aria-hidden />
+                )}
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-400/10">
+                  <Icon className="h-4 w-4 text-teal-400" />
+                </span>
+                {label}
+              </span>
+            ))}
           </m.div>
+
+          {/* Nota prawna / disclaimer ofertowy — celowo statyczna (bez wariantów
+              framer-motion): to treść informacyjno-prawna, nie element promocyjny,
+              więc nie powinna zależeć od hydracji ani viewport animation. */}
+          <div className="mt-10 pt-6 border-t border-white/10">
+            <p className="text-[11px] leading-relaxed text-slate-500 text-center max-w-4xl mx-auto">
+              Prezentowana oferta dotyczy mieszkań. W przypadku budynków jednorodzinnych obowiązuje inna oferta.
+              Prezentowana oferta Netii S.A.: „Wybierz szybszy Internet 6mies. 1/2Gb/s (PON, HFC, ETTH)” obowiązuje
+              przy zawarciu Umowy na czas określony 24 pełnych Okresów Rozliczeniowych przy jednoczesnym korzystaniu
+              z rabatów za e-fakturę (5 zł) i zgody marketingowe (5 zł). W przypadku rezygnacji lub niespełnienia
+              warunków przyznania rabatów, cena wzrośnie o 10 zł. Wraz z pierwszą fakturą zostanie naliczona opłata
+              aktywacyjna w wysokości 79 zł za Internet i 2 zł za Telewizję. Po 24 miesiącach cena abonamentu
+              wzrasta o 10 zł. „Szybki Internet Max (1000, 2000)” stanowi wyłącznie nazwę marketingową. Usługa
+              Internetowa oparta jest na parametrach jakości wynikających z maksymalnych parametrów technicznych
+              danej technologii, w jakiej świadczona jest Usługa Internetowa lub wynikających z ofertowych ustawień
+              technicznych łącza. Prędkość 2 Gb/s jest dostępna na technologii PON. Parametry świadczenia Usługi
+              Internetowej, w szczególności parametry prędkości oraz wpływu innych Usług na Usługę Internetową,
+              dostępne są na stronie netia.pl. Oferta jest ograniczona terytorialnie do zasięgu stacjonarnej sieci
+              PON, HFC, ETTH Operatora.
+            </p>
+          </div>
         </div>
       </section>
     </LazyMotion>

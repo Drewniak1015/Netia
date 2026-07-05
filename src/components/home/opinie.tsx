@@ -1,190 +1,210 @@
-"use client";
-
-import { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
-  LazyMotion,
-  domAnimation,
-  m,
-  AnimatePresence,
-  useReducedMotion,
-  type Variants,
-} from "framer-motion";
-import { Star, ChevronLeft, ChevronRight } from "lucide-react";
+  RotateCcw,
+  Headset,
+  Wrench,
+  FileText,
+  BadgeCheck,
+  Phone,
+  MessageCircle,
+  ChevronRight,
+} from "lucide-react";
 
-type Testimonial = {
+type Review = {
   initials: string;
   name: string;
   city: string;
-  quote: string;
+  date: string;
+  text: string;
 };
 
-const testimonials: Testimonial[] = [
+const REVIEWS: Review[] = [
   {
     initials: "MK",
     name: "Marta K.",
     city: "Warszawa",
-    quote:
-      "Montaż był naprawdę w 24 godziny, tak jak obiecywali. Internet działa stabilnie nawet wieczorami, kiedy cała rodzina siedzi online.",
+    date: "czerwiec 2026",
+    text: "Montaż był naprawdę w 24 godziny, tak jak obiecywali. Internet działa stabilnie nawet wieczorami, kiedy cała rodzina siedzi online.",
   },
   {
     initials: "PS",
     name: "Piotr S.",
     city: "Kraków",
-    quote:
-      "Przesiadka z innego operatora zajęła mi 10 minut przez telefon. Zero ukrytych opłat — cena taka, jaką podali od razu.",
+    date: "maj 2026",
+    text: "Przesiadka z innego operatora zajęła mi 10 minut przez telefon. Zero ukrytych opłat — cena taka, jaką podali od razu.",
   },
   {
     initials: "AN",
     name: "Anna N.",
     city: "Wrocław",
-    quote:
-      "Pracuję zdalnie i to pierwszy dostawca, przy którym połączenie na wideokonferencjach się nie zrywa. Wsparcie techniczne odebrało od razu.",
+    date: "maj 2026",
+    text: "Wi-Fi w końcu dociera do każdego pokoju, nawet do piwnicy z domowym biurem. Instalacja bezbolesna, technik przyjechał na czas.",
   },
 ];
 
-const sectionBgStyle = { backgroundColor: "#0B2A3D" } as const;
-const AUTO_ADVANCE_MS = 5500;
+const GUARANTEES = [
+  {
+    icon: RotateCcw,
+    title: "14 dni na zmianę zdania",
+    desc: "Umowa poza salonem? Masz 14 dni na odstąpienie bez podania przyczyny.",
+  },
+  {
+    icon: Headset,
+    title: "Wsparcie zawsze pod ręką",
+    desc: "Infolinia i serwis techniczny gotowe pomóc, gdy coś się zdarzy.",
+  },
+  {
+    icon: Wrench,
+    title: "Profesjonalny montaż",
+    desc: "Technik podłączy i skonfiguruje wszystko na miejscu.",
+  },
+  {
+    icon: FileText,
+    title: "Jasne warunki umowy",
+    desc: "Wszystkie opłaty i zasady po okresie promocyjnym opisane wprost w umowie.",
+  },
+];
 
-// Slide direction is passed in as the `custom` prop, so enter/exit sides
-// depend on whether we're moving forward or backward through the list.
-const slideVariants: Variants = {
-  enter: (direction: number) => ({ opacity: 0, x: direction > 0 ? 40 : -40 }),
-  center: { opacity: 1, x: 0, transition: { duration: 0.35, ease: "easeOut" } },
-  exit: (direction: number) => ({
-    opacity: 0,
-    x: direction > 0 ? -40 : 40,
-    transition: { duration: 0.25, ease: "easeIn" },
-  }),
-};
-
-const Stars = memo(function Stars({ className = "h-4 w-4" }: { className?: string }) {
+export default function NetiaSocialProof() {
   return (
-    <div className="flex gap-0.5" aria-hidden="true">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className={`${className} fill-teal-400 text-teal-400`} />
-      ))}
-    </div>
-  );
-});
+    <section
+      style={{ backgroundColor: "#0B2A3D" }}
+      className="w-full py-16 px-6 font-sans"
+    >
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeInUp {
+          animation: fadeInUp 0.6s ease-out both;
+        }
+      `}</style>
 
-export default function Opinie() {
-  const reduceMotion = useReducedMotion();
-  const [[index, direction], setState] = useState<[number, number]>([0, 0]);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+      <div className="max-w-305 mx-auto">
+        {/* Eyebrow */}
+        <div className="flex justify-center mb-5 animate-fadeInUp">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">
+            <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
+            Opinie i gwarancje
+          </span>
+        </div>
 
-  const goTo = useCallback((next: number) => {
-    setState(([current]) => {
-      const len = testimonials.length;
-      const dir = next > current || (current === len - 1 && next === 0) ? 1 : -1;
-      return [((next % len) + len) % len, dir];
-    });
-  }, []);
+        <h2
+          className="text-center font-extrabold text-white text-2xl sm:text-3xl lg:text-4xl tracking-tight mb-8 animate-fadeInUp"
+          style={{ animationDelay: "80ms" }}
+        >
+          Zaufało nam <span className="text-teal-400">2,4 mln klientów</span>
+        </h2>
 
-  const advance = useCallback(() => {
-    setState(([current]) => [(current + 1) % testimonials.length, 1]);
-  }, []);
-
-  // Auto-advance, paused when the user prefers reduced motion. Restarts
-  // the timer whenever `index` changes (manual nav resets the countdown too).
-  useEffect(() => {
-    if (reduceMotion) return;
-    timerRef.current = setInterval(advance, AUTO_ADVANCE_MS);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [index, reduceMotion, advance]);
-
-  const item = testimonials[index];
-
-  return (
-    <LazyMotion features={domAnimation} strict>
-      <section className="py-16 px-8" style={sectionBgStyle}>
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-10">
-            <span className="inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wide text-teal-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
-              OPINIE KLIENTÓW
-            </span>
-            <h2 className="mt-6 text-3xl md:text-4xl font-extrabold text-white">
-              Zaufało nam <span className="text-teal-400">2,4 mln klientów</span>
-            </h2>
-            <div className="mt-4 flex items-center justify-center gap-2">
-              <Stars />
-              <span className="text-sm text-slate-400">4.8/5 z ponad 1200 opinii</span>
-            </div>
-          </div>
-
-          <div
-            className="relative rounded-2xl border border-white/10 bg-[#0d1f31] p-8 md:p-10"
-            onMouseEnter={() => timerRef.current && clearInterval(timerRef.current)}
-            onMouseLeave={() => {
-              if (!reduceMotion) timerRef.current = setInterval(advance, AUTO_ADVANCE_MS);
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => goTo(index - 1)}
-              aria-label="Poprzednia opinia"
-              className="absolute left-2 md:-left-4 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-[#0B2A3D] text-slate-400 hover:text-teal-300 hover:border-teal-400/30 transition-colors"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => goTo(index + 1)}
-              aria-label="Następna opinia"
-              className="absolute right-2 md:-right-4 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-[#0B2A3D] text-slate-400 hover:text-teal-300 hover:border-teal-400/30 transition-colors"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-
-            <div className="min-h-[160px] flex items-center justify-center overflow-hidden">
-              <AnimatePresence mode="wait" custom={direction} initial={false}>
-                <m.div
-                  key={item.name}
-                  custom={direction}
-                  variants={slideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  className="text-center max-w-xl"
-                >
-                  <div className="flex justify-center mb-4">
-                    <Stars />
-                  </div>
-                  <p className="text-base md:text-lg text-slate-200 leading-relaxed">
-                    “{item.quote}”
-                  </p>
-                  <div className="mt-6 flex items-center justify-center gap-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-400/15 text-xs font-bold text-teal-300">
-                      {item.initials}
-                    </span>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-white">{item.name}</p>
-                      <p className="text-xs text-slate-500">{item.city}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-5">
+          {/* Reviews column */}
+          <div className="flex flex-col gap-4 h-full">
+            {REVIEWS.map((r, i) => (
+              <div
+                key={i}
+                className="flex-1 flex flex-col justify-between rounded-2xl p-6 border border-white/10 bg-white/5 animate-fadeInUp transition-all duration-300 hover:border-teal-400/30 hover:bg-white/[0.07] hover:-translate-y-0.5"
+                style={{ animationDelay: `${160 + i * 100}ms` }}
+              >
+                <p className="text-white/85 text-base leading-relaxed mb-5">
+                  „{r.text}”
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center shrink-0 rounded-full h-9.5 w-9.5 bg-teal-400/15 text-teal-300 text-[13px] font-semibold">
+                      {r.initials}
+                    </div>
+                    <div>
+                      <p className="text-white text-[0.9375rem] font-semibold m-0">
+                        {r.name}
+                      </p>
+                      <p className="text-white/60 text-[13px] m-0">{r.city}</p>
                     </div>
                   </div>
-                </m.div>
-              </AnimatePresence>
-            </div>
-          </div>
-
-          <div className="mt-6 flex justify-center gap-2">
-            {testimonials.map((t, i) => (
-              <button
-                key={t.name}
-                type="button"
-                onClick={() => goTo(i)}
-                aria-label={`Pokaż opinię ${i + 1}`}
-                aria-current={i === index}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === index ? "w-6 bg-teal-400" : "w-1.5 bg-white/20 hover:bg-white/30"
-                }`}
-              />
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="inline-flex items-center gap-1 text-teal-400 text-xs font-semibold">
+                      <BadgeCheck size={13} />
+                      Zweryfikowany klient
+                    </span>
+                    <span className="text-white/40 text-xs">{r.date}</span>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
+
+          {/* Guarantees column */}
+          <div
+            className="rounded-2xl p-6 sm:p-7 flex flex-col border border-white/10 bg-white/5 animate-fadeInUp"
+            style={{ animationDelay: "220ms" }}
+          >
+            <p className="uppercase mb-5 text-teal-400 text-xs font-bold tracking-wide">
+              Kupujesz bez ryzyka
+            </p>
+
+            <div className="flex flex-col gap-5 mb-6">
+              {GUARANTEES.map((g, i) => {
+                const Icon = g.icon;
+                return (
+                  <div key={i} className="group flex gap-3.5">
+                    <div className="flex items-center justify-center shrink-0 rounded-xl h-9 w-9 bg-teal-400/12 text-teal-300 transition-transform duration-300 group-hover:scale-110 group-hover:bg-teal-400/20">
+                      <Icon size={17} strokeWidth={2} />
+                    </div>
+                    <div>
+                      <p className="text-white text-[0.9375rem] font-semibold m-0 mb-0.5">
+                        {g.title}
+                      </p>
+                      <p className="text-white/60 text-[0.8438rem] leading-relaxed m-0">
+                        {g.desc}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="pt-5 mb-6 border-t border-white/10 text-white/55 text-[13px] leading-relaxed">
+              Jeśli po podpisaniu umowy zmienisz zdanie, masz 14 dni na odstąpienie od umowy
+              zawartej poza lokalem firmy. Późniejsze rozwiązanie umowy odbywa się zgodnie z jej
+              warunkami.
+            </p>
+
+            {/* Closing CTA — call or SMS only, styled like Hero buttons */}
+            <div className="mt-auto flex flex-col sm:flex-row gap-2.5">
+              <a
+                href="tel:+48883334124"
+                className="group flex-1 flex items-center justify-between gap-3 rounded-xl bg-teal-500 px-4 py-3 text-white transition-transform duration-150 hover:scale-[1.02]"
+              >
+                <span className="flex items-center gap-2.5">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15">
+                    <Phone size={14} />
+                  </span>
+                  <span className="text-sm font-bold">Zadzwoń</span>
+                </span>
+                <ChevronRight
+                  size={16}
+                  className="text-white/70 transition-transform duration-200 group-hover:translate-x-1"
+                />
+              </a>
+
+              <a
+                href="sms:+48883334124?body=INTERNET"
+                className="group flex-1 flex items-center justify-between gap-3 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white transition-transform duration-150 hover:scale-[1.02]"
+              >
+                <span className="flex items-center gap-2.5">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
+                    <MessageCircle size={14} />
+                  </span>
+                  <span className="text-sm font-bold">Wyślij SMS</span>
+                </span>
+                <ChevronRight
+                  size={16}
+                  className="text-white/50 transition-transform duration-200 group-hover:translate-x-1"
+                />
+              </a>
+            </div>
+          </div>
         </div>
-      </section>
-    </LazyMotion>
+      </div>
+    </section>
   );
 }

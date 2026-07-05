@@ -151,15 +151,17 @@ export default function OfertyInternet() {
                   * ceny z rabatami przy umowie 24 miesiące
                 </p>
 
-                <m.a
-                  href="tel:+48883334124"
-                  whileHover={reduceMotion ? undefined : { scale: 1.01 }}
-                  whileTap={reduceMotion ? undefined : { scale: 0.99 }}
-                  transition={{ duration: 0.15 }}
-                  className="mt-6 flex items-center justify-center rounded-xl bg-teal-400 px-6 py-4 text-sm font-bold text-[#0a1a2b] transition-colors hover:bg-teal-300"
-                >
-                  Sprawdź ofertę Internet Netia
-                </m.a>
+         <div className="mt-6 flex justify-center">
+  <m.a
+    href="tel:+48883334124"
+    whileHover={reduceMotion ? undefined : { scale: 1.01 }}
+    whileTap={reduceMotion ? undefined : { scale: 0.99 }}
+    transition={{ duration: 0.15 }}
+    className="flex items-center justify-center rounded-xl bg-teal-400 px-8 py-2.5 text-sm font-bold text-[#0a1a2b] transition-colors hover:bg-teal-300"
+  >
+    Sprawdź ofertę Internet Netia
+  </m.a>
+</div>
               </div>
             </section>
           </m.div>
