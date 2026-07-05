@@ -93,8 +93,8 @@ export default function OfertyInternet() {
 
   return (
     <LazyMotion features={domAnimation} strict>
-      <div style={sectionBgStyle} className="pb-8">
-        <div className="pt-8 flex justify-center">
+      <div style={sectionBgStyle} className="pb-6">
+        <div className="pt-6 flex justify-center">
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}

@@ -124,7 +124,7 @@ export default function PoradnikTechnologie() {
 
   return (
     <LazyMotion features={domAnimation} strict>
-      <section className="py-20 px-8" style={sectionBgStyle}>
+      <section className="py-16 px-8" style={sectionBgStyle}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <span className="inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wide text-teal-300">

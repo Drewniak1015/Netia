@@ -173,7 +173,7 @@ export default function Oferty() {
     // set (transform/opacity/gestures) instead of the full animation engine.
     <LazyMotion features={domAnimation} strict>
       <section
-        className="relative w-full py-20 px-8 overflow-hidden"
+        className="relative w-full py-16 px-8 overflow-hidden"
         style={{ backgroundColor: "#0B2A3D" }}
       >
         {/* ambient background lines, consistent with hero */}

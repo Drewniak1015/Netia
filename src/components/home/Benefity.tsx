@@ -73,7 +73,7 @@ const item: Variants = {
 
 export default function Benefity() {
   return (
-    <section className="py-20 px-8" style={{ backgroundColor: "#0B2A3D" }}>
+    <section className="py-16 px-8" style={{ backgroundColor: "#0B2A3D" }}>
       <div className="mx-auto max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.6fr] gap-10">
           {/* Left column */}
