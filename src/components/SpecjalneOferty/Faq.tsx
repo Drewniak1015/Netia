@@ -1,15 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Phone,
   MessageCircle,
   ChevronRight,
   Plus,
-  ShieldCheck,
-  Clock,
-  FileX,
-  Wrench,
+  Package,
+  Wallet,
+  TrendingUp,
+  FileCheck,
+  FileText,
+  Tv,
+  XCircle,
+  Gauge,
 } from "lucide-react";
 import type { ElementType } from "react";
 
@@ -21,34 +25,78 @@ type FaqItem = {
 
 const FAQ_ITEMS: FaqItem[] = [
   {
-    icon: FileX,
-    q: "Mam umowę z obecnym operatorem — czy zapłacę karę?",
-    a: "W większości przypadków pomożemy Ci to sprawdzić telefonicznie, zanim cokolwiek podpiszesz. Doradca oceni Twoją obecną umowę i powie wprost, czy przejście się opłaca — bez zobowiązań z Twojej strony.",
+    icon: Package,
+    q: "Co dokładnie dostaję w pakiecie Max 1000 i Max 2000?",
+    a: "Max 1000: Internet do 1000 Mb/s + Telewizja L 4K z Dekoderem + Bezpieczny Internet Ultra (ochrona 5 urządzeń + CyberEkspert). Max 2000: to samo, ale z Internetem do 2000 Mb/s (technologia PON). W obu opcjonalnie SoundBox 4K za +30 zł/mies.",
   },
   {
-    icon: Clock,
-    q: "Ile trwa przeniesienie numeru i instalacja?",
-    a: "Instalację umawiamy najczęściej w ciągu 24 godzin roboczych od potwierdzenia dostępności. Przeniesienie numeru odbywa się równolegle i nie wymaga przerwy w działaniu usług.",
+    icon: Wallet,
+    q: "Ile naprawdę zapłacę przez pierwsze 12 miesięcy?",
+    a: "Przez pierwsze 12 miesięcy abonament wynosi 0 zł. Płatne są jedynie opłaty aktywacyjne na pierwszej fakturze: 79 zł za Internet i 2 zł za Telewizję (łącznie 81 zł jednorazowo).",
   },
   {
-    icon: ShieldCheck,
-    q: "Co jeśli internet nie będzie działał tak, jak obiecano?",
-    a: "Zgłoś to naszemu wsparciu technicznemu dostępnemu 24/7. Jeśli w pierwszych dniach usługa nie spełnia parametrów z oferty, doradca zaproponuje rozwiązanie — od razu, telefonicznie.",
+    icon: TrendingUp,
+    q: "Ile kosztuje pakiet od 13. miesiąca?",
+    a: "Max 1000 = 140 zł/mies., Max 2000 = 160 zł/mies. — te ceny obowiązują od 13. do 24. miesiąca. Po 24 miesiącach cena abonamentu rośnie o 10 zł zgodnie z regulaminem.",
   },
   {
-    icon: Wrench,
-    q: "Czy muszę być w domu podczas instalacji?",
-    a: "Tak, potrzebujemy Twojej obecności na czas montażu routera i ewentualnego dekodera — zwykle zajmuje to od 30 do 60 minut. Termin ustalisz bezpośrednio z technikiem po telefonie do nas.",
+    icon: FileCheck,
+    q: "Czy muszę spełnić jakieś warunki, żeby cena pozostała na poziomie 140/160 zł?",
+    a: "Tak — wymagana jest e-faktura (rabat 5 zł) i zgody marketingowe (rabat 5 zł). Jeśli zrezygnujesz z tych zgód lub e-faktury, cena wzrośnie o 10 zł.",
+  },
+  {
+    icon: FileText,
+    q: "Na jak długo jest umowa?",
+    a: "Umowa zawierana jest na czas określony 24 pełnych okresów rozliczeniowych. Pierwsze 12 mies. abonamentu za 0 zł, kolejne 12 mies. według tabeli cen.",
+  },
+  {
+    icon: Tv,
+    q: "Czy mogę dokupić pakiety filmowe lub sportowe?",
+    a: "Tak — dostępne dopłaty: HBO + HBO Max (+25 zł), Canal+ Prestige (+50 zł), Canal+ Select (+35 zł), Polsat Sport Premium (+20 zł), Eleven Sports (+10 zł), Polsat Sport Premium + Eleven Sports (+20 zł), FilmBox (+10 zł), Dla Dorosłych (+10 zł).",
+  },
+  {
+    icon: XCircle,
+    q: "Czy w ofercie jest Disney+ lub SkyShowtime?",
+    a: "Nie. W tej promocji nie ma usług streamingowych Disney+ i SkyShowtime. Dostępne są klasyczne pakiety telewizyjne i premium opisane wyżej.",
+  },
+  {
+    icon: Gauge,
+    q: "W jakiej technologii dostępna jest prędkość 2 Gb/s?",
+    a: "Maksymalna prędkość 2 Gb/s dostępna jest w technologii PON. W technologiach HFC lub ETTH maksymalna prędkość może być inna — sprawdź dostępność pod swoim adresem przed zamówieniem.",
   },
 ];
 
+
 export default function NetiaFAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [inView, setInView] = useState(false);
+  const sectionRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section
+      ref={sectionRef}
       style={{ backgroundColor: "#0B2A3D" }}
-      className="w-full py-16 px-6 font-sans overflow-hidden"
+      className={`w-full py-6 px-6 font-sans overflow-hidden ${
+        inView ? "faq-in-view" : ""
+      }`}
     >
       <style>{`
         @keyframes faq-fade-up {
@@ -70,6 +118,10 @@ export default function NetiaFAQ() {
           }
         }
         .faq-animate {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        .faq-in-view .faq-animate {
           animation: faq-fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
         .faq-cta-pulse {
@@ -78,6 +130,8 @@ export default function NetiaFAQ() {
         @media (prefers-reduced-motion: reduce) {
           .faq-animate {
             animation: none;
+            opacity: 1;
+            transform: none;
           }
           .faq-cta-pulse {
             animation: none;
@@ -223,6 +277,8 @@ export default function NetiaFAQ() {
             </a>
           </div>
         </div>
+
+        {/* Legal disclaimer */}
       </div>
     </section>
   );
