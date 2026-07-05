@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Phone,
   MessageCircle,
@@ -44,25 +44,98 @@ const FAQ_ITEMS: FaqItem[] = [
 
 export default function NetiaFAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [inView, setInView] = useState(false);
+  const sectionRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section
+      ref={sectionRef}
       style={{ backgroundColor: "#0B2A3D" }}
-      className="w-full py-20 px-6 font-sans"
+      className={`w-full py-20 px-6 font-sans overflow-hidden ${
+        inView ? "faq-in-view" : ""
+      }`}
     >
+      <style>{`
+        @keyframes faq-fade-up {
+          from {
+            opacity: 0;
+            transform: translateY(14px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes faq-pulse {
+          0%, 100% {
+            box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.45);
+          }
+          50% {
+            box-shadow: 0 0 0 8px rgba(45, 212, 191, 0);
+          }
+        }
+        .faq-animate {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        .faq-in-view .faq-animate {
+          animation: faq-fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .faq-cta-pulse {
+          animation: faq-pulse 2.4s ease-out infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .faq-animate {
+            animation: none;
+            opacity: 1;
+            transform: none;
+          }
+          .faq-cta-pulse {
+            animation: none;
+          }
+        }
+      `}</style>
+
       <div className="max-w-3xl mx-auto">
         {/* Eyebrow */}
-        <div className="flex justify-center mb-5">
+        <div
+          className="flex justify-center mb-5 faq-animate"
+          style={{ animationDelay: "0ms" }}
+        >
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">
             <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
             Zanim zadzwonisz
           </span>
         </div>
 
-        <h2 className="text-center font-extrabold text-white text-2xl sm:text-3xl lg:text-4xl tracking-tight mb-3">
+        <h2
+          className="text-center font-extrabold text-white text-2xl sm:text-3xl lg:text-4xl tracking-tight mb-3 faq-animate"
+          style={{ animationDelay: "80ms" }}
+        >
           Najczęstsze pytania
         </h2>
-        <p className="text-center mb-12 max-w-lg mx-auto text-sm sm:text-base text-white/65">
+        <p
+          className="text-center mb-12 max-w-lg mx-auto text-sm sm:text-base text-white/65 faq-animate"
+          style={{ animationDelay: "160ms" }}
+        >
           Odpowiedzi na to, co najczęściej pyta nas 2,4 mln klientów. Coś jeszcze
           niejasne? Doradca odpowie w 3 minuty przez telefon.
         </p>
@@ -85,15 +158,16 @@ export default function NetiaFAQ() {
                     setOpenIndex(isOpen ? null : i);
                   }
                 }}
-                className={`cursor-pointer rounded-2xl overflow-hidden border transition-colors duration-200 ${
+                className={`faq-animate cursor-pointer rounded-2xl overflow-hidden border transition-colors duration-200 ${
                   isOpen
                     ? "bg-teal-400/10 border-teal-400/30"
                     : "bg-white/5 border-white/10 hover:bg-white/[0.07]"
                 }`}
+                style={{ animationDelay: `${240 + i * 90}ms` }}
               >
                 <div className="w-full flex items-center gap-4 text-left px-5 py-4 sm:px-6 sm:py-5">
                   <div
-                    className={`flex items-center justify-center shrink-0 rounded-xl h-10 w-10 ${
+                    className={`flex items-center justify-center shrink-0 rounded-xl h-10 w-10 transition-colors duration-300 ${
                       isOpen
                         ? "bg-teal-400/15 text-teal-300"
                         : "bg-white/10 text-white/60"
@@ -103,7 +177,7 @@ export default function NetiaFAQ() {
                   </div>
 
                   <span
-                    className={`flex-1 font-medium text-base sm:text-[1.0625rem] leading-snug ${
+                    className={`flex-1 font-medium text-base sm:text-[1.0625rem] leading-snug transition-colors duration-300 ${
                       isOpen ? "text-white" : "text-white/80"
                     }`}
                   >
@@ -133,7 +207,10 @@ export default function NetiaFAQ() {
         </div>
 
         {/* Closing CTA — call or SMS only, styled like Hero buttons */}
-        <div className="rounded-3xl border border-white/10 bg-white/5 px-6 py-8 sm:px-10 sm:py-10 text-center">
+        <div
+          className="faq-animate rounded-3xl border border-white/10 bg-white/5 px-6 py-8 sm:px-10 sm:py-10 text-center"
+          style={{ animationDelay: `${240 + FAQ_ITEMS.length * 90 + 80}ms` }}
+        >
           <h3 className="font-bold text-white text-xl sm:text-2xl mb-2">
             Wciąż masz pytania?
           </h3>
@@ -144,7 +221,7 @@ export default function NetiaFAQ() {
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
             <a
               href="tel:+48883334124"
-              className="flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] sm:min-w-60"
+              className="faq-cta-pulse flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] sm:min-w-60"
             >
               <span className="flex items-center gap-3">
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">

@@ -95,10 +95,14 @@ export default function OfertyInternet() {
     <LazyMotion features={domAnimation} strict>
       <div style={sectionBgStyle} className="pb-6">
         <div className="pt-6 flex justify-center">
-          <button
+          <m.button
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
             className="flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-5 py-2.5 text-sm font-semibold text-teal-300 transition-colors hover:bg-white/10"
           >
             <Wifi className="h-4 w-4" />
@@ -109,7 +113,7 @@ export default function OfertyInternet() {
             >
               <ChevronDown className="h-4 w-4" />
             </m.span>
-          </button>
+          </m.button>
         </div>
 
       <AnimatePresence initial={false}>

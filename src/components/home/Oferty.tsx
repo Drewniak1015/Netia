@@ -274,10 +274,16 @@ export default function Oferty() {
             ))}
           </m.div>
 
-          {/* Nota prawna / disclaimer ofertowy — celowo statyczna (bez wariantów
-              framer-motion): to treść informacyjno-prawna, nie element promocyjny,
-              więc nie powinna zależeć od hydracji ani viewport animation. */}
-          <div className="mt-10 pt-6 border-t border-white/10">
+          {/* Nota prawna / disclaimer ofertowy — teraz z tą samą, lekką animacją
+              wejścia (fade + slide-up) co pozostałe sekcje, uruchamianą przy
+              wjechaniu w viewport. */}
+          <m.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-40px" }}
+            variants={footerVariants}
+            className="mt-10 pt-6 border-t border-white/10"
+          >
             <p className="text-[11px] leading-relaxed text-slate-500 text-center max-w-4xl mx-auto">
               Prezentowana oferta dotyczy mieszkań. W przypadku budynków jednorodzinnych obowiązuje inna oferta.
               Prezentowana oferta Netii S.A.: „Wybierz szybszy Internet 6mies. 1/2Gb/s (PON, HFC, ETTH)” obowiązuje
@@ -293,7 +299,7 @@ export default function Oferty() {
               dostępne są na stronie netia.pl. Oferta jest ograniczona terytorialnie do zasięgu stacjonarnej sieci
               PON, HFC, ETTH Operatora.
             </p>
-          </div>
+          </m.div>
         </div>
       </section>
     </LazyMotion>

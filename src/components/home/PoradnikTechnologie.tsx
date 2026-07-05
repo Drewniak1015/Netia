@@ -59,6 +59,18 @@ const cardVariants: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
+const fadeUpVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
+
+const headerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.08 },
+  },
+};
+
 const ColumnCard = memo(function ColumnCard({
   column,
   reduceMotion,
@@ -126,20 +138,29 @@ export default function PoradnikTechnologie() {
     <LazyMotion features={domAnimation} strict>
       <section className="py-16 px-8" style={sectionBgStyle}>
         <div className="max-w-305  mx-auto">
-          <div className="text-center mb-12">
-            <span className="inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wide text-teal-300">
+          <m.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={headerVariants}
+            className="text-center mb-12"
+          >
+            <m.span
+              variants={fadeUpVariants}
+              className="inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wide text-teal-300"
+            >
               <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
               KRÓTKI PRZEWODNIK
-            </span>
-            <h2 className="mt-6 text-3xl md:text-4xl font-extrabold text-white">
+            </m.span>
+            <m.h2 variants={fadeUpVariants} className="mt-6 text-3xl md:text-4xl font-extrabold text-white">
               Dlaczego światłowód, <span className="text-teal-400">a nie LTE czy kabel?</span>
-            </h2>
-            <p className="mt-4 text-slate-400 text-base max-w-2xl mx-auto">
+            </m.h2>
+            <m.p variants={fadeUpVariants} className="mt-4 text-slate-400 text-base max-w-2xl mx-auto">
               Wybierając internet, masz do wyboru trzy główne technologie: światłowód (PON, ETTH),
               kabel koncentryczny (HFC) oraz internet mobilny 5G/LTE. Poniżej krótkie porównanie —
               co daje światłowód i kiedy alternatywy mają sens.
-            </p>
-          </div>
+            </m.p>
+          </m.div>
 
           <m.div
             initial="hidden"
@@ -153,14 +174,20 @@ export default function PoradnikTechnologie() {
             ))}
           </m.div>
 
-          <p className="mt-10 text-center text-sm text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          <m.p
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={fadeUpVariants}
+            className="mt-10 text-center text-sm text-slate-400 max-w-2xl mx-auto leading-relaxed"
+          >
             Do codziennego użytku w domu lub biurze światłowód zwykle wygrywa stosunkiem jakości do
             ceny.{" "}
             <span className="text-white font-semibold">
               Pakiety Netii zaczynają się od 40 zł/mies.
             </span>{" "}
             — sprawdź dostępność światłowodu pod swoim adresem.
-          </p>
+          </m.p>
         </div>
       </section>
     </LazyMotion>

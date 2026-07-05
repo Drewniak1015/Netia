@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef, useState, type RefObject } from "react";
 import {
   RotateCcw,
   Headset,
@@ -64,9 +67,40 @@ const GUARANTEES = [
   },
 ];
 
+// Hook: returns true once the element has scrolled into view (fires once)
+function useInView(
+  options: IntersectionObserverInit = {}
+): [RefObject<HTMLElement | null>, boolean] {
+  const ref = useRef<HTMLElement | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect(); // animate once, don't repeat on every scroll
+        }
+      },
+      { threshold: 0.15, ...options }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [options]);
+
+  return [ref, isVisible];
+}
+
 export default function NetiaSocialProof() {
+  const [sectionRef, sectionInView] = useInView();
+
   return (
     <section
+      ref={sectionRef}
       style={{ backgroundColor: "#0B2A3D" }}
       className="w-full py-16 px-6 font-sans"
     >
@@ -75,14 +109,25 @@ export default function NetiaSocialProof() {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fadeInUp {
+        .reveal {
+          opacity: 0;
+        }
+        .reveal.in-view {
           animation: fadeInUp 0.6s ease-out both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .reveal {
+            opacity: 1;
+            animation: none !important;
+          }
         }
       `}</style>
 
       <div className="max-w-305 mx-auto">
         {/* Eyebrow */}
-        <div className="flex justify-center mb-5 animate-fadeInUp">
+        <div
+          className={`flex justify-center mb-5 reveal ${sectionInView ? "in-view" : ""}`}
+        >
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">
             <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
             Opinie i gwarancje
@@ -90,7 +135,7 @@ export default function NetiaSocialProof() {
         </div>
 
         <h2
-          className="text-center font-extrabold text-white text-2xl sm:text-3xl lg:text-4xl tracking-tight mb-8 animate-fadeInUp"
+          className={`text-center font-extrabold text-white text-2xl sm:text-3xl lg:text-4xl tracking-tight mb-8 reveal ${sectionInView ? "in-view" : ""}`}
           style={{ animationDelay: "80ms" }}
         >
           Zaufało nam <span className="text-teal-400">2,4 mln klientów</span>
@@ -102,7 +147,7 @@ export default function NetiaSocialProof() {
             {REVIEWS.map((r, i) => (
               <div
                 key={i}
-                className="flex-1 flex flex-col justify-between rounded-2xl p-6 border border-white/10 bg-white/5 animate-fadeInUp transition-all duration-300 hover:border-teal-400/30 hover:bg-white/[0.07] hover:-translate-y-0.5"
+                className={`flex-1 flex flex-col justify-between rounded-2xl p-6 border border-white/10 bg-white/5 transition-all duration-300 hover:border-teal-400/30 hover:bg-white/[0.07] hover:-translate-y-0.5 reveal ${sectionInView ? "in-view" : ""}`}
                 style={{ animationDelay: `${160 + i * 100}ms` }}
               >
                 <p className="text-white/85 text-base leading-relaxed mb-5">
@@ -134,7 +179,7 @@ export default function NetiaSocialProof() {
 
           {/* Guarantees column */}
           <div
-            className="rounded-2xl p-6 sm:p-7 flex flex-col border border-white/10 bg-white/5 animate-fadeInUp"
+            className={`rounded-2xl p-6 sm:p-7 flex flex-col border border-white/10 bg-white/5 reveal ${sectionInView ? "in-view" : ""}`}
             style={{ animationDelay: "220ms" }}
           >
             <p className="uppercase mb-5 text-teal-400 text-xs font-bold tracking-wide">

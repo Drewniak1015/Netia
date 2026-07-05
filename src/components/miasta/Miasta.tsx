@@ -1,4 +1,7 @@
+"use client";
+
 import { MapPin, ArrowRight, Wifi } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { CITIES } from "./miasta-dane";
 
 function formatPopulation(n: number): string {
@@ -11,23 +14,70 @@ interface MiastaProps {
   onShowFullList?: () => void;
 }
 
+/**
+ * Hook: zwraca ref + flagę "widoczny", ustawianą raz, gdy element
+ * wjedzie w viewport. Respektuje prefers-reduced-motion (od razu widoczny).
+ */
+function useRevealOnScroll<T extends HTMLElement>(options?: IntersectionObserverInit) {
+  const ref = useRef<T | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) {
+      setVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisible(true);
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -40px 0px", ...options }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return { ref, visible };
+}
+
 export default function Miasta({ baseHref = "/internet", onShowFullList }: MiastaProps) {
+  const header = useRevealOnScroll<HTMLDivElement>();
+  const grid = useRevealOnScroll<HTMLDivElement>();
+  const footer = useRevealOnScroll<HTMLDivElement>();
+
   return (
     <section
       style={{ backgroundColor: "#0B2A3D" }}
       className="relative overflow-hidden font-sans"
     >
       <div className="relative z-10 mx-auto max-w-320 px-5 py-16 sm:px-6 sm:py-16 lg:px-8 lg:py-16">
-        {/* Badge */}
-        <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-white/70">
-            Dostępność w Twoim mieście
-          </span>
-        </div>
+        {/* Badge + Header */}
+        <div
+          ref={header.ref}
+          className="mb-10 transition-all duration-700 ease-out"
+          style={{
+            opacity: header.visible ? 1 : 0,
+            transform: header.visible ? "translateY(0)" : "translateY(16px)",
+          }}
+        >
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-white/70">
+              Dostępność w Twoim mieście
+            </span>
+          </div>
 
-        {/* Header */}
-        <div className="mb-10">
           <h1 className="text-2xl font-extrabold text-white sm:text-3xl lg:text-4xl">
             Wybierz swoje <span className="text-teal-300">miasto</span>
           </h1>
@@ -37,14 +87,22 @@ export default function Miasta({ baseHref = "/internet", onShowFullList }: Miast
         </div>
 
         {/* City grid */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {CITIES.map((city) => (
+        <div ref={grid.ref} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {CITIES.map((city, i) => (
             <a
               key={city.slug}
               href={`${baseHref}/${city.slug}`}
               title={`Internet i telewizja w ${city.locative} — sprawdź ofertę`}
               aria-label={`Sprawdź dostępność internetu i telewizji w ${city.locative}`}
-              className="group flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-left transition-colors duration-200 hover:border-teal-400/40 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D]"
+              className="group flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-left transition-all duration-200 hover:border-teal-400/40 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D]"
+              style={{
+                opacity: grid.visible ? 1 : 0,
+                transform: grid.visible ? "translateY(0)" : "translateY(20px)",
+                transitionProperty: "opacity, transform, border-color, background-color",
+                transitionDuration: "600ms, 600ms, 200ms, 200ms",
+                transitionTimingFunction: "ease-out",
+                transitionDelay: grid.visible ? `${i * 60}ms` : "0ms",
+              }}
             >
               <div className="flex items-center gap-3">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-teal-300">
@@ -68,7 +126,14 @@ export default function Miasta({ baseHref = "/internet", onShowFullList }: Miast
         </div>
 
         {/* Footer callout */}
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 px-6 py-5 sm:flex-row">
+        <div
+          ref={footer.ref}
+          className="mt-10 flex flex-col items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 px-6 py-5 transition-all duration-700 ease-out sm:flex-row"
+          style={{
+            opacity: footer.visible ? 1 : 0,
+            transform: footer.visible ? "translateY(0)" : "translateY(16px)",
+          }}
+        >
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-teal-300">
               <Wifi size={18} strokeWidth={2} />
