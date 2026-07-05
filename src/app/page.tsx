@@ -21,10 +21,9 @@ export default function HomePage() {
       <Instrukcja/>
       <Benefity/>
       <Opinie/>
-      {/* Gwarancja */}
       <CTA/>
       <NetiaFAQ/>
-      <Miasta/>
+      {/* <Miasta/> */}
     </>
   );
 } 
