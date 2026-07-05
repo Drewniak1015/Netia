@@ -23,7 +23,7 @@ export default function HomePage() {
       <Opinie/>
       <CTA/>
       <NetiaFAQ/>
-      {/* <Miasta/> */}
+      <Miasta/>
     </>
   );
 } 
