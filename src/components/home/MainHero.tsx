@@ -67,9 +67,15 @@ export default function Hero() {
             </m.div>
 
             {/* LCP element: bez opacity w animacji, tylko h1 statyczny */}
-<h1 className="animate-fade-up text-2xl font-extrabold ...">
+<m.h1
+  initial={reduceMotion ? false : "hidden"}
+  animate="visible"
+  variants={fadeUp}
+  transition={{ duration: 0.6, ease: "easeOut", delay: 0 }}
+  className="text-2xl font-extrabold ..."
+>
   Internet i telewizja, które po prostu działają.
-</h1>
+</m.h1>
             <m.h2
               initial={reduceMotion ? false : "hidden"}
               animate="visible"
