@@ -121,7 +121,7 @@ const TIER_3: FaqItem[] = [
 const FAQ_ITEMS: FaqItem[] = [...TIER_1, ...TIER_2, ...TIER_3];
 
 export default function NetiaFAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
     <section

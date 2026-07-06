@@ -157,7 +157,7 @@ const faqs: { icon: React.ReactNode; q: string; a: string }[] = [
 
 export default function PopularneOferty() {
   const reduceMotion = useReducedMotion();
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
     <LazyMotion features={domAnimation} strict>

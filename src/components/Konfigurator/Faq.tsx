@@ -55,7 +55,7 @@ const FAQ_ITEMS: FaqItem[] = [
 ];
 
 export default function KonfiguratorFAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [inView, setInView] = useState(false);
   const sectionRef = useRef<HTMLElement | null>(null);
 
