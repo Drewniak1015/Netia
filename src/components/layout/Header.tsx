@@ -111,9 +111,9 @@ const NAV: NavItem[] = [
         {
           heading: "Pakiety telewizyjne",
           items: [
-            { title: "Pakiet S", desc: "Kanały podstawowe.", icon: Tv, href: "/kanaly/s" },
-            { title: "Pakiet M", desc: "Więcej rozrywki i sportu.", icon: Tv, href: "/kanaly/m" },
-            { title: "Pakiet L", desc: "Pełna oferta, kanały premium.", icon: Tv, href: "/kanaly/l" },
+            { title: "Pakiet S", desc: "Kanały podstawowe.", icon: Tv, href: "/kanaly?tier=s" },
+            { title: "Pakiet M", desc: "Więcej rozrywki i sportu.", icon: Tv, href: "/kanaly?tier=m" },
+            { title: "Pakiet L", desc: "Pełna oferta, kanały premium.", icon: Tv, href: "/kanaly?tier=l" },
           ],
         },
       ],

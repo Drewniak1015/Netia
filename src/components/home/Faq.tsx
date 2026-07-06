@@ -128,7 +128,7 @@ export default function NetiaFAQ() {
       style={{ backgroundColor: "#0B2A3D" }}
       className="w-full py-16 px-6 font-sans overflow-hidden"
     >
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-305 mx-auto">
         {/* Eyebrow */}
         <motion.div
           className="flex justify-center mb-5"
