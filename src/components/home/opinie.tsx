@@ -227,7 +227,7 @@ export default function NetiaSocialProof() {
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15">
                     <Phone size={14} />
                   </span>
-                  <span className="text-sm font-bold">Zadzwoń</span>
+                  <span className="text-sm font-bold">Zadzwoń<br/> +48 883 883 883</span>
                 </span>
                 <ChevronRight
                   size={16}

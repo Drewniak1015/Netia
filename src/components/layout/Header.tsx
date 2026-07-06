@@ -138,7 +138,7 @@ const NAV: NavItem[] = [
               title: "Telewizja",
               desc: "Znajdź odpowiedzi na najczęstsze pytania.",
               icon: Tv,
-              href: "/pomoc/faq",
+              href: "/pomoc/Telewizja",
             },
             {
               title: "Internet",
@@ -156,7 +156,7 @@ const NAV: NavItem[] = [
               title: "Zgłoś Awarię",
               desc: "Kroki naprawcze i kontakt z działem technicznym.",
               icon: Wrench,
-              href: "/awarie",
+              href: "/pomoc/awarie",
             },
             {
               title: "Blog",

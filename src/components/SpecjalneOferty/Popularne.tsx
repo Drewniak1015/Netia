@@ -26,9 +26,16 @@ const fadeUp = {
 
 type Offer = {
   id: string;
-  title: string;
+  /* Nagłówek prędkości — dwupoziomowy, jak "Internet do" / "300 Mb/s + TV S" */
+  eyebrow: string;
+  speedBold: string;
+  speedSuffix?: string;
+  /* Blok promocji — etykieta / duży nagłówek / dopisek gwiazdką */
+  promoEyebrow?: string;
+  promoHeadline?: string;
+  promoNote?: string;
+  /* Fallback, gdy oferta nie ma trzyczęściowego bloku promo (np. "Najczęściej wybierany") */
   badgeLabel: string;
-  badgeTone: "contract" | "promo";
   features: { icon: React.ReactNode; label: string }[];
   price: string;
   priceUnit: string;
@@ -39,9 +46,13 @@ type Offer = {
 const offers: Offer[] = [
   {
     id: "net-300-tv-s",
-    title: "INTERNET DO 300 Mb/s + TV S",
+    eyebrow: "Internet do",
+    speedBold: "300 Mb/s",
+    speedSuffix: "+ TV S",
+    promoEyebrow: "UMOWA",
+    promoHeadline: "24 miesiące",
+    promoNote: "*po rabatach",
     badgeLabel: "Umowa na 24 miesiące *po rabatach",
-    badgeTone: "contract",
     features: [
       { icon: <Router size={14} />, label: "Router z Wi-Fi w cenie" },
       { icon: <ShieldCheck size={14} />, label: "Netia GO w cenie" },
@@ -52,9 +63,13 @@ const offers: Offer[] = [
   },
   {
     id: "net-300-tv-s-4k",
-    title: "INTERNET DO 300 Mb/s + TV S 4K",
+    eyebrow: "Internet do",
+    speedBold: "300 Mb/s",
+    speedSuffix: "+ TV S 4K",
+    promoEyebrow: "UMOWA",
+    promoHeadline: "24 miesiące",
+    promoNote: "*po rabatach",
     badgeLabel: "Umowa na 24 miesiące *po rabatach",
-    badgeTone: "contract",
     features: [
       { icon: <Router size={14} />, label: "Router z Wi-Fi w cenie" },
       { icon: <Tv size={14} />, label: "Dekoder 4K w cenie" },
@@ -66,9 +81,12 @@ const offers: Offer[] = [
   },
   {
     id: "net-1000",
-    title: "INTERNET DO 1000 Mb/s",
+    eyebrow: "Internet do",
+    speedBold: "1000 Mb/s",
+    promoEyebrow: "ABONAMENT",
+    promoHeadline: "6 miesięcy za 0 zł",
+    promoNote: "*po rabatach",
     badgeLabel: "Abonament 6 miesięcy za 0 zł *po rabatach",
-    badgeTone: "promo",
     features: [
       { icon: <Router size={14} />, label: "Router Combo z ONT Wi-Fi 6" },
     ],
@@ -78,9 +96,13 @@ const offers: Offer[] = [
   },
   {
     id: "net-1000-tv-s",
-    title: "INTERNET DO 1000 Mb/s + TV S",
+    eyebrow: "Internet do",
+    speedBold: "1000 Mb/s",
+    speedSuffix: "+ TV S",
+    promoEyebrow: "ABONAMENT",
+    promoHeadline: "6 miesięcy za 0 zł",
+    promoNote: "*po rabatach",
     badgeLabel: "Abonament 6 miesięcy za 0 zł *po rabatach",
-    badgeTone: "promo",
     features: [
       { icon: <Router size={14} />, label: "Router z Wi-Fi 6 w cenie" },
       { icon: <Tv size={14} />, label: "Dekoder 4K w cenie" },
@@ -92,9 +114,13 @@ const offers: Offer[] = [
   },
   {
     id: "net-2000-tv-s",
-    title: "INTERNET DO 2000 Mb/s + TV S",
-    badgeLabel: "Najczęściej wybierany",
-    badgeTone: "promo",
+    eyebrow: "Internet do",
+    speedBold: "2000 Mb/s",
+    speedSuffix: "+ TV S",
+    promoEyebrow: "ABONAMENT",
+    promoHeadline: "6 miesięcy za 0 zł",
+    promoNote: "*po rabatach",
+    badgeLabel: "Abonament 6 miesięcy za 0 zł *po rabatach",
     highlighted: true,
     features: [
       { icon: <Router size={14} />, label: "Router Combo z ONT z Wi-Fi 7" },
@@ -107,9 +133,13 @@ const offers: Offer[] = [
   },
   {
     id: "net-2000-tv-l",
-    title: "INTERNET DO 2000 Mb/s + TV L",
+    eyebrow: "Internet do",
+    speedBold: "2000 Mb/s",
+    speedSuffix: "+ TV L",
+    promoEyebrow: "ABONAMENT",
+    promoHeadline: "6 miesięcy za 0 zł",
+    promoNote: "*po rabatach",
     badgeLabel: "Abonament 6 miesięcy za 0 zł *po rabatach",
-    badgeTone: "promo",
     features: [
       { icon: <Router size={14} />, label: "Router Combo z ONT Wi-Fi 7" },
       { icon: <Tv size={14} />, label: "Dekoder 4K w cenie" },
@@ -182,7 +212,7 @@ export default function PopularneOferty() {
           >
             <span className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-teal-400/70 to-transparent" />
 
-            {/* Grafika SVG — sygnał routera + ścieżka światłowodowa, motyw sieci */}
+            {/* Grafika SVG — kwadraty, dekoracja po prawej stronie */}
             <svg
               className="pointer-events-none absolute -right-12 -top-14 hidden h-56 w-56 opacity-40 sm:block lg:h-72 lg:w-72"
               viewBox="0 0 200 200"
@@ -190,43 +220,135 @@ export default function PopularneOferty() {
               xmlns="http://www.w3.org/2000/svg"
               aria-hidden="true"
             >
-              <circle cx="150" cy="55" r="5" fill="#2DD4BF" />
-              <circle
-                cx="150"
-                cy="55"
-                r="28"
+              {/* Duży obrócony kwadrat — kontur */}
+              <rect
+                x="120"
+                y="25"
+                width="70"
+                height="70"
+                rx="10"
                 stroke="#2DD4BF"
-                strokeOpacity="0.55"
+                strokeOpacity="0.5"
                 strokeWidth="2"
+                transform="rotate(15 155 60)"
               />
-              <circle
-                cx="150"
-                cy="55"
-                r="52"
-                stroke="#2DD4BF"
+              {/* Mniejszy kwadrat — kontur */}
+              <rect
+                x="140"
+                y="75"
+                width="42"
+                height="42"
+                rx="8"
+                stroke="#99F6E4"
                 strokeOpacity="0.32"
                 strokeWidth="2"
+                transform="rotate(-10 161 96)"
+              />
+              {/* Wypełnione kwadraty w różnych rozmiarach */}
+              <rect
+                x="60"
+                y="120"
+                width="16"
+                height="16"
+                rx="3"
+                fill="#2DD4BF"
+                opacity="0.7"
+                transform="rotate(20 68 128)"
+              />
+              <rect
+                x="95"
+                y="145"
+                width="10"
+                height="10"
+                rx="2"
+                fill="#99F6E4"
+                opacity="0.55"
+                transform="rotate(35 100 150)"
+              />
+              <rect
+                x="30"
+                y="70"
+                width="9"
+                height="9"
+                rx="2"
+                fill="#99F6E4"
+                opacity="0.5"
+                transform="rotate(-15 34 74)"
+              />
+              <rect
+                x="165"
+                y="150"
+                width="7"
+                height="7"
+                rx="2"
+                fill="#2DD4BF"
+                opacity="0.55"
+              />
+            </svg>
+
+            {/* Grafika SVG — gwiazdki i kółka, dekoracja po lewej stronie */}
+            <svg
+              className="pointer-events-none absolute -left-10 -bottom-10 hidden h-52 w-52 opacity-40 sm:block lg:h-64 lg:w-64"
+              viewBox="0 0 200 200"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              {/* Kółka o różnej wielkości, w stylu "orbit" */}
+              <circle cx="40" cy="150" r="4" fill="#2DD4BF" />
+              <circle
+                cx="40"
+                cy="150"
+                r="22"
+                stroke="#2DD4BF"
+                strokeOpacity="0.5"
+                strokeWidth="2"
               />
               <circle
-                cx="150"
-                cy="55"
-                r="76"
+                cx="40"
+                cy="150"
+                r="42"
                 stroke="#99F6E4"
-                strokeOpacity="0.18"
+                strokeOpacity="0.28"
                 strokeWidth="2"
+              />
+
+              <circle cx="120" cy="40" r="3" fill="#99F6E4" />
+              <circle
+                cx="120"
+                cy="40"
+                r="16"
+                stroke="#99F6E4"
+                strokeOpacity="0.35"
+                strokeWidth="1.5"
+              />
+
+              {/* Gwiazdki (4-ramienne, "sparkle") w kilku miejscach */}
+              <path
+                d="M75 90 L79 100 L89 104 L79 108 L75 118 L71 108 L61 104 L71 100 Z"
+                fill="#2DD4BF"
+                opacity="0.7"
               />
               <path
-                d="M35 165 L85 118 L115 136 L165 78"
-                stroke="#99F6E4"
-                strokeOpacity="0.45"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeDasharray="3 7"
+                d="M150 120 L152.5 126 L158.5 128.5 L152.5 131 L150 137 L147.5 131 L141.5 128.5 L147.5 126 Z"
+                fill="#99F6E4"
+                opacity="0.6"
               />
-              <circle cx="35" cy="165" r="3.5" fill="#99F6E4" />
-              <circle cx="85" cy="118" r="3.5" fill="#99F6E4" />
-              <circle cx="115" cy="136" r="3.5" fill="#99F6E4" />
-              <circle cx="165" cy="78" r="3.5" fill="#2DD4BF" />
+              <path
+                d="M25 55 L27 60 L32 62 L27 64 L25 69 L23 64 L18 62 L23 60 Z"
+                fill="#99F6E4"
+                opacity="0.5"
+              />
+              <path
+                d="M105 165 L107 170 L112 172 L107 174 L105 179 L103 174 L98 172 L103 170 Z"
+                fill="#2DD4BF"
+                opacity="0.5"
+              />
+
+              {/* Drobne kropki dla wypełnienia */}
+              <circle cx="60" cy="30" r="2.5" fill="#2DD4BF" opacity="0.6" />
+              <circle cx="170" cy="70" r="2" fill="#99F6E4" opacity="0.5" />
+              <circle cx="15" cy="110" r="2" fill="#2DD4BF" opacity="0.5" />
             </svg>
 
             <m.span
@@ -295,7 +417,7 @@ export default function PopularneOferty() {
           </m.div>
 
           {/* Siatka ofert */}
-          <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
             {offers.map((offer, i) => (
               <m.div
                 key={offer.id}
@@ -305,33 +427,55 @@ export default function PopularneOferty() {
                 variants={fadeUp}
                 transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.08 }}
                 whileHover={reduceMotion ? undefined : { y: -4 }}
-                className={`relative flex h-[430px] flex-col rounded-2xl border p-6 ${
+                className={`relative flex h-[520px] flex-col rounded-2xl border p-6 ${
                   offer.highlighted
-                    ? "border-teal-400/50 bg-gradient-to-b from-teal-500/10 to-white/5 shadow-[0_0_40px_-12px_rgba(45,212,191,0.35)]"
+                    ? "border-amber-400/60 bg-white/5"
                     : "border-white/10 bg-white/5"
                 }`}
               >
                 {offer.highlighted && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-teal-500 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#0B2A3D]">
                     Najczęściej wybierany
                   </span>
                 )}
 
-                <h3 className="text-md font-bold uppercase tracking-wide text-white">
-                  {offer.title}
+                {/* Nagłówek: mała etykieta + duża prędkość */}
+                <p className="text-xs font-semibold text-white/50">
+                  {offer.eyebrow}
+                </p>
+                <h3 className="mt-1 text-2xl font-extrabold leading-snug text-white">
+                  {offer.speedBold}
+                  {offer.speedSuffix && (
+                    <span className="ml-1.5 text-lg font-semibold text-white/85">
+                      {offer.speedSuffix}
+                    </span>
+                  )}
                 </h3>
 
-                <span
-                  className={`mt-3 inline-flex w-fit items-center rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wide ${
-                    offer.badgeTone === "promo"
-                      ? "bg-teal-500/15 text-teal-300"
-                      : "border border-white/15 text-white/60"
-                  }`}
-                >
-                  {offer.badgeLabel}
-                </span>
+                {/* Blok promocji: etykieta / duży nagłówek / dopisek — lub pigułka zastępcza */}
+                {offer.promoHeadline ? (
+                  <div className="mt-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-orange-400">
+                      {offer.promoEyebrow}
+                    </p>
+                    <p className="text-lg font-extrabold leading-tight text-orange-300">
+                      {offer.promoHeadline}
+                    </p>
+                    {offer.promoNote && (
+                      <p className="mt-0.5 text-[11px] text-white/40">
+                        {offer.promoNote}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <span className="mt-4 inline-flex w-fit items-center rounded-full bg-teal-500/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-teal-300">
+                    {offer.badgeLabel}
+                  </span>
+                )}
 
-                <ul className="mt-5 space-y-2.5">
+                <div className="mt-5 border-t border-white/10" />
+
+                <ul className="mt-5 flex-1 space-y-2.5">
                   {offer.features.map((f, idx) => (
                     <li
                       key={idx}
@@ -345,36 +489,39 @@ export default function PopularneOferty() {
                   ))}
                 </ul>
 
-                <div className="mt-6 flex items-end gap-1.5">
-                  <span className="text-3xl font-extrabold text-white">
-                    {offer.price}
-                  </span>
-                  <span className="mb-1 text-sm font-medium text-white/60">
-                    {offer.priceUnit}
+                {/* Boks z ceną — wyśrodkowany, w ramce */}
+                <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.03] py-4 text-center">
+                  <div className="flex items-baseline justify-center gap-1.5">
+                    <span className="text-3xl font-extrabold text-white">
+                      {offer.price}
+                    </span>
+                    <span className="text-sm font-medium text-white/60">
+                      {offer.priceUnit}
+                    </span>
+                  </div>
+                  <span className="mt-1 block text-[11px] text-white/40">
+                    {offer.priceNote}
                   </span>
                 </div>
-                <span className="mt-0.5 text-[11px] text-white/40">
-                  {offer.priceNote}
-                </span>
 
                 <div className="mt-auto flex flex-col gap-2.5 pt-6">
-                  <m.a
-                    href="tel:+48883334124"
-                    whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-                    whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                    className="flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-4 py-2.5 text-sm font-bold text-white"
-                  >
-                    <Phone size={14} />
-                    ZADZWOŃ +48 883 334 124
-                  </m.a>
                   <m.a
                     href="sms:+48883334124?body=INTERNET"
                     whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                     whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white"
+                    className="flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-4 py-2.5 text-sm font-bold text-white"
                   >
                     <MessageCircle size={14} />
                     WYŚLIJ SMS
+                  </m.a>
+                  <m.a
+                    href="tel:+48883334124"
+                    whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+                    whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white"
+                  >
+                    <Phone size={14} />
+                    ZADZWOŃ +48 883 334 124
                   </m.a>
                 </div>
               </m.div>
@@ -477,124 +624,123 @@ export default function PopularneOferty() {
             </div>
 
             <div className="mt-10 grid gap-3 sm:grid-cols-2 sm:gap-x-5">
-{faqs.map((item, i) => {
-  const isOpen = openFaq === i;
-  return (
-    <m.div
-      key={i}
-      initial={reduceMotion ? false : "hidden"}
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.3 }}
-      variants={fadeUp}
-      transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.05 }}
-      onClick={() => setOpenFaq(isOpen ? null : i)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          setOpenFaq(isOpen ? null : i);
-        }
-      }}
-      className={`cursor-pointer overflow-hidden self-start rounded-xl border transition-colors ${
-        isOpen
-          ? "border-teal-400/40 bg-teal-500/[0.07]"
-          : "border-white/10 bg-white/5"
-      }`}
-    >
-      <div className="flex w-full items-center gap-3 px-5 py-4 text-left">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-400/15 text-teal-300">
-          {item.icon}
-        </span>
-        <span className="flex-1 text-sm font-semibold text-white sm:text-base">
-          {item.q}
-        </span>
-        <ChevronDown
-          size={18}
-          className={`shrink-0 text-white/50 transition-transform duration-300 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </div>
-      <div
-        className="grid transition-[grid-template-rows] duration-300 ease-out"
-        style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
-      >
-        <div className="overflow-hidden">
-          <p className="px-5 pb-5 pl-16 text-sm leading-relaxed text-white/65">
-            {item.a}
-          </p>
-        </div>
-      </div>
-    </m.div>
-  );
-})}
+              {faqs.map((item, i) => {
+                const isOpen = openFaq === i;
+                return (
+                  <m.div
+                    key={i}
+                    initial={reduceMotion ? false : "hidden"}
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.3 }}
+                    variants={fadeUp}
+                    transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.05 }}
+                    onClick={() => setOpenFaq(isOpen ? null : i)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setOpenFaq(isOpen ? null : i);
+                      }
+                    }}
+                    className={`cursor-pointer overflow-hidden self-start rounded-xl border transition-colors ${
+                      isOpen
+                        ? "border-teal-400/40 bg-teal-500/[0.07]"
+                        : "border-white/10 bg-white/5"
+                    }`}
+                  >
+                    <div className="flex w-full items-center gap-3 px-5 py-4 text-left">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-400/15 text-teal-300">
+                        {item.icon}
+                      </span>
+                      <span className="flex-1 text-sm font-semibold text-white sm:text-base">
+                        {item.q}
+                      </span>
+                      <ChevronDown
+                        size={18}
+                        className={`shrink-0 text-white/50 transition-transform duration-300 ${
+                          isOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </div>
+                    <div
+                      className="grid transition-[grid-template-rows] duration-300 ease-out"
+                      style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
+                    >
+                      <div className="overflow-hidden">
+                        <p className="px-5 pb-5 pl-16 text-sm leading-relaxed text-white/65">
+                          {item.a}
+                        </p>
+                      </div>
+                    </div>
+                  </m.div>
+                );
+              })}
             </div>
           </div>
 
           {/* Dolne CTA */}
-          {/* Dolne CTA */}
-<m.div
-  initial={reduceMotion ? false : "hidden"}
-  whileInView="visible"
-  viewport={{ once: true, amount: 0.5 }}
-  variants={fadeUp}
-  transition={{ duration: 0.6, ease: "easeOut" }}
-  className="mx-auto mt-16 max-w-2xl rounded-3xl border border-white/10 bg-white/5 px-6 py-8 text-center sm:px-10 sm:py-10"
->
-  <h4 className="text-xl font-bold text-white sm:text-2xl">
-    Wciąż masz pytania?
-  </h4>
-  <p className="mt-2 mb-6 text-sm text-white/65 sm:text-[0.9375rem]">
-    Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
-  </p>
+          <m.div
+            initial={reduceMotion ? false : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.5 }}
+            variants={fadeUp}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="mx-auto mt-16 max-w-2xl rounded-3xl border border-white/10 bg-white/5 px-6 py-8 text-center sm:px-10 sm:py-10"
+          >
+            <h4 className="text-xl font-bold text-white sm:text-2xl">
+              Wciąż masz pytania?
+            </h4>
+            <p className="mt-2 mb-6 text-sm text-white/65 sm:text-[0.9375rem]">
+              Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
+            </p>
 
-  <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-    <m.a
-      href="tel:+48883334124"
-      whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-      whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-      className="flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white sm:min-w-60"
-    >
-      <span className="flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
-          <Phone size={16} />
-        </span>
-        <span className="text-left">
-          <span className="block text-sm font-bold leading-tight">
-            ZADZWOŃ
-          </span>
-          <span className="block text-xs text-white/85">
-            +48 883 334 124
-          </span>
-        </span>
-      </span>
-      <ChevronRight size={18} className="text-white/70" />
-    </m.a>
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <m.a
+                href="tel:+48883334124"
+                whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+                whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                className="flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white sm:min-w-60"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
+                    <Phone size={16} />
+                  </span>
+                  <span className="text-left">
+                    <span className="block text-sm font-bold leading-tight">
+                      ZADZWOŃ
+                    </span>
+                    <span className="block text-xs text-white/85">
+                      +48 883 334 124
+                    </span>
+                  </span>
+                </span>
+                <ChevronRight size={18} className="text-white/70" />
+              </m.a>
 
-    <m.a
-      href="sms:+48883334124?body=INTERNET"
-      whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-      whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-      className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white sm:min-w-60"
-    >
-      <span className="flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
-          <MessageCircle size={16} />
-        </span>
-        <span className="text-left">
-          <span className="block text-sm font-bold leading-tight">
-            WYŚLIJ SMS
-          </span>
-          <span className="block text-xs text-white/70">
-            Oddzwonimy w kilka minut
-          </span>
-        </span>
-      </span>
-      <ChevronRight size={18} className="text-white/50" />
-    </m.a>
-  </div>
-</m.div>
+              <m.a
+                href="sms:+48883334124?body=INTERNET"
+                whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+                whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white sm:min-w-60"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
+                    <MessageCircle size={16} />
+                  </span>
+                  <span className="text-left">
+                    <span className="block text-sm font-bold leading-tight">
+                      WYŚLIJ SMS
+                    </span>
+                    <span className="block text-xs text-white/70">
+                      Oddzwonimy w kilka minut
+                    </span>
+                  </span>
+                </span>
+                <ChevronRight size={18} className="text-white/50" />
+              </m.a>
+            </div>
+          </m.div>
         </div>
       </section>
     </LazyMotion>

@@ -13,6 +13,7 @@ import {
   Smartphone,
   Gift,
   Flame,
+  Sparkles,
 } from "lucide-react";
 
 /* ---------------------------------------------------------------------- */
@@ -116,9 +117,10 @@ interface Pakiet {
   id: string;
   nazwa: string;
   predkosc: string;
-  opis: string;
+  upload: string;
+  wyposazenie: string;
   cena: number;
-  tv?: string;
+  promoBadge?: string;
   wyrozniony?: boolean;
 }
 
@@ -127,37 +129,47 @@ const PAKIETY_24: Pakiet[] = [
     id: "24-150",
     nazwa: "Internet do 150Mb/s",
     predkosc: "150 Mb/s",
-    opis: "Upload do 50 Mb/s. Router WiFi w cenie.",
+    upload: "Upload do 50 Mb/s",
+    wyposazenie: "Router WiFi",
     cena: 55,
+    promoBadge: "Abonament 3 mies. 0 zł po rabatach",
   },
   {
     id: "24-300",
     nazwa: "Internet do 300Mb/s",
     predkosc: "300 Mb/s",
-    opis: "Upload do 50 Mb/s. Router WiFi w cenie.",
+    upload: "Upload do 50 Mb/s",
+    wyposazenie: "Router WiFi",
     cena: 55,
+    promoBadge: "Abonament 3 mies. 0 zł po rabatach",
   },
   {
     id: "24-600",
     nazwa: "Internet do 600Mb/s",
     predkosc: "600 Mb/s",
-    opis: "Upload do 100 Mb/s. Router WiFi w cenie.",
+    upload: "Upload do 100 Mb/s",
+    wyposazenie: "Router WiFi",
     cena: 65,
+    promoBadge: "Abonament 3 mies. 0 zł po rabatach",
     wyrozniony: true,
   },
   {
     id: "24-1000",
     nazwa: "Internet do 1000Mb/s",
     predkosc: "1000 Mb/s",
-    opis: "Upload do 300 Mb/s. Router WiFi 6 w cenie.",
+    upload: "Upload do 300 Mb/s",
+    wyposazenie: "Router WiFi 6",
     cena: 80,
+    promoBadge: "Abonament 3 mies. 0 zł po rabatach",
   },
   {
     id: "24-2000",
     nazwa: "Internet do 2000Mb/s",
     predkosc: "2000 Mb/s",
-    opis: "Upload do 1000 Mb/s. Router Combo z ONT WiFi 7 w cenie.",
+    upload: "Upload do 1000 Mb/s",
+    wyposazenie: "Router Combo z ONT WiFi 7",
     cena: 100,
+    promoBadge: "Abonament 3 mies. 0 zł po rabatach",
   },
 ];
 
@@ -170,21 +182,24 @@ const PAKIETY_BEZ: Pakiet[] = [
     id: "bez-150",
     nazwa: "Internet do 150Mb/s",
     predkosc: "150 Mb/s",
-    opis: "Bez zobowiązań — cena zgodnie z cennikiem.",
+    upload: "Zgodnie z cennikiem",
+    wyposazenie: "Router WiFi",
     cena: 65,
   },
   {
     id: "bez-300",
     nazwa: "Internet do 300Mb/s",
     predkosc: "300 Mb/s",
-    opis: "Bez zobowiązań — cena zgodnie z cennikiem.",
+    upload: "Zgodnie z cennikiem",
+    wyposazenie: "Router WiFi",
     cena: 65,
   },
   {
     id: "bez-600",
     nazwa: "Internet do 600Mb/s",
     predkosc: "600 Mb/s",
-    opis: "Bez zobowiązań — cena zgodnie z cennikiem.",
+    upload: "Zgodnie z cennikiem",
+    wyposazenie: "Router WiFi",
     cena: 75,
     wyrozniony: true,
   },
@@ -192,7 +207,8 @@ const PAKIETY_BEZ: Pakiet[] = [
     id: "bez-1000",
     nazwa: "Internet do 1000Mb/s",
     predkosc: "1000 Mb/s",
-    opis: "Bez zobowiązań — cena zgodnie z cennikiem.",
+    upload: "Zgodnie z cennikiem",
+    wyposazenie: "Router WiFi 6",
     cena: 90,
   },
 ];
@@ -283,28 +299,32 @@ const PAKIETY_24_BEZ: Pakiet[] = [
     id: "24-150",
     nazwa: "Internet 150",
     predkosc: "150 Mb/s",
-    opis: "Upload do 50 Mb/s. Router WiFi w cenie.",
+    upload: "Upload do 50 Mb/s",
+    wyposazenie: "Router WiFi",
     cena: 65,
   },
   {
     id: "24-300",
     nazwa: "Internet 300",
     predkosc: "300 Mb/s",
-    opis: "Upload do 50 Mb/s. Router WiFi w cenie.",
+    upload: "Upload do 50 Mb/s",
+    wyposazenie: "Router WiFi",
     cena: 65,
   },
   {
     id: "24-600",
     nazwa: "Internet 600",
     predkosc: "600 Mb/s",
-    opis: "Upload do 100 Mb/s. Router WiFi w cenie.",
+    upload: "Upload do 100 Mb/s",
+    wyposazenie: "Router WiFi",
     cena: 75,
   },
   {
     id: "24-1000",
     nazwa: "Internet 1000",
     predkosc: "1000 Mb/s",
-    opis: "Upload do 300 Mb/s. Router WiFi 6 w cenie.",
+    upload: "Upload do 300 Mb/s",
+    wyposazenie: "Router WiFi 6",
     cena: 90,
   },
 ];
@@ -428,7 +448,7 @@ function KafelekPakietu({
       whileTap={reduceMotion ? undefined : { scale: 0.99 }}
       className={`relative flex h-full flex-col rounded-2xl border p-6 text-left transition-colors ${
         wybrany
-          ? "border-teal-400/70 bg-white/10"
+          ? "border-teal-400 bg-white/10 shadow-[0_0_0_3px_rgba(45,212,191,0.18)]"
           : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
       }`}
     >
@@ -438,43 +458,47 @@ function KafelekPakietu({
         </span>
       )}
 
-      <div className="flex items-center gap-2 text-white/60">
-        <Wifi size={16} className="text-teal-300" />
-        <span className="text-sm">{pakiet.predkosc}</span>
-        {pakiet.tv && (
-          <>
-            <span className="text-white/20">•</span>
-            <Tv size={16} className="text-teal-300" />
-            <span className="text-sm">{pakiet.tv}</span>
-          </>
-        )}
+      {/* Nagłówek: prędkość jako duży tytuł + upload jako podpis */}
+      <div className="flex items-center gap-2 text-white/50">
+        <Wifi size={15} className="text-teal-300" />
+        <span className="text-xs">{pakiet.upload}</span>
       </div>
-
-      <h4 className="mt-3 text-xl font-extrabold text-white">
-        {pakiet.nazwa}
+      <h4 className="mt-1.5 text-xl font-extrabold leading-snug text-white">
+        Internet do <span className="text-teal-300">{pakiet.predkosc}</span>
       </h4>
-      <p className="mt-2 text-sm leading-snug text-white/65">{pakiet.opis}</p>
 
+      {/* Pigułka promocji */}
+      {pakiet.promoBadge && (
+        <span className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-full border border-orange-400/30 bg-orange-400/10 px-3 py-1 text-[11px] font-semibold text-orange-300">
+          <Gift size={12} />
+          {pakiet.promoBadge}
+        </span>
+      )}
+
+      {/* Cena */}
       <div className="mt-5 flex items-end gap-1.5">
         <span className="text-3xl font-extrabold text-white">{pakiet.cena} zł</span>
-        <span className="mb-1 text-sm text-white/60">/mies.</span>
+        <span className="mb-1 text-sm text-white/60">z VAT</span>
       </div>
-      <span className="mt-1 text-xs text-white/45">
-        {umowa === "24" ? "w umowie na 24 miesiące" : "bez zobowiązań, w każdej chwili możesz zrezygnować"}
+      <span className="mt-0.5 text-xs text-white/45">
+        {umowa === "24" ? "Przez 24 mies. z rabatami" : "bez zobowiązań, w każdej chwili możesz zrezygnować"}
       </span>
 
+      {/* Chip sprzętu w cenie */}
+      <div className="mt-4 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-center text-sm font-medium text-white/70">
+        {pakiet.wyposazenie}
+      </div>
+
+      {/* CTA */}
       <div
-        className={`mt-5 flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold ${
+        className={`mt-4 flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold ${
           wybrany
-            ? "bg-teal-500 text-white"
-            : "border border-white/15 text-white/80"
+            ? "bg-gradient-to-r from-teal-400 to-emerald-400 text-[#0B2A3D]"
+            : "bg-gradient-to-r from-blue-500 to-teal-400 text-white"
         }`}
       >
-        <span className="flex items-center gap-2">
-          {wybrany && <Check size={16} />}
-          {wybrany ? "Wybrany pakiet" : "Wybierz ten pakiet"}
-        </span>
-        <ChevronRight size={16} />
+        {wybrany && <Check size={16} />}
+        {wybrany ? "Wybrane" : "Wybierz"}
       </div>
     </m.button>
   );
