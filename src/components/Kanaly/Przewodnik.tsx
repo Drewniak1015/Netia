@@ -11,7 +11,7 @@ import {
   Tv,
 } from "lucide-react";
 import type { ElementType } from "react";
-
+import type { Tier } from "@/lib/channels";
 type MainPackage = {
   name: string;
   count: number;
@@ -94,7 +94,13 @@ const THEME_GROUPS: ThemeGroup[] = [
   },
 ];
 
-export default function Przewodnik() {
+export default function Przewodnik({
+  tier,
+  onTierChange,
+}: {
+  tier: Tier;
+  onTierChange: (next: Tier) => void;
+}) {
   const shouldReduceMotion = useReducedMotion();
   const reduceMotion = shouldReduceMotion ?? false;
 
