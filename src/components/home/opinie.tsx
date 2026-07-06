@@ -15,6 +15,7 @@ import {
 type Review = {
   initials: string;
   name: string;
+  age: number;
   city: string;
   date: string;
   text: string;
@@ -22,25 +23,28 @@ type Review = {
 
 const REVIEWS: Review[] = [
   {
-    initials: "MK",
-    name: "Marta K.",
-    city: "Warszawa",
+    initials: "TW",
+    name: "Tomasz W.",
+    age: 47,
+    city: "Poznań",
     date: "czerwiec 2026",
-    text: "Montaż był naprawdę w 24 godziny, tak jak obiecywali. Internet działa stabilnie nawet wieczorami, kiedy cała rodzina siedzi online.",
+    text: "Dostałem SMS o kolejnej podwyżce od dotychczasowego operatora i tyle mi wystarczyło. U Netii cena w umowie to cena, którą płacę — bez niespodzianek co pół roku.",
   },
   {
-    initials: "PS",
-    name: "Piotr S.",
-    city: "Kraków",
+    initials: "KD",
+    name: "Kamila D.",
+    age: 33,
+    city: "Gdańsk",
     date: "maj 2026",
-    text: "Przesiadka z innego operatora zajęła mi 10 minut przez telefon. Zero ukrytych opłat — cena taka, jaką podali od razu.",
+    text: "Pracuję zdalnie i prowadzę spotkania online codziennie — nie mogę sobie pozwolić na to, żeby internet 'akurat teraz' odmówił posłuszeństwa. Od kiedy mam Netię, po prostu o tym nie myślę.",
   },
   {
-    initials: "AN",
-    name: "Anna N.",
-    city: "Wrocław",
-    date: "maj 2026",
-    text: "Wi-Fi w końcu dociera do każdego pokoju, nawet do piwnicy z domowym biurem. Instalacja bezbolesna, technik przyjechał na czas.",
+    initials: "RJ",
+    name: "Rafał J.",
+    age: 41,
+    city: "Łódź",
+    date: "kwiecień 2026",
+    text: "U poprzedniego operatora awaria potrafiła trwać kilka dni, a infolinia odsyłała mnie z kwitkiem. Przy Netii jeszcze nie miałem sytuacji, żebym został bez pomocy dłużej niż kilka godzin.",
   },
 ];
 
@@ -160,7 +164,7 @@ export default function NetiaSocialProof() {
                     </div>
                     <div>
                       <p className="text-white text-[0.9375rem] font-semibold m-0">
-                        {r.name}
+                        {r.name}, {r.age} lat
                       </p>
                       <p className="text-white/60 text-[13px] m-0">{r.city}</p>
                     </div>

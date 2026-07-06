@@ -87,7 +87,7 @@ export default function Miasta({ baseHref = "/internet", onShowFullList }: Miast
         </div>
 
         {/* City grid */}
-        <div ref={grid.ref} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div ref={grid.ref} className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {CITIES.map((city, i) => (
             <a
               key={city.slug}

@@ -95,8 +95,8 @@ const NAV: NavItem[] = [
         {
           heading: "Wybierz długość umowy",
           items: [
-            { title: "24 Miesiące", desc: "Najniższa cena miesięczna.", icon: Wifi, href: "/konfigurator/24-miesiace" },
-            { title: "Bez Zobowiązań", desc: "Pełna elastyczność, rezygnacja kiedy chcesz.", icon: Wifi, href: "/konfigurator/bez-zobowiazan" },
+            { title: "24 Miesiące", desc: "Najniższa cena miesięczna.", icon: Wifi, href: "/konfigurator?umowa=24" },
+            { title: "Bez Zobowiązań", desc: "Pełna elastyczność, rezygnacja kiedy chcesz.", icon: Wifi, href: "/konfigurator?umowa=bez" },
           ],
         },
       ],
@@ -133,7 +133,7 @@ const NAV: NavItem[] = [
               desc: "Znajdź odpowiedzi na najczęstsze pytania.",
               icon: Search,
               href: "/pomoc/faq",
-            },          
+            },
             {
               title: "Telewizja",
               desc: "Znajdź odpowiedzi na najczęstsze pytania.",
@@ -201,10 +201,11 @@ function DotCluster({ size = 22 }: { size?: number }) {
     </span>
   );
 }
+
 function Logo() {
   return (
     <Link href="/" className="flex items-center shrink-0" aria-label="Netia — strona główna">
-      <img src="/images/Placeholder.svg" alt="Netia" className="h-16 w-auto"/>
+      <img src="/images/Placeholder.svg" alt="Netia" className="h-16 w-auto" />
     </Link>
   );
 }
@@ -213,7 +214,15 @@ function Logo() {
 /* Panel: prosta lista (jedna kolumna, wyświetlana po kliknięciu)      */
 /* ------------------------------------------------------------------ */
 
-function SimplePanel({ columns, pathname }: { columns: SimpleColumn[]; pathname: string | null }) {
+function SimplePanel({
+  columns,
+  pathname,
+  onItemClick,
+}: {
+  columns: SimpleColumn[];
+  pathname: string | null;
+  onItemClick?: () => void;
+}) {
   return (
     <div
       className="grid gap-10"
@@ -224,7 +233,7 @@ function SimplePanel({ columns, pathname }: { columns: SimpleColumn[]; pathname:
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-4">
             {col.heading}
           </p>
-       <div className="flex flex-col gap-2 py-1">
+          <div className="flex flex-col gap-2 py-1">
             {col.items.map((item, j) => {
               const Icon: LucideIcon | undefined = item.icon;
               const isSelected = !!item.href && item.href === pathname;
@@ -236,6 +245,7 @@ function SimplePanel({ columns, pathname }: { columns: SimpleColumn[]; pathname:
                 >
                   <Link
                     href={item.href ?? "#"}
+                    onClick={onItemClick}
                     className={`group relative flex items-start gap-4 rounded-xl px-4 py-4 transition-all duration-200 border border-transparent hover:border-slate-200  ${
                       isSelected
                         ? "bg-teal-50 ring-1 ring-inset ring-teal-200"
@@ -292,9 +302,17 @@ function SimplePanel({ columns, pathname }: { columns: SimpleColumn[]; pathname:
   );
 }
 
-function Panel({ item, pathname }: { item: NavItem; pathname: string | null }) {
+function Panel({
+  item,
+  pathname,
+  onItemClick,
+}: {
+  item: NavItem;
+  pathname: string | null;
+  onItemClick?: () => void;
+}) {
   if (!item.panel) return null;
-  return <SimplePanel columns={item.panel.columns} pathname={pathname} />;
+  return <SimplePanel columns={item.panel.columns} pathname={pathname} onItemClick={onItemClick} />;
 }
 
 /* ------------------------------------------------------------------ */
@@ -307,18 +325,21 @@ function MobileNavItem({
   onToggle,
   active,
   pathname,
+  onNavigate,
 }: {
   item: NavItem;
   open: boolean;
   onToggle: () => void;
   active?: boolean;
   pathname: string | null;
+  onNavigate?: () => void;
 }) {
   if (!item.panel) {
     return (
       <div className="border-b border-white/10">
         <Link
           href={item.href ?? "#"}
+          onClick={onNavigate}
           className={`relative block rounded-lg py-3.5 pl-3 text-sm font-semibold transition-colors duration-200 ${
             active ? "bg-white/10 text-teal-300" : "text-white hover:text-teal-300"
           } ${!active && item.highlight ? "text-pink-300" : ""}`}
@@ -365,10 +386,10 @@ function MobileNavItem({
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-  className="overflow-hidden pt-4"
+            className="overflow-hidden pt-4"
           >
             <div className="rounded-xl bg-white p-5 mb-3">
-              <Panel item={item} pathname={pathname} />
+              <Panel item={item} pathname={pathname} onItemClick={onNavigate} />
             </div>
           </motion.div>
         )}
@@ -377,17 +398,16 @@ function MobileNavItem({
   );
 }
 
-
 function isSectionActive(item: NavItem, pathname: string | null): boolean {
   if (!pathname) return false;
   if (item.href) return pathname === item.href;
   // sprawdza czy ścieżka zaczyna się od klucza sekcji, np. "/konfigurator"
   return pathname.startsWith(`/${item.key}`);
 }
+
 /* ------------------------------------------------------------------ */
 /* Header główny                                                       */
 /* ------------------------------------------------------------------ */
-
 
 export default function NetiaHeader() {
   const pathname = usePathname();
@@ -422,12 +442,13 @@ export default function NetiaHeader() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
   useEffect(() => {
-  const handleScroll = () => setScrolled(window.scrollY > 8);
-  window.addEventListener("scroll", handleScroll, { passive: true });
-  handleScroll();
-  return () => window.removeEventListener("scroll", handleScroll);
-}, []);
+    const handleScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -443,19 +464,26 @@ export default function NetiaHeader() {
     };
   }, [mobileOpen]);
 
+  // Zamykanie desktopowego dropdownu i mobilnego menu przy zmianie ścieżki
+  useEffect(() => {
+    setActiveKey(null);
+    setMobileOpen(false);
+    setMobileActiveKey(null);
+  }, [pathname]);
+
   return (
     <div className="font-sans">
-<header
-  ref={headerRef}
-  className={`fixed top-0 z-40 w-full border-b transition-all duration-300 ${
-    scrolled
-      ? "border-white/10 shadow-lg shadow-black/20 backdrop-blur-xl backdrop-saturate-150"
-      : "border-white/10 shadow-none"
-  }`}
-  style={{
-    backgroundColor: scrolled ? "rgba(11, 42, 61, 0.72)" : "#0B2A3D",
-  }}
->
+      <header
+        ref={headerRef}
+        className={`fixed top-0 z-40 w-full border-b transition-all duration-300 ${
+          scrolled
+            ? "border-white/10 shadow-lg shadow-black/20 backdrop-blur-xl backdrop-saturate-150"
+            : "border-white/10 shadow-none"
+        }`}
+        style={{
+          backgroundColor: scrolled ? "rgba(11, 42, 61, 0.72)" : "#0B2A3D",
+        }}
+      >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-10 px-8 py-4">
           <Logo />
 
@@ -468,39 +496,39 @@ export default function NetiaHeader() {
                   onMouseEnter={() => openMenu(item.key)}
                   onMouseLeave={scheduleClose}
                 >
-<motion.button
-  type="button"
-  onClick={() => toggleMenu(item.key)}
-  initial={isSectionActive(item, pathname) ? "hover" : "rest"}
-  whileHover="hover"
-  animate={activeKey === item.key || isSectionActive(item, pathname) ? "hover" : "rest"}
-className={`relative flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm transition-all duration-200 hover:scale-[1.04] active:scale-[0.98]
-  ${
-    item.highlight
-      ? "text-pink-300 hover:text-pink-200"
-      : "text-white/85 hover:text-white"
-  }
-  ${isSectionActive(item, pathname) ? "font-bold" : "font-semibold"}
-`}
->
-  {item.highlight && <Sparkles size={14} />}
-  {item.label}
-  <motion.span
-    animate={{ rotate: activeKey === item.key ? 180 : 0 }}
-    transition={{ duration: 0.2, ease: "easeInOut" }}
-  >
-    <ChevronDown size={14} />
-  </motion.span>
+                  <motion.button
+                    type="button"
+                    onClick={() => toggleMenu(item.key)}
+                    initial={isSectionActive(item, pathname) ? "hover" : "rest"}
+                    whileHover="hover"
+                    animate={activeKey === item.key || isSectionActive(item, pathname) ? "hover" : "rest"}
+                    className={`relative flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm transition-all duration-200 hover:scale-[1.04] active:scale-[0.98]
+                      ${
+                        item.highlight
+                          ? "text-pink-300 hover:text-pink-200"
+                          : "text-white/85 hover:text-white"
+                      }
+                      ${isSectionActive(item, pathname) ? "font-bold" : "font-semibold"}
+                    `}
+                  >
+                    {item.highlight && <Sparkles size={14} />}
+                    {item.label}
+                    <motion.span
+                      animate={{ rotate: activeKey === item.key ? 180 : 0 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                    >
+                      <ChevronDown size={14} />
+                    </motion.span>
 
-  <motion.span
-    variants={underlineVariants}
-    transition={{ duration: 0.25, ease: "easeOut" }}
-    style={{ originX: 0 }}
-    className={`absolute left-4 right-4 -bottom-0.5 h-[2px] rounded-full ${
-      item.highlight ? "bg-pink-300" : "bg-teal-400"
-    }`}
-  />
-</motion.button>
+                    <motion.span
+                      variants={underlineVariants}
+                      transition={{ duration: 0.25, ease: "easeOut" }}
+                      style={{ originX: 0 }}
+                      className={`absolute left-4 right-4 -bottom-0.5 h-[2px] rounded-full ${
+                        item.highlight ? "bg-pink-300" : "bg-teal-400"
+                      }`}
+                    />
+                  </motion.button>
 
                   {/* Rozwijany panel — idealnie wyśrodkowany pod punktem, z którego został otwarty */}
                   <AnimatePresence>
@@ -513,7 +541,11 @@ className={`relative flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm 
                         className="absolute left-1/2 top-full mt-3 z-40 w-max min-w-[340px] max-w-md -translate-x-1/2 rounded-2xl border border-slate-100 bg-white shadow-2xl"
                       >
                         <div className="px-6 py-6">
-                          <Panel item={item} pathname={pathname} />
+                          <Panel
+                            item={item}
+                            pathname={pathname}
+                            onItemClick={() => setActiveKey(null)}
+                          />
                         </div>
                       </motion.div>
                     )}
@@ -604,7 +636,10 @@ className={`relative flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm 
                   onToggle={() => setMobileActiveKey(mobileActiveKey === item.key ? null : item.key)}
                   active={!item.panel && pathname === item.href}
                   pathname={pathname}
-
+                  onNavigate={() => {
+                    setMobileOpen(false);
+                    setMobileActiveKey(null);
+                  }}
                 />
               ))}
 

@@ -6,14 +6,12 @@ import {
   MessageCircle,
   ChevronRight,
   Plus,
-  Package,
-  Wallet,
-  TrendingUp,
-  FileCheck,
-  FileText,
-  Tv,
-  XCircle,
   Gauge,
+  Tv,
+  Package,
+  Smartphone,
+  FileCheck,
+  Wallet,
 } from "lucide-react";
 import type { ElementType } from "react";
 
@@ -25,49 +23,38 @@ type FaqItem = {
 
 const FAQ_ITEMS: FaqItem[] = [
   {
-    icon: Package,
-    q: "Co dokładnie dostaję w pakiecie Max 1000 i Max 2000?",
-    a: "Max 1000: Internet do 1000 Mb/s + Telewizja L 4K z Dekoderem + Bezpieczny Internet Ultra (ochrona 5 urządzeń + CyberEkspert). Max 2000: to samo, ale z Internetem do 2000 Mb/s (technologia PON). W obu opcjonalnie SoundBox 4K za +30 zł/mies.",
-  },
-  {
-    icon: Wallet,
-    q: "Ile naprawdę zapłacę przez pierwsze 12 miesięcy?",
-    a: "Przez pierwsze 12 miesięcy abonament wynosi 0 zł. Płatne są jedynie opłaty aktywacyjne na pierwszej fakturze: 79 zł za Internet i 2 zł za Telewizję (łącznie 81 zł jednorazowo).",
-  },
-  {
-    icon: TrendingUp,
-    q: "Ile kosztuje pakiet od 13. miesiąca?",
-    a: "Max 1000 = 140 zł/mies., Max 2000 = 160 zł/mies. — te ceny obowiązują od 13. do 24. miesiąca. Po 24 miesiącach cena abonamentu rośnie o 10 zł zgodnie z regulaminem.",
-  },
-  {
-    icon: FileCheck,
-    q: "Czy muszę spełnić jakieś warunki, żeby cena pozostała na poziomie 140/160 zł?",
-    a: "Tak — wymagana jest e-faktura (rabat 5 zł) i zgody marketingowe (rabat 5 zł). Jeśli zrezygnujesz z tych zgód lub e-faktury, cena wzrośnie o 10 zł.",
-  },
-  {
-    icon: FileText,
-    q: "Na jak długo jest umowa?",
-    a: "Umowa zawierana jest na czas określony 24 pełnych okresów rozliczeniowych. Pierwsze 12 mies. abonamentu za 0 zł, kolejne 12 mies. według tabeli cen.",
+    icon: Gauge,
+    q: "Jakie prędkości Internetu są dostępne?",
+    a: "Konfigurator obsługuje pięć prędkości stacjonarnych: 150 Mb/s, 300 Mb/s, 600 Mb/s, 1000 Mb/s i 2000 Mb/s. Najwyższa (2 Gb/s) dostępna jest w technologii PON. Faktyczna dostępność prędkości zależy od technologii pokrycia pod Twoim adresem.",
   },
   {
     icon: Tv,
-    q: "Czy mogę dokupić pakiety filmowe lub sportowe?",
-    a: "Tak — dostępne dopłaty: HBO + HBO Max (+25 zł), Canal+ Prestige (+50 zł), Canal+ Select (+35 zł), Polsat Sport Premium (+20 zł), Eleven Sports (+10 zł), Polsat Sport Premium + Eleven Sports (+20 zł), FilmBox (+10 zł), Dla Dorosłych (+10 zł).",
+    q: "Czym różnią się pakiety telewizyjne S, M i L?",
+    a: "Pakiet S „Coś na Start” to wybór podstawowy, M „Najpopularniejszy” zawiera szerszy zestaw kanałów (sport, filmy), L „Dla Wymagających” to najbogatszy pakiet z największą liczbą kanałów. Pełna lista kanałów jest dostępna na stronie „Lista Kanałów”.",
   },
   {
-    icon: XCircle,
-    q: "Czy w ofercie jest Disney+ lub SkyShowtime?",
-    a: "Nie. W tej promocji nie ma usług streamingowych Disney+ i SkyShowtime. Dostępne są klasyczne pakiety telewizyjne i premium opisane wyżej.",
+    icon: Package,
+    q: "Jakie dodatki mogę dodać do pakietu?",
+    a: "Konfigurator obsługuje: Multiroom (standardowy i 4K), Giga Nagrywarka Maxi, Bezpieczny Internet, Stałe IP, kanały premium (HBO + MAX, Canal+ Select, Canal+ Prestige, Eleven Sports, Polsat Sport Premium, FilmBox, Cinemax, Dla Dorosłych, Dla Dzieci, Pakiet Ukraina) oraz streaming Disney+ i SkyShowtime.",
   },
   {
-    icon: Gauge,
-    q: "W jakiej technologii dostępna jest prędkość 2 Gb/s?",
-    a: "Maksymalna prędkość 2 Gb/s dostępna jest w technologii PON. W technologiach HFC lub ETTH maksymalna prędkość może być inna — sprawdź dostępność pod swoim adresem przed zamówieniem.",
+    icon: Smartphone,
+    q: "Jak działają usługi mobilne 5G?",
+    a: "Trzy plany 5G: SUPER (60 GB w PL + 8,5 GB roaming UE, 30 zł po 6 mies. 0 zł), VIP (100 GB + 11 GB, 40 zł), GIGA (200 GB + 15 GB, 60 zł). Wszystkie z nielimitowanymi połączeniami i SMS w kraju, umową na 24 miesiące i bez opłaty aktywacyjnej.",
+  },
+  {
+    icon: FileCheck,
+    q: "Czy mogę zmienić pakiet w trakcie umowy?",
+    a: "Podwyższenie prędkości lub rozszerzenie pakietu TV (np. dodanie kanałów premium) jest możliwe w trakcie umowy bez jej wydłużania. Obniżenie pakietu może wiązać się z dodatkowymi warunkami — sprawdź to u konsultanta.",
+  },
+  {
+    icon: Wallet,
+    q: "Czy montaż jest płatny?",
+    a: "Tak — w cenniku istnieje jednorazowa opłata aktywacyjna (osobne pozycje dla Internetu, Telewizji, Multiroom, usług mobilnych i HBO Max). Konfigurator pokazuje sumę aktywacji dla wybranych usług w sekcji „Opłata aktywacyjna (jednorazowa)”.",
   },
 ];
 
-
-export default function NetiaFAQ() {
+export default function KonfiguratorFAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const [inView, setInView] = useState(false);
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -75,7 +62,6 @@ export default function NetiaFAQ() {
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -85,7 +71,6 @@ export default function NetiaFAQ() {
       },
       { threshold: 0.15 }
     );
-
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
@@ -147,7 +132,7 @@ export default function NetiaFAQ() {
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">
             <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
-            FAQ
+            KONFIGURATOR — FAQ
           </span>
         </div>
 
@@ -155,14 +140,14 @@ export default function NetiaFAQ() {
           className="text-center font-extrabold text-white text-2xl sm:text-3xl lg:text-4xl tracking-tight mb-3 faq-animate"
           style={{ animationDelay: "80ms" }}
         >
-          Najczęstsze pytania
+          Najczęstsze pytania o konfigurator
         </h2>
         <p
           className="text-center mb-12 max-w-lg mx-auto text-sm sm:text-base text-white/65 faq-animate"
           style={{ animationDelay: "160ms" }}
         >
-          Odpowiedzi na to, co najczęściej pyta nas 2,4 mln klientów. Coś jeszcze
-          niejasne? Doradca odpowie w 3 minuty przez telefon.
+          Wszystko, co warto wiedzieć przed samodzielnym złożeniem pakietu.
+          Masz dodatkowe pytanie? Doradca pomoże w 3 minuty przez telefon.
         </p>
 
         {/* Accordion — dwie kolumny od sm w górę, jedna na mobile */}
@@ -200,7 +185,6 @@ export default function NetiaFAQ() {
                   >
                     <Icon size={19} strokeWidth={2} />
                   </div>
-
                   <span
                     className={`flex-1 font-medium text-base sm:text-[1.0625rem] leading-snug transition-colors duration-300 ${
                       isOpen ? "text-white" : "text-white/80"
@@ -208,14 +192,12 @@ export default function NetiaFAQ() {
                   >
                     {item.q}
                   </span>
-
                   <Plus
                     size={20}
                     className="shrink-0 text-teal-400 transition-transform duration-300"
                     style={{ transform: isOpen ? "rotate(45deg)" : "rotate(0deg)" }}
                   />
                 </div>
-
                 <div
                   className="grid transition-all duration-300 ease-out"
                   style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
@@ -242,7 +224,6 @@ export default function NetiaFAQ() {
           <p className="mb-6 text-sm sm:text-[0.9375rem] text-white/65">
             Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
           </p>
-
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
             <a
               href="tel:+48883334124"
@@ -259,7 +240,6 @@ export default function NetiaFAQ() {
               </span>
               <ChevronRight size={18} className="text-white/70" />
             </a>
-
             <a
               href="sms:+48883334124?body=INTERNET"
               className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] sm:min-w-60"
@@ -277,7 +257,6 @@ export default function NetiaFAQ() {
             </a>
           </div>
         </div>
-
         {/* Legal disclaimer */}
       </div>
     </section>
