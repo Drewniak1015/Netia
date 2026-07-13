@@ -164,8 +164,8 @@ const OfferCard = memo(function OfferCard({ offer, reduceMotion }: { offer: Offe
         transition={{ duration: 0.15 }}
         className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-teal-400 px-4 py-3 text-sm font-bold text-[#0a1a2b] transition-colors hover:bg-teal-300"
       >
-        <MessageCircle className="h-4 w-4" />
-        WYŚLIJ SMS
+         <Phone className="h-4 w-4" />
+         ZADZWOŃ {PHONE}
       </m.button>
 
       <m.a
@@ -175,8 +175,9 @@ const OfferCard = memo(function OfferCard({ offer, reduceMotion }: { offer: Offe
         transition={{ duration: 0.15 }}
         className="mt-2.5 flex items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-white/5"
       >
-        <Phone className="h-4 w-4" />
-        ZADZWOŃ {PHONE}
+        <MessageCircle className="h-4 w-4" />
+      
+        WYŚLIJ SMS
       </m.a>
     </m.article>
   );

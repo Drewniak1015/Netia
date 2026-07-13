@@ -1,3 +1,4 @@
+// components/Kanaly/Wyszukiwarka.tsx
 "use client";
 
 import { useState, useMemo } from "react";
@@ -8,13 +9,54 @@ import {
   ADDONS,
   TIER_ORDER,
   TIER_LABELS,
+  channelsForAddon,
+  channelId,
   type Tier,
+  type Channel,
 } from "@/lib/channels";
 
 type Props = {
   tier: Tier;
   onTierChange: (tier: Tier) => void;
 };
+
+const SELECTABLE_TIERS: Tier[] = ["s", "m", "l"];
+
+// Ikona kanału: pokazuje prawdziwe logo (ch.logoUrl), a jeśli go nie ma —
+// lub obrazek nie chce się załadować — spada do kolorowego kwadratu z literą.
+function ChannelIcon({ ch, size }: { ch: Channel; size: number }) {
+  const [failed, setFailed] = useState(false);
+  const showImage = Boolean(ch.logoUrl) && !failed;
+
+  return (
+    <span
+      className="flex items-center justify-center shrink-0 rounded-xl overflow-hidden"
+      style={{
+        height: size,
+        width: size,
+        backgroundColor: showImage ? "transparent" : ch.color,
+      }}
+    >
+      {showImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={ch.logoUrl}
+          src={ch.logoUrl}
+          alt={ch.alt ?? ch.name}
+          onError={() => setFailed(true)}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <span
+          className="text-white font-bold"
+          style={{ fontSize: size * 0.35 }}
+        >
+          {ch.name.charAt(0)}
+        </span>
+      )}
+    </span>
+  );
+}
 
 export default function Wyszukiwarka({ tier, onTierChange }: Props) {
   const [query, setQuery] = useState("");
@@ -24,15 +66,17 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
 
-    return CHANNELS.filter((ch) => {
-      if (q.length >= 3 && !ch.name.toLowerCase().includes(q)) return false;
+    // WAŻNE: dla dodatków używamy channelsForAddon() zamiast bezpośredniego
+    // filtrowania ADDON_CHANNELS. "canal-plus-select" nie ma własnych wpisów
+    // w tablicy - jest wyliczany na bieżąco z "canal-plus-prestige" właśnie
+    // przez tę funkcję. Filtrowanie samej tablicy zwróciłoby dla niego pustą listę.
+    const source = selectedAddon
+      ? channelsForAddon(selectedAddon)
+      : CHANNELS.filter((ch) => TIER_ORDER[ch.tier] <= TIER_ORDER[tier]);
 
-      if (selectedAddon) {
-        return ch.addon === selectedAddon;
-      }
-
-      return TIER_ORDER[ch.tier] <= TIER_ORDER[tier] && !ch.addon;
-    }).sort((a, b) => a.number - b.number);
+    return source
+      .filter((ch) => q.length < 3 || ch.name.toLowerCase().includes(q))
+      .sort((a, b) => a.number - b.number);
   }, [query, tier, selectedAddon]);
 
   const handleDownload = () => {
@@ -110,7 +154,7 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
 
           <p className="text-xs font-semibold uppercase tracking-wide text-white/40 mb-3">Pakiety główne</p>
           <div className="grid grid-cols-3 gap-3 mb-2">
-            {(Object.keys(TIER_LABELS) as Tier[]).map((t) => {
+            {SELECTABLE_TIERS.map((t) => {
               const active = tier === t && !selectedAddon;
               return (
                 <motion.button
@@ -181,7 +225,7 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
               className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/[0.08] px-4 py-2.5 text-sm font-semibold text-white transition-colors"
             >
               <FileDown size={16} />
-              Pobierz listę kanałów (PDF)
+              Pobierz listę kanałów (CSV)
             </motion.button>
           </div>
         </motion.div>
@@ -198,16 +242,14 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
             <motion.div key="grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {results.map((ch) => (
                 <motion.div
-                  key={ch.number}
+                  key={channelId(ch)}
                   layout
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   whileHover={{ y: -3 }}
                   className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 flex items-center gap-3 transition-colors duration-200 hover:bg-white/[0.08]"
                 >
-                  <span style={{ backgroundColor: ch.color }} className="flex items-center justify-center shrink-0 h-10 w-10 rounded-xl text-white text-sm font-bold">
-                    {ch.name.charAt(0)}
-                  </span>
+                  <ChannelIcon ch={ch} size={40} />
                   <div className="min-w-0">
                     <p className="font-semibold text-white text-sm truncate">{ch.name}</p>
                     <p className="text-xs text-white/40">Kanał {ch.number}</p>
@@ -218,11 +260,9 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
           ) : (
             <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
               {results.map((ch, i) => (
-                <motion.div key={ch.number} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`flex items-center gap-4 px-5 py-3 ${i !== 0 ? "border-t border-white/5" : ""}`}>
+                <motion.div key={channelId(ch)} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`flex items-center gap-4 px-5 py-3 ${i !== 0 ? "border-t border-white/5" : ""}`}>
                   <span className="text-xs font-semibold text-white/40 w-8 shrink-0">{ch.number}</span>
-                  <span style={{ backgroundColor: ch.color }} className="flex items-center justify-center shrink-0 h-8 w-8 rounded-lg text-white text-xs font-bold">
-                    {ch.name.charAt(0)}
-                  </span>
+                  <ChannelIcon ch={ch} size={32} />
                   <span className="font-medium text-white text-sm">{ch.name}</span>
                 </motion.div>
               ))}

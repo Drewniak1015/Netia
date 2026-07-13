@@ -51,7 +51,7 @@ function useRevealOnScroll<T extends HTMLElement>(options?: IntersectionObserver
   return { ref, visible };
 }
 
-export default function Miasta({ baseHref = "/internet", onShowFullList }: MiastaProps) {
+export default function Miasta({ baseHref = "/internet-miasta", onShowFullList }: MiastaProps) {
   const header = useRevealOnScroll<HTMLDivElement>();
   const grid = useRevealOnScroll<HTMLDivElement>();
   const footer = useRevealOnScroll<HTMLDivElement>();
@@ -126,32 +126,6 @@ export default function Miasta({ baseHref = "/internet", onShowFullList }: Miast
         </div>
 
         {/* Footer callout */}
-        <div
-          ref={footer.ref}
-          className="mt-10 flex flex-col items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 px-6 py-5 transition-all duration-700 ease-out sm:flex-row"
-          style={{
-            opacity: footer.visible ? 1 : 0,
-            transform: footer.visible ? "translateY(0)" : "translateY(16px)",
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-teal-300">
-              <Wifi size={18} strokeWidth={2} />
-            </span>
-            <p className="text-sm font-normal text-white/70 sm:text-[15px]">
-              Nie znalazłeś swojego miasta? Sprawdź pełną listę dostępności w Twojej
-              okolicy.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onShowFullList}
-            className="flex shrink-0 items-center gap-2 text-sm font-semibold text-teal-300 transition-colors hover:text-teal-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D]"
-          >
-            Zobacz pełną listę
-            <ArrowRight size={16} />
-          </button>
-        </div>
       </div>
     </section>
   );

@@ -129,7 +129,7 @@ const NAV: NavItem[] = [
           heading: "Pomoc",
           items: [
             {
-              title: "Duże FAQ + wyszukiwarka",
+              title: "Najczęstsze Pytania",
               desc: "Znajdź odpowiedzi na najczęstsze pytania.",
               icon: Search,
               href: "/pomoc/faq",

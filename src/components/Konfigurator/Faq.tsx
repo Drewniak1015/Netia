@@ -131,7 +131,10 @@ export default function KonfiguratorFAQ() {
           style={{ animationDelay: "0ms" }}
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">
-            <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
+            <span 
+              className="h-1.5 w-1.5 rounded-full" 
+              style={{ backgroundColor: "var(--color-teal-300)" }}
+            />
             KONFIGURATOR — FAQ
           </span>
         </div>
@@ -170,18 +173,20 @@ export default function KonfiguratorFAQ() {
                 }}
                 className={`faq-animate cursor-pointer rounded-2xl overflow-hidden border transition-colors duration-200 ${
                   isOpen
-                    ? "bg-teal-400/10 border-teal-400/30"
+                    ? "bg-teal-400/10"
                     : "bg-white/5 border-white/10 hover:bg-white/[0.07]"
                 }`}
-                style={{ animationDelay: `${240 + i * 90}ms` }}
+                style={{ 
+                  animationDelay: `${240 + i * 90}ms`,
+                  borderColor: isOpen ? "var(--color-teal-300)" : "" 
+                }}
               >
                 <div className="w-full flex items-center gap-4 text-left px-5 py-4 sm:px-6 sm:py-5">
                   <div
                     className={`flex items-center justify-center shrink-0 rounded-xl h-10 w-10 transition-colors duration-300 ${
-                      isOpen
-                        ? "bg-teal-400/15 text-teal-300"
-                        : "bg-white/10 text-white/60"
+                      isOpen ? "bg-teal-400/15" : "bg-white/10 text-white/60"
                     }`}
+                    style={{ color: isOpen ? "var(--color-teal-300)" : "" }}
                   >
                     <Icon size={19} strokeWidth={2} />
                   </div>
@@ -194,8 +199,11 @@ export default function KonfiguratorFAQ() {
                   </span>
                   <Plus
                     size={20}
-                    className="shrink-0 text-teal-400 transition-transform duration-300"
-                    style={{ transform: isOpen ? "rotate(45deg)" : "rotate(0deg)" }}
+                    className="shrink-0 transition-transform duration-300"
+                    style={{ 
+                      transform: isOpen ? "rotate(45deg)" : "rotate(0deg)",
+                      color: "var(--color-teal-300)"
+                    }}
                   />
                 </div>
                 <div

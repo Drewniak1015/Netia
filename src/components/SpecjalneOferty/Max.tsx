@@ -450,15 +450,16 @@ export default function OfferMaxSection() {
                 miesiąca.
               </span>
             </div>
-            <m.button
-              whileHover={reduceMotion ? undefined : { scale: 1.03 }}
-              whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-              className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-pink-400 px-4 py-2.5 text-[13px] font-bold text-pink-400"
-            >
-              <Tv size={15} />
-              Wyszukiwarka kanałów TV
-              <Search size={14} />
-            </m.button>
+<m.a
+  href="/kanaly"
+  whileHover={reduceMotion ? undefined : { scale: 1.03 }}
+  whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+  className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-pink-400 px-4 py-2.5 text-[13px] font-bold text-pink-400 no-underline cursor-pointer"
+>
+  <Tv size={15} />
+  Wyszukiwarka kanałów TV
+  <Search size={14} />
+</m.a>
           </m.div>
 
           {/* TV PACKAGES */}

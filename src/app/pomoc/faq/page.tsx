@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import {
   Search,
   ChevronDown,
+  ArrowRight,
   FileX,
   ShieldCheck,
   Clock,
@@ -30,35 +31,39 @@ import {
 } from "lucide-react";
 
 /* ---------- design tokens ----------
-   This page mirrors the reference screenshot: a light page with a
-   dark gradient hero card floating on top, then a white "toolbar"
-   card holding search + category filters. */
+   Układ „ciemny hero + jasna lista" — jak na inspiracji.
+   Hero zostaje w palecie strony Pomocy (navy + teal),
+   lista FAQ przechodzi na jasne karty dla lepszej czytelności. */
 const c = {
-  pageBg: "#eef2f6",
-  hero1: "#0b2536",
-  hero2: "#1b2350",
-  hero3: "#2a1f49",
+  // hero (ciemna strefa)
+  heroBg: "rgb(9, 33, 50)",
+  heroDeep: "rgb(6, 24, 38)",
+  heroInner: "rgb(17, 51, 74)",
+  heroBorder: "rgba(255,255,255,.1)",
+  heroText: "#eef5f7",
+  heroMuted: "#a7b9c6",
+  heroFaint: "#6f8798",
+
+  // body (jasna strefa)
+  pageBg: "#eef2f5",
   card: "#ffffff",
-  border: "#e2e8f0",
-  text: "#0f2436",
-  muted: "#64748b",
-  faint: "#94a3b8",
-  accent: "#0f9488",
-  accentDim: "rgba(15,148,136,.08)",
-  accentBorder: "rgba(15,148,136,.28)",
+  cardBorder: "rgba(13, 45, 66, .08)",
+  text: "#10344c", // pytania
+  muted: "#54697a", // odpowiedzi
+  faint: "#93a6b3", // chevrony nieaktywne
+
+  // akcent
+  accent: "#2dd9c4",
+  accentDark: "#0fae9c", // teal na jasnym tle (kontrast)
+  accentDim: "rgba(45,217,196,.14)",
+  accentDimLight: "rgba(15,174,156,.1)",
+  accentBorder: "rgba(45,217,196,.32)",
 };
 
 /* ---------- data ----------
-   Every question from all the drafts you pasted (TIER_1 / TIER_2 /
-   TIER_3, both FAQ_ITEMS arrays, and the `faqs` array) — 35 items
-   total, each tagged with a category so the pill filters work.
-   Note: "Czy Bezpieczny Internet obejmuje kontrolę rodzicielską?"
-   still carries the placeholder answer from your draft ("Uzupełnij
-   odpowiedź przed publikacją") — it's included as requested, but
-   swap in the real answer before this goes live.
-   A couple of questions repeat across drafts with different answers
-   (e.g. contract length appears three times) — kept as separate rows
-   since each came with its own wording. */
+   Wszystkie 35 pytań bez zmian.
+   Uwaga: "Czy Bezpieczny Internet obejmuje kontrolę rodzicielską?"
+   nadal ma placeholder — uzupełnij przed publikacją. */
 
 type Category =
   | "Zamówienie i instalacja"
@@ -84,6 +89,8 @@ interface FaqItem {
   q: string;
   a: string;
   category: Category;
+  /** opcjonalny link „Dowiedz się więcej" pod odpowiedzią */
+  more?: { label: string; href: string };
 }
 
 const FAQ_ITEMS: FaqItem[] = [
@@ -93,6 +100,7 @@ const FAQ_ITEMS: FaqItem[] = [
     q: "Mam umowę z obecnym operatorem — czy zapłacę karę?",
     a: "W większości przypadków pomożemy Ci to sprawdzić telefonicznie, zanim cokolwiek podpiszesz. Doradca oceni Twoją obecną umowę i powie wprost, czy przejście się opłaca — bez zobowiązań z Twojej strony.",
     category: "Umowy i rozliczenia",
+    more: { label: "Dowiedz się więcej", href: "/pomoc" },
   },
   {
     icon: ShieldCheck,
@@ -310,6 +318,116 @@ const FAQ_ITEMS: FaqItem[] = [
   },
 ];
 
+/* ---------- animations (global keyframes) ---------- */
+
+const ANIM_CSS = `
+@keyframes faqFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes faqFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes faqFloatAlt {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+.faq-fade-up  { animation: faqFadeUp .55s cubic-bezier(.22,.8,.32,1) both; }
+.faq-float    { animation: faqFloat 5s ease-in-out infinite; }
+.faq-float-alt{ animation: faqFloatAlt 4s ease-in-out .6s infinite; }
+
+.faq-card { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.faq-card:hover { transform: translateY(-2px); }
+
+.faq-pill { transition: filter .15s ease; }
+.faq-pill:hover { filter: brightness(1.18); }
+
+.faq-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .3s cubic-bezier(.22,.8,.32,1);
+}
+.faq-collapse.open { grid-template-rows: 1fr; }
+.faq-collapse > div { overflow: hidden; min-height: 0; }
+.faq-collapse .faq-answer { opacity: 0; transition: opacity .25s ease .05s; }
+.faq-collapse.open .faq-answer { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-fade-up, .faq-float, .faq-float-alt { animation: none; }
+  .faq-card, .faq-pill, .faq-collapse, .faq-collapse .faq-answer { transition: none; }
+  .faq-card:hover { transform: none; }
+}
+`;
+
+/* ---------- illustration ----------
+   Dymki „pytanie + Wi-Fi" — odchudzony SVG:
+   bez filtrów feDropShadow (ciężkie w renderze),
+   cień jako jedna elipsa, po jednym gradiencie na dymek,
+   do tego delikatne pływanie (CSS, wyłączane przy reduced motion). */
+
+function HeroBubbles() {
+  return (
+    <svg
+      viewBox="0 0 300 240"
+      className="w-[220px] md:w-[280px] h-auto select-none pointer-events-none"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id="fbTeal" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#3ee8d3" />
+          <stop offset="100%" stopColor="#0e9d8e" />
+        </linearGradient>
+        <linearGradient id="fbNavy" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#1d5a80" />
+          <stop offset="100%" stopColor="#0c2c44" />
+        </linearGradient>
+      </defs>
+
+      {/* cień pod całością — jedna elipsa zamiast filtrów */}
+      <ellipse cx="165" cy="224" rx="105" ry="11" fill="#02121d" opacity=".35" />
+
+      {/* dymek główny — znak zapytania */}
+      <g className="faq-float">
+        <path
+          d="M138 18c-58 0-104 38-104 86 0 47 46 85 104 85 10 0 20-1 29-3l34 22-6-34c29-16 47-42 47-70 0-48-46-86-104-86z"
+          fill="url(#fbTeal)"
+        />
+        {/* delikatny błysk — jedna półprzezroczysta ścieżka */}
+        <path
+          d="M70 62c18-25 46-38 74-38 20 0 38 6 53 16-38-13-85-4-112 27-8 9-13 19-16 30-2-12-1-24 1-35z"
+          fill="rgba(255,255,255,.2)"
+        />
+        <text
+          x="138"
+          y="128"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontFamily="ui-sans-serif, system-ui, sans-serif"
+          fontWeight="800"
+          fontSize="96"
+          fill="#ffffff"
+        >
+          ?
+        </text>
+      </g>
+
+      {/* dymek drugi — Wi-Fi */}
+      <g className="faq-float-alt">
+        <path
+          d="M228 78c-38 0-68 25-68 56 0 31 30 56 68 56 7 0 13-1 19-2l24 16-4-24c18-11 29-27 29-46 0-31-30-56-68-56z"
+          fill="url(#fbNavy)"
+        />
+        <g stroke="#2dd9c4" strokeWidth="7" strokeLinecap="round" fill="none">
+          <path d="M198 130c17-15 43-15 60 0" />
+          <path d="M208 143c11-10 29-10 40 0" />
+        </g>
+        <circle cx="228" cy="157" r="6" fill="#2dd9c4" />
+      </g>
+    </svg>
+  );
+}
+
 /* ---------- pieces ---------- */
 
 function CategoryPill({
@@ -327,20 +445,24 @@ function CategoryPill({
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-[13.5px] font-semibold whitespace-nowrap border cursor-pointer transition-colors"
+      className="faq-pill inline-flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-semibold whitespace-nowrap border cursor-pointer"
       style={
         active
-          ? { background: c.accent, borderColor: c.accent, color: "#ffffff" }
-          : { background: c.card, borderColor: c.border, color: c.text }
+          ? { background: c.accent, borderColor: c.accent, color: "rgb(6, 26, 39)" }
+          : {
+              background: "rgba(255,255,255,.04)",
+              borderColor: c.heroBorder,
+              color: c.heroMuted,
+            }
       }
     >
       {label}
       <span
-        className="text-[11.5px] font-bold px-1.5 py-0.5 rounded-full"
+        className="text-[11px] font-bold px-1.5 py-0.5 rounded-full"
         style={
           active
-            ? { background: "rgba(255,255,255,.22)", color: "#ffffff" }
-            : { background: c.accentDim, color: c.accent }
+            ? { background: "rgba(6,26,39,.18)", color: "rgb(6, 26, 39)" }
+            : { background: "rgba(255,255,255,.08)", color: c.heroFaint }
         }
       >
         {count}
@@ -349,23 +471,43 @@ function CategoryPill({
   );
 }
 
-function FaqRow({ item }: { item: FaqItem }) {
-  const [open, setOpen] = useState(false);
+function FaqRow({
+  item,
+  defaultOpen = false,
+  delay = 0,
+}: {
+  item: FaqItem;
+  defaultOpen?: boolean;
+  delay?: number;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
   const Icon = item.icon;
 
   return (
     <div
-      className="rounded-2xl overflow-hidden transition-colors"
-      style={{ background: c.card, border: `1px solid ${c.border}` }}
+      className="faq-card faq-fade-up rounded-2xl overflow-hidden"
+      style={{
+        background: c.card,
+        border: `1px solid ${open ? "rgba(15,174,156,.35)" : c.cardBorder}`,
+        boxShadow: open
+          ? "0 10px 30px rgba(13,45,66,.1)"
+          : "0 2px 10px rgba(13,45,66,.05)",
+        animationDelay: `${delay}ms`,
+      }}
     >
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
         className="w-full flex items-center gap-4 px-5 py-4 cursor-pointer border-0 bg-transparent text-left"
       >
         <div
           className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
-          style={{ background: c.accentDim, color: c.accent }}
+          style={{
+            background: c.accentDimLight,
+            border: "1px solid rgba(15,174,156,.2)",
+            color: c.accentDark,
+          }}
         >
           <Icon size={17} />
         </div>
@@ -375,21 +517,34 @@ function FaqRow({ item }: { item: FaqItem }) {
         <ChevronDown
           size={18}
           style={{
-            color: c.faint,
+            color: open ? c.accentDark : c.faint,
             flexShrink: 0,
             transform: open ? "rotate(180deg)" : "rotate(0deg)",
-            transition: "transform .2s ease",
+            transition: "transform .25s ease",
           }}
         />
       </button>
-      {open && (
-        <div
-          className="px-5 pb-4 pl-[4.4rem] text-[14px] leading-relaxed"
-          style={{ color: c.muted }}
-        >
-          {item.a}
+
+      {/* płynne rozwijanie: grid 0fr → 1fr */}
+      <div className={`faq-collapse${open ? " open" : ""}`}>
+        <div>
+          <div className="faq-answer px-5 pb-5 pl-[4.4rem]">
+            <p className="text-[14px] leading-relaxed" style={{ color: c.muted }}>
+              {item.a}
+            </p>
+            {item.more && (
+              <a
+                href={item.more.href}
+                className="inline-flex items-center gap-1.5 mt-3 text-[13.5px] font-bold no-underline"
+                style={{ color: c.accentDark }}
+              >
+                {item.more.label}
+                <ArrowRight size={15} />
+              </a>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -420,43 +575,67 @@ export default function FaqPage() {
   }, [active, query]);
 
   return (
-    <div style={{ background: c.pageBg, color: c.text }} className="font-sans min-h-screen">
-      <div className="max-w-[860px] mx-auto px-5 py-8 pt-36">
-        {/* HERO */}
-        <div
-          className="rounded-[26px] px-8 md:px-10 py-9"
-          style={{
-            background: `linear-gradient(120deg, ${c.hero1} 0%, ${c.hero2} 55%, ${c.hero3} 100%)`,
-          }}
-        >
-          <h1 className="text-[30px] md:text-[36px] font-extrabold tracking-tight text-white">
-            Najczęstsze pytania
-          </h1>
-          <p className="text-[14.5px] md:text-[15px] mt-2" style={{ color: "rgba(255,255,255,.72)" }}>
-            Krótko i na temat: odpowiedzi techniczne i sprzedażowe.
-          </p>
-        </div>
+    <div style={{ background: c.pageBg }} className="font-sans min-h-screen">
+      <style dangerouslySetInnerHTML={{ __html: ANIM_CSS }} />
 
-        {/* TOOLBAR: search + category pills */}
-        <div
-          className="rounded-[22px] mt-[-14px] mx-2 px-5 md:px-7 pt-6 pb-5 relative"
-          style={{ background: c.card, border: `1px solid ${c.border}` }}
-        >
-          <div
-            className="flex items-center gap-3 rounded-xl px-4 py-3"
-            style={{ border: `1px solid ${c.border}` }}
-          >
-            <Search size={18} style={{ color: c.faint }} />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Wyszukaj w FAQ i dokumentach..."
-              className="w-full bg-transparent outline-none text-[14.5px]"
-              style={{ color: c.text }}
-            />
+      {/* ===== HERO — ciemna strefa na pełną szerokość ===== */}
+      <div
+        style={{
+          background: `radial-gradient(140% 180% at 85% -30%, ${c.heroInner} 0%, ${c.heroBg} 45%, ${c.heroDeep} 100%)`,
+          borderBottom: `1px solid ${c.heroBorder}`,
+        }}
+      >
+        <div className="max-w-[920px] mx-auto px-5 pt-32 pb-10 md:pb-12">
+          <div className="flex items-center justify-between gap-8">
+            {/* lewa kolumna: tytuł + search */}
+            <div className="flex-1 max-w-[560px]">
+              <h1
+                className="faq-fade-up text-[28px] md:text-[34px] font-extrabold tracking-tight"
+                style={{ color: c.heroText }}
+              >
+                Najczęstsze pytania
+              </h1>
+              <p
+                className="faq-fade-up text-[14.5px] md:text-[15px] mt-2"
+                style={{ color: c.heroMuted, animationDelay: "80ms" }}
+              >
+                Szybkie odpowiedzi na pytania o Internet, telewizję i usługi Netii.
+              </p>
+
+              {/* SEARCH */}
+              <div
+                className="faq-fade-up flex items-center gap-3 rounded-full px-5 py-3 mt-6 transition-colors focus-within:border-[rgba(45,217,196,.5)]"
+                style={{
+                  background: "rgba(255,255,255,.05)",
+                  border: `1px solid ${c.heroBorder}`,
+                  animationDelay: "160ms",
+                }}
+              >
+                <Search size={17} style={{ color: c.heroFaint, flexShrink: 0 }} />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Wyszukaj wśród pytań..."
+                  className="w-full bg-transparent outline-none text-[14.5px]"
+                  style={{ color: c.heroText }}
+                />
+              </div>
+            </div>
+
+            {/* prawa kolumna: ilustracja */}
+            <div
+              className="faq-fade-up hidden md:block flex-shrink-0 -mb-6"
+              style={{ animationDelay: "200ms" }}
+            >
+              <HeroBubbles />
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-2.5 mt-4">
+          {/* CATEGORY PILLS */}
+          <div
+            className="faq-fade-up flex gap-2.5 mt-7 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"
+            style={{ scrollbarWidth: "none", animationDelay: "240ms" }}
+          >
             <CategoryPill
               label="Wszystkie"
               count={counts.get("Wszystkie") ?? 0}
@@ -474,21 +653,34 @@ export default function FaqPage() {
             ))}
           </div>
         </div>
+      </div>
 
-        {/* FAQ LIST */}
-        <div className="flex flex-col gap-3 mt-6">
+      {/* ===== FAQ LIST — jasna strefa ===== */}
+      <main className="max-w-310 mx-auto px-5 py-8 pb-16">
+        <div className="max-w-[885px] mx-auto flex flex-col gap-3">
           {filtered.length === 0 ? (
             <div
-              className="rounded-2xl px-6 py-10 text-center text-[14.5px]"
-              style={{ background: c.card, border: `1px solid ${c.border}`, color: c.muted }}
+              className="faq-fade-up rounded-2xl px-6 py-10 text-center text-[14.5px]"
+              style={{
+                background: c.card,
+                border: `1px solid ${c.cardBorder}`,
+                color: c.muted,
+              }}
             >
               Nie znaleziono pytań pasujących do wyszukiwania.
             </div>
           ) : (
-            filtered.map((item, i) => <FaqRow key={i} item={item} />)
+            filtered.map((item, i) => (
+              <FaqRow
+                key={item.q + i}
+                item={item}
+                defaultOpen={i === 0 && active === "Wszystkie" && query.trim() === ""}
+                delay={Math.min(i, 10) * 45}
+              />
+            ))
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -1,5 +1,7 @@
+// components/Kanaly/Przewodnik.tsx
 "use client";
 
+import { useMemo } from "react";
 import {
   ChevronDown,
   Trophy,
@@ -12,91 +14,76 @@ import {
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import type { ElementType } from "react";
-import type { Tier } from "@/lib/channels";
+import {
+  ADDONS,
+  CHANNELS,
+  ADDON_CHANNELS,
+  TIER_CHANNEL_COUNTS,
+  REGIONAL_TVP_CHANNELS_COUNT,
+  channelsForAddon,
+  type Tier,
+} from "@/lib/channels";
 
-type MainPackage = {
-  name: string;
-  count: number;
-  desc: string;
-  sub: string;
-};
-
-type Channel = {
-  name: string;
-  count: number;
-};
+// Pakiety główne prezentowane na stronie (XS jest bazą wliczoną automatycznie
+// do każdego z poniższych, dlatego nie pokazujemy go jako osobnej opcji).
+const SELECTABLE_TIERS: { tier: Tier; name: string; desc: string }[] = [
+  {
+    tier: "s",
+    name: "Pakiet S",
+    desc: "Coś na Start — klasyczny zestaw informacyjno-rozrywkowy.",
+  },
+  {
+    tier: "m",
+    name: "Pakiet M",
+    desc: "Najpopularniejszy — wszystko z S + dodatkowe sport, filmy, lifestyle.",
+  },
+  {
+    tier: "l",
+    name: "Pakiet L",
+    desc: "Dla Wymagających — pełna baza: M + dokumentalne, muzyczne, więcej sportu.",
+  },
+];
 
 type ThemeGroup = {
   icon: ElementType;
   title: string;
   desc: string;
-  channels: Channel[];
+  addonKeys: string[];
 };
-
-const MAIN_PACKAGES: MainPackage[] = [
-  {
-    name: "Pakiet S",
-    count: 81,
-    desc: "Coś na Start — klasyczny zestaw informacyjno-rozrywkowy.",
-    sub: "81 kanałów",
-  },
-  {
-    name: "Pakiet M",
-    count: 106,
-    desc: "Najpopularniejszy — wszystko z S + dodatkowe sport, filmy, lifestyle.",
-    sub: "106 kanałów",
-  },
-  {
-    name: "Pakiet L",
-    count: 185,
-    desc: "Dla Wymagających — pełna baza: M + dokumentalne, muzyczne, więcej sportu.",
-    sub: "185 kanałów",
-  },
-];
 
 const THEME_GROUPS: ThemeGroup[] = [
   {
     icon: Trophy,
     title: "Sport",
     desc: "Dla kibiców — piłka, koszykówka, MMA, F1, golf.",
-    channels: [
-      { name: "Polsat Sport Premium", count: 6 },
-      { name: "Eleven Sports", count: 5 },
-    ],
+    addonKeys: ["polsat-sport-premium", "eleven-sports"],
   },
   {
     icon: Clapperboard,
     title: "Filmy i seriale",
-    desc: "Premiery filmowe i seriale od HBO, CANAL+, FilmBox i Cinemax.",
-    channels: [
-      { name: "HBO + HBO Max", count: 3 },
-      { name: "CANAL+ Prestige", count: 10 },
-      { name: "CANAL+ Select", count: 8 },
-      { name: "FilmBox", count: 5 },
-      { name: "Cinemax", count: 2 },
-    ],
+    desc: "Premiery filmowe i seriale od HBO, FilmBox i Cinemax.",
+    addonKeys: ["hbo", "filmbox", "cinemax-hd"],
   },
   {
     icon: Baby,
     title: "Dla dzieci i rodziny",
     desc: "Bajki, programy edukacyjne, kanały dla młodzieży.",
-    channels: [{ name: "Pakiet Dla Dzieci", count: 13 }],
+    addonKeys: ["dzieci"],
   },
   {
     icon: Flag,
     title: "Społeczność ukraińska",
     desc: "Kanały ukraińskojęzyczne — informacyjne, rozrywkowe i dziecięce.",
-    channels: [{ name: "Pakiet Ukraina", count: 8 }],
+    addonKeys: ["ukraina"],
   },
   {
     icon: ShieldAlert,
     title: "Tylko 18+",
     desc: "Pakiet dodatkowy dla widzów dorosłych — wymaga PIN-u w dekoderze.",
-    channels: [{ name: "Pakiet Dla dorosłych", count: 8 }],
+    addonKeys: ["dorosli"],
   },
 ];
 
-// --- warianty animacji: uruchamiane przy wejściu w viewport, nie przy załadowaniu strony ---
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
 const fadeUp: Variants = {
@@ -106,11 +93,7 @@ const fadeUp: Variants = {
 
 const staggerContainer: Variants = {
   hidden: {},
-  show: {
-    transition: {
-      staggerChildren: 0.12,
-    },
-  },
+  show: { transition: { staggerChildren: 0.12 } },
 };
 
 const cardItem: Variants = {
@@ -125,6 +108,15 @@ export default function Przewodnik({
   tier: Tier;
   onTierChange: (next: Tier) => void;
 }) {
+  // Liczba wszystkich unikalnych kanałów w ofercie (pakiet L + kanały dostępne
+  // wyłącznie w dodatkach + regionalne TVP z pakietu XS), liczona z realnych danych.
+  const totalChannelsCount = useMemo(() => {
+    const numbers = new Set<number>();
+    CHANNELS.forEach((ch) => numbers.add(ch.number));
+    ADDON_CHANNELS.forEach((ch) => numbers.add(ch.number));
+    return numbers.size + REGIONAL_TVP_CHANNELS_COUNT;
+  }, []);
+
   return (
     <section
       style={{ backgroundColor: "#0B2A3D" }}
@@ -168,10 +160,8 @@ export default function Przewodnik({
               </radialGradient>
             </defs>
 
-            {/* Miękka poświata w tle */}
             <circle cx="80" cy="110" r="80" fill="url(#glowGradLeft)" />
 
-            {/* Fale sygnału — statyczne okręgi, lustrzane względem prawej strony */}
             {[22, 38, 54].map((r, idx) => (
               <circle
                 key={r}
@@ -186,10 +176,7 @@ export default function Przewodnik({
               />
             ))}
 
-            {/* Punkty nadajnika */}
             <circle cx="80" cy="140" r="4.5" fill="#2DD4BF" />
-
-            {/* Dekoracyjne punkty świetlne */}
             <circle cx="140" cy="150" r="2.5" fill="#99F6E4" fillOpacity="0.5" />
             <circle cx="25" cy="130" r="2" fill="#2DD4BF" fillOpacity="0.5" />
             <circle cx="155" cy="90" r="1.8" fill="#2DD4BF" fillOpacity="0.35" />
@@ -213,10 +200,8 @@ export default function Przewodnik({
               </radialGradient>
             </defs>
 
-            {/* Miękka poświata w tle */}
             <circle cx="120" cy="90" r="90" fill="url(#glowGrad)" />
 
-            {/* Fale sygnału — statyczne okręgi */}
             {[24, 42, 60].map((r, idx) => (
               <circle
                 key={r}
@@ -231,10 +216,7 @@ export default function Przewodnik({
               />
             ))}
 
-            {/* Punkty nadajnika */}
             <circle cx="120" cy="60" r="5" fill="#2DD4BF" />
-
-            {/* Dekoracyjne punkty świetlne */}
             <circle cx="60" cy="50" r="3" fill="#99F6E4" fillOpacity="0.5" />
             <circle cx="175" cy="70" r="2.5" fill="#2DD4BF" fillOpacity="0.5" />
             <circle cx="45" cy="120" r="2" fill="#2DD4BF" fillOpacity="0.35" />
@@ -251,13 +233,13 @@ export default function Przewodnik({
           </h1>
 
           <p className="relative z-10 mt-1 max-w-2xl text-sm text-white/65 sm:text-base leading-relaxed">
-            W ofercie Netii znajdziesz 232 kanałów rozproszonych po pakietach
-            głównych (S, M, L) oraz dodatkach tematycznych i premium. Poniżej
-            znajdziesz przewodnik — co tematycznie zawiera każda grupa.
+            W ofercie Netii znajdziesz {totalChannelsCount} kanałów rozproszonych po
+            pakietach głównych (S, M, L) oraz dodatkach tematycznych i premium.
+            Poniżej znajdziesz przewodnik — co tematycznie zawiera każda grupa.
           </p>
 
           <div className="relative z-10 mt-4">
-            <a
+            <a 
               href="#pelna-lista"
               className="inline-flex items-center gap-2 rounded-xl bg-teal-400 px-6 py-3 text-xs sm:text-sm font-bold text-[#0B2A3D] shadow-lg shadow-teal-500/10"
             >
@@ -288,26 +270,37 @@ export default function Przewodnik({
           variants={staggerContainer}
           className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12 auto-rows-fr"
         >
-          {MAIN_PACKAGES.map((pkg) => (
-            <motion.div
-              key={pkg.name}
-              variants={cardItem}
-              className="h-full flex flex-col rounded-2xl border border-white/10 bg-white/5 px-6 py-6"
-            >
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="font-bold text-white text-lg">{pkg.name}</h3>
-                <span className="font-extrabold text-teal-300 text-xl leading-none">
-                  {pkg.count}
+          {SELECTABLE_TIERS.map((pkg) => {
+            const active = tier === pkg.tier;
+            return (
+              <motion.button
+                key={pkg.tier}
+                type="button"
+                onClick={() => onTierChange(pkg.tier)}
+                variants={cardItem}
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className={`h-full flex flex-col text-left rounded-2xl border px-6 py-6 transition-colors duration-200 ${
+                  active
+                    ? "border-teal-400/60 bg-teal-400/10"
+                    : "border-white/10 bg-white/5 hover:bg-white/[0.08]"
+                }`}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="font-bold text-white text-lg">{pkg.name}</h3>
+                  <span className="font-extrabold text-teal-300 text-xl leading-none">
+                    {TIER_CHANNEL_COUNTS[pkg.tier]}
+                  </span>
+                </div>
+                <p className="text-sm text-white/60 leading-relaxed mb-3 flex-1">
+                  {pkg.desc}
+                </p>
+                <span className="text-xs font-semibold text-teal-400">
+                  {TIER_CHANNEL_COUNTS[pkg.tier]} kanałów
                 </span>
-              </div>
-              <p className="text-sm text-white/60 leading-relaxed mb-3 flex-1">
-                {pkg.desc}
-              </p>
-              <span className="text-xs font-semibold text-teal-400">
-                {pkg.sub}
-              </span>
-            </motion.div>
-          ))}
+              </motion.button>
+            );
+          })}
         </motion.div>
 
         <motion.p
@@ -351,19 +344,24 @@ export default function Przewodnik({
                 </div>
 
                 <div className="flex flex-col gap-2 flex-1">
-                  {group.channels.map((ch) => (
-                    <div
-                      key={ch.name}
-                      className="flex items-center justify-between border-t border-white/5 pt-2 first:border-t-0 first:pt-0"
-                    >
-                      <span className="text-sm text-teal-300/90 font-medium">
-                        {ch.name}
-                      </span>
-                      <span className="text-sm text-white/50">
-                        {ch.count} kanałów
-                      </span>
-                    </div>
-                  ))}
+                  {group.addonKeys.map((key) => {
+                    const addon = ADDONS.find((a) => a.key === key);
+                    const count = channelsForAddon(key).length;
+                    if (!addon) return null;
+                    return (
+                      <div
+                        key={key}
+                        className="flex items-center justify-between border-t border-white/5 pt-2 first:border-t-0 first:pt-0"
+                      >
+                        <span className="text-sm text-teal-300/90 font-medium">
+                          {addon.label}
+                        </span>
+                        <span className="text-sm text-white/50">
+                          {count} kanałów · {addon.price}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </motion.div>
             );

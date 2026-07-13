@@ -1,6 +1,7 @@
 // app/kanaly/page.tsx
 import { isValidTier, type Tier } from "@/lib/channels";
 import KanalyView from "@/components/Kanaly/KanalyView";
+import Faq from "@/components/Kanaly/Faq";
 
 type Props = {
   searchParams: Promise<{ tier?: string }>;
@@ -13,6 +14,7 @@ export default async function Page({ searchParams }: Props) {
   return (
     <main>
       <KanalyView initialTier={initialTier} />
+      <Faq/>
     </main>
   );
 }
