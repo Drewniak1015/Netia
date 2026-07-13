@@ -357,7 +357,7 @@ export default function Przewodnik({
                           {addon.label}
                         </span>
                         <span className="text-sm text-white/50">
-                          {count} kanałów · {addon.price}
+                          {count} kanałów
                         </span>
                       </div>
                     );
