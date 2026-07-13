@@ -21,11 +21,14 @@ export default function RootLayout({
           <Header />
           {children}
           <Footer />
-          <PodsumowanieFixed
-            ukryjNaSciezkach={[
-              // np. "/pomoc/*", "/regulamin" — strony, na których pasek ma się nie pojawiać
-            ]}
-          />
+<PodsumowanieFixed
+  ukryjNaSciezkach={[
+    '/',              // strona główna\
+    '/oferty/max',
+    '/oferty/popularne',
+    '/pomoc/awarie',  // ta konkretna podstrona pomocy
+  ]}
+/>
         </KonfiguratorProvider>
       </body>
     </html>

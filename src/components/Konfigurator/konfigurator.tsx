@@ -230,28 +230,18 @@ const OFERTY_TV: Oferta[] = [
     nazwa: "Pakiet S",
     opis: "Coś na Start",
     cena: 5,
-    // kanaly: 81,
-    // dekoder: "Dekoder 4K",
-    // etykieta: "Coś na Start",
   },
   {
     id: "tv-m",
     nazwa: "Pakiet M",
     opis: "Najpopularniejszy",
     cena: 15,
-    // kanaly: 106,
-    // dekoder: "Dekoder 4K",
-    // etykieta: "Najpopularniejszy",
-    // wyrozniony: true,
   },
   {
     id: "tv-l",
     nazwa: "Pakiet L",
     opis: "Dla Wymagających",
     cena: 45,
-    // kanaly: 185,
-    // dekoder: "Dekoder 4K",
-    // etykieta: "Dla Wymagających",
   },
 ];
 
@@ -267,7 +257,6 @@ const OFERTY_5G: Oferta[] = [
     nazwa: "VIP (5G)",
     opis: "Nielimitowane połączenia, SMS-y i MMS-y. 100 GB internetu mobilnego w Polsce.",
     cena: 40,
-    // wyrozniony: true,
   },
   {
     id: "5g-giga",
@@ -448,8 +437,8 @@ function KafelekPakietu({
       whileTap={reduceMotion ? undefined : { scale: 0.99 }}
       className={`relative flex h-full flex-col rounded-2xl border p-6 text-left transition-colors ${
         wybrany
-          ? "border-teal-400 bg-white/10 shadow-[0_0_0_3px_rgba(45,212,191,0.18)]"
-          : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
+          ? "border-teal-300 bg-white/[0.04] shadow-[0_0_0_3px_rgba(45,212,191,0.15)]"
+          : "border-white/10 bg-transparent hover:bg-white/[0.03]"
       }`}
     >
       {pakiet.wyrozniony && (
@@ -493,8 +482,8 @@ function KafelekPakietu({
       <div
         className={`mt-4 flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold ${
           wybrany
-            ? "bg-gradient-to-r from-teal-400 to-emerald-400 text-[#0B2A3D]"
-            : "bg-gradient-to-r from-blue-500 to-teal-400 text-white"
+            ? "border border-teal-300 bg-teal-300/10 text-teal-200"
+            : "border border-white/15 bg-transparent text-white/80"
         }`}
       >
         {wybrany && <Check size={16} />}
@@ -532,8 +521,8 @@ function KafelekOferty({
       whileTap={reduceMotion ? undefined : { scale: 0.99 }}
       className={`flex h-full flex-col rounded-2xl border p-5 text-left transition-colors ${
         wybrana
-          ? "border-teal-400/70 bg-white/10"
-          : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
+          ? "border-teal-300 bg-white/[0.04]"
+          : "border-white/10 bg-transparent hover:bg-white/[0.03]"
       }`}
     >
       <h3 className="text-lg font-extrabold text-white">{oferta.nazwa}</h3>
@@ -547,7 +536,7 @@ function KafelekOferty({
       <div
         className={`mt-4 flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold ${
           wybrana
-            ? "bg-teal-500 text-white"
+            ? "border border-teal-300 bg-teal-300/10 text-teal-200"
             : "border border-white/15 text-white/80"
         }`}
       >
