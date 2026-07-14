@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { LazyMotion, domAnimation, m, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ChevronRight, ChevronLeft, Calendar, Clock, Tag, ImageOff, Home, Search, X } from "lucide-react";
 import { CATEGORY_LIST, CATEGORIES, isValidCategory, type CategorySlug } from "@/lib/blog/categories";
@@ -462,9 +462,12 @@ function Paginacja({
 }
 
 /* ---------------------------------------------------------------------- */
-/*  Strona                                                                 */
+/*  Właściwa zawartość strony — używa useSearchParams, więc MUSI być       */
+/*  renderowana wewnątrz <Suspense> (patrz eksport domyślny niżej).        */
+/*  Brak tego opakowania powoduje błąd builda:                             */
+/*  "useSearchParams() should be wrapped in a suspense boundary".          */
 /* ---------------------------------------------------------------------- */
-export default function Blog() {
+function BlogContent() {
   const reduceMotion = useReducedMotion();
   const searchParams = useSearchParams();
   const kategoriaParam = searchParams.get("kategoria");
@@ -619,5 +622,18 @@ export default function Blog() {
         </div>
       </section>
     </LazyMotion>
+  );
+}
+
+/* ---------------------------------------------------------------------- */
+/*  Eksport domyślny strony — opakowuje BlogContent w Suspense, co jest    */
+/*  wymagane przez Next.js dla komponentów korzystających z               */
+/*  useSearchParams() podczas statycznego prerenderowania.                */
+/* ---------------------------------------------------------------------- */
+export default function Blog() {
+  return (
+    <Suspense fallback={null}>
+      <BlogContent />
+    </Suspense>
   );
 }
