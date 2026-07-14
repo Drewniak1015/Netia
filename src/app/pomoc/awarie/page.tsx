@@ -216,34 +216,39 @@ function Note({ children }: { children: ReactNode }) {
 function Step({
   number,
   icon,
+  title,
   children,
 }: {
   number: number;
   icon: ReactNode;
+  title: string;
   children: ReactNode;
 }) {
   return (
     <motion.div
       variants={fadeUp}
       transition={{ duration: 0.5, ease: EASE }}
-      className="flex items-start gap-4 py-3"
+      whileHover={{ y: -3 }}
+      className="rounded-2xl p-5 h-full flex flex-col"
+      style={{ background: "#0d1f31", border: `1px solid ${c.border}` }}
     >
-      <div
-        className="w-11 h-12 rounded-2xl flex flex-col items-center justify-center flex-shrink-0"
-        style={{ background: c.tealDim, border: `1px solid ${c.tealBorder}`, color: c.teal }}
-      >
-        {icon}
-        <span className="text-[10px] font-bold leading-none mt-1" style={{ color: c.teal }}>
-          {String(number).padStart(2, "0")}
-        </span>
+      <div className="flex items-center gap-3 mb-3">
+        <div
+          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-extrabold text-[14px]"
+          style={{ background: c.tealDim, border: `1px solid ${c.tealBorder}`, color: c.teal }}
+        >
+          {number}
+        </div>
+        <div className="font-bold text-[14.5px] leading-tight" style={{ color: c.text }}>
+          {title}
+        </div>
       </div>
-      <div className="text-[14px] pt-1.5" style={{ color: c.muted }}>
+      <p className="text-[13.5px] leading-relaxed" style={{ color: c.muted }}>
         {children}
-      </div>
+      </p>
     </motion.div>
   );
 }
-
 /* ---------- quick-call button ---------- */
 
 function CallButton({
@@ -438,34 +443,32 @@ export default function NetiaZglaszanieAwariiPomocPage() {
               className="rounded-2xl px-5 py-3 my-4"
               style={{ background: c.card, border: `1px solid ${c.border}` }}
             >
-              <RevealGroup delay={0.05}>
-                <div>
-                  <Step number={1} icon={<Smartphone size={16} />}>
-                    Sprawdź, czy problem występuje tylko na jednym urządzeniu. Jeśli tak — spróbuj
-                    ponownie połączyć się z Wi-Fi lub przetestuj inne urządzenie.
-                  </Step>
-                  <Step number={2} icon={<Cable size={16} />}>
-                    Sprawdź zasilanie i kable: upewnij się, że router (i ONT przy światłowodzie) są
-                    podłączone, a wszystkie wtyczki dobrze osadzone.
-                  </Step>
-                  <Step number={3} icon={<RotateCw size={16} />}>
-                    Zrestartuj sprzęt: odłącz router (i ONT) na 30 sekund, włącz najpierw ONT, po 60 s
-                    włącz router i odczekaj 2–3 minuty.
-                  </Step>
-                  <Step number={4} icon={<Radio size={16} />}>
-                    Sprawdź diody: PON/DSL — stała zielona = sygnał OK, miganie/czerwona/brak =
-                    problem z linią. Internet/WAN — zielona ciągła = online.
-                  </Step>
-                  <Step number={5} icon={<WanIcon size={16} />}>
-                    Przetestuj połączenie przewodowe: podłącz jedno urządzenie kablem LAN do routera.
-                    Jeśli też nie działa — to nie problem z Wi-Fi.
-                  </Step>
-                  <Step number={6} icon={<Wifi size={16} />}>
-                    Jeśli Internet nadal nie działa — zgłoś awarię. Przygotuj numer klienta lub PESEL
-                    oraz adres instalacji.
-                  </Step>
-                </div>
-              </RevealGroup>
+<RevealGroup delay={0.05} className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4">
+  <Step number={1} icon={<Smartphone size={16} />} title="Sprawdź urządzenie">
+    Sprawdź, czy problem występuje tylko na jednym urządzeniu. Jeśli tak — spróbuj
+    ponownie połączyć się z Wi-Fi lub przetestuj inne urządzenie.
+  </Step>
+  <Step number={2} icon={<Cable size={16} />} title="Sprawdź kable i zasilanie">
+    Upewnij się, że router (i ONT przy światłowodzie) są podłączone, a wszystkie
+    wtyczki dobrze osadzone.
+  </Step>
+  <Step number={3} icon={<RotateCw size={16} />} title="Zrestartuj sprzęt">
+    Odłącz router (i ONT) na 30 sekund, włącz najpierw ONT, po 60 s włącz router
+    i odczekaj 2–3 minuty.
+  </Step>
+  <Step number={4} icon={<Radio size={16} />} title="Sprawdź diody">
+    PON/DSL — stała zielona = sygnał OK, miganie/czerwona/brak = problem z linią.
+    Internet/WAN — zielona ciągła = online.
+  </Step>
+  <Step number={5} icon={<WanIcon size={16} />} title="Test połączenia przewodowego">
+    Podłącz jedno urządzenie kablem LAN do routera. Jeśli też nie działa — to nie
+    problem z Wi-Fi.
+  </Step>
+  <Step number={6} icon={<Wifi size={16} />} title="Zgłoś awarię">
+    Jeśli Internet nadal nie działa — zgłoś awarię. Przygotuj numer klienta lub
+    PESEL oraz adres instalacji.
+  </Step>
+</RevealGroup>
             </motion.div>
 
             <RevealGroup className="flex flex-col md:flex-row gap-3 my-4">

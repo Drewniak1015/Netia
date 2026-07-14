@@ -11,6 +11,8 @@
 /*  Strzałka rozsuwa kartę W GÓRĘ (bo widget jest zaczepiony u dołu),      */
 /*  odsłaniając tabelę z rozbiciem na pozycje.                            */
 /*  Stan wyłącznie w pamięci (useKonfigurator) — można osadzić wszędzie.  */
+/*  Paleta: teal/granat. Dodatkowy "glow" + mocniejszy border/cień,        */
+/*  żeby widget odznaczał się od tła strony niezależnie od jej koloru.    */
 /* ---------------------------------------------------------------------- */
 
 import { useState } from "react";
@@ -82,16 +84,22 @@ export default function PodsumowanieFixed({
 
   return (
     <LazyMotion features={domAnimation} strict>
-      {/* Kotwica: lewy dolny róg. Karta rośnie W GÓRĘ, więc pasek przycisków
-          zawsze zostaje na tej samej wysokości — nic nie "skacze". */}
-      <div className="fixed bottom-4 left-4 z-50 flex flex-col-reverse items-start font-sans sm:bottom-6 sm:left-6">
+      {/* Kotwica: poniżej 550px pełna szerokość przyklejona do dołu (zawartość
+          wyśrodkowana), od 550px wzwyż lewy dolny róg jako kompaktowa karta.
+          Karta rośnie W GÓRĘ, więc pasek przycisków zawsze zostaje na tej
+          samej wysokości — nic nie "skacze". */}
+      <div className="fixed inset-x-0 bottom-0 z-50 flex flex-col-reverse items-stretch px-3 pb-3 font-sans min-[550px]:inset-x-auto min-[550px]:left-6 min-[550px]:right-auto min-[550px]:bottom-6 min-[550px]:items-start min-[550px]:px-0 min-[550px]:pb-0">
         {/* Pasek zawsze widoczny: cena, zadzwoń, edytuj ofertę, strzałka */}
         <div
-          className="flex items-center gap-2 rounded-2xl border border-white/10 py-2.5 pl-3.5 pr-2 shadow-2xl backdrop-blur-md"
-          style={{ backgroundColor: "rgba(11,42,61,0.97)" }}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-teal-400/25 py-2.5 pl-3.5 pr-2 ring-1 ring-black/40 backdrop-blur-md min-[550px]:w-auto min-[550px]:justify-start"
+          style={{
+            backgroundColor: "rgba(11,42,61,0.97)",
+            boxShadow:
+              "0 0 0 1px rgba(45,212,191,0.12), 0 8px 16px -4px rgba(0,0,0,0.55), 0 20px 45px -10px rgba(0,0,0,0.65)",
+          }}
         >
           {/* Cena */}
-          <div className="flex flex-col leading-none">
+          <div className="flex flex-col items-center text-center leading-none">
             <span className="text-[10px] font-medium uppercase tracking-wide text-white/45">
               Twoja oferta
             </span>
@@ -106,9 +114,10 @@ export default function PodsumowanieFixed({
           <a
             href={telHref}
             aria-label={`Zadzwoń pod numer ${telefon}`}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 text-white/80 transition-colors hover:bg-white/10"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 text-white/80 transition-colors hover:bg-white/10 min-[550px]:h-9 min-[550px]:w-9"
           >
-            <Phone size={15} />
+            <Phone size={17} className="min-[550px]:hidden" />
+            <Phone size={15} className="hidden min-[550px]:block" />
           </a>
 
           {/* Edytuj ofertę */}
@@ -141,8 +150,12 @@ export default function PodsumowanieFixed({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 14, scale: 0.98 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
-              className="mb-2 w-[min(88vw,320px)] overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
-              style={{ backgroundColor: "#0B2A3D" }}
+              className="mb-2 w-full overflow-hidden rounded-2xl border border-teal-400/20 min-[550px]:w-[min(88vw,320px)]"
+              style={{
+                backgroundColor: "#0B2A3D",
+                boxShadow:
+                  "0 0 0 1px rgba(45,212,191,0.12), 0 8px 16px -4px rgba(0,0,0,0.55), 0 20px 45px -10px rgba(0,0,0,0.65)",
+              }}
             >
               <div className="max-h-[50vh] overflow-y-auto p-4">
                 <h3 className="text-xs font-bold uppercase tracking-wide text-white/55">

@@ -38,6 +38,17 @@ const fadeUp = {
   visible: { opacity: 1, y: 0 },
 };
 
+// TODO: podmień na docelową ścieżkę strony pomocy telewizji, jeśli routing
+// wygląda inaczej niż zakładany tu "/pomoc/telewizja".
+const POMOC_TV_URL = "/pomoc/Telewizja";
+
+/** Format kotwicy zgodny z anchorIdForPackageKey() w NetiaTelewizjaPomocPage.tsx:
+ *  "pakiet-" + klucz z dwukropkiem zamienionym na myślnik. */
+function pakietHref(addonKey?: string): string {
+  if (!addonKey) return `${POMOC_TV_URL}#pakiety`;
+  return `${POMOC_TV_URL}#pakiet-addon-${addonKey}`;
+}
+
 interface PackageCardProps {
   name: string;
   speed: string;
@@ -152,6 +163,9 @@ interface TvCardProps {
   icon: LucideIcon;
   iconColor: string;
   iconBg: string;
+  /** Klucz dodatku z lib/channels.ts (ADDONS) — steruje przekierowaniem do
+   *  konkretnego pakietu na stronie pomocy. Brak = link do ogólnej sekcji "Pakiety". */
+  addonKey?: string;
   index: number;
   reduceMotion: boolean | null;
 }
@@ -162,18 +176,20 @@ function TvCard({
   icon: Icon,
   iconColor,
   iconBg,
+  addonKey,
   index,
   reduceMotion,
 }: TvCardProps) {
   return (
-    <m.div
+    <m.a
+      href={pakietHref(addonKey)}
       initial={reduceMotion ? false : "hidden"}
       whileInView="visible"
       viewport={{ once: true, amount: 0.3 }}
       variants={fadeUp}
       transition={{ duration: 0.45, ease: "easeOut", delay: index * 0.06 }}
       whileHover={reduceMotion ? undefined : { y: -3 }}
-      className="flex flex-col items-center rounded-xl border border-white/10 bg-white/[0.04] p-4 text-center sm:p-5"
+      className="flex cursor-pointer flex-col items-center rounded-xl border border-white/10 bg-white/[0.04] p-4 text-center no-underline transition-colors hover:border-pink-400/40 sm:p-5"
     >
       <div
         className="mb-3 flex h-11 w-11 items-center justify-center rounded-full ring-1 ring-inset ring-white/10"
@@ -184,31 +200,33 @@ function TvCard({
       <div className="mb-2 min-h-[36px] text-sm font-bold text-white">{name}</div>
       <div className="text-[15px] font-extrabold text-pink-400">{price}</div>
       <div className="mt-0.5 text-[11px] text-white/55">od 13 m-ca</div>
-    </m.div>
+    </m.a>
   );
 }
 
 const tvPackages: Omit<TvCardProps, "index" | "reduceMotion">[] = [
-  { name: "HBO + HBO Max", price: "+25 zł", icon: Clapperboard, iconColor: "#c084fc", iconBg: "rgba(192,132,252,0.14)" },
-  { name: "Canal+ Prestige", price: "+50 zł", icon: PlayCircle, iconColor: "#fb7185", iconBg: "rgba(251,113,133,0.14)" },
-  { name: "Canal+ Select", price: "+35 zł", icon: PlayCircle, iconColor: "#60a5fa", iconBg: "rgba(96,165,250,0.14)" },
-  { name: "Polsat Sport Premium", price: "+20 zł", icon: Trophy, iconColor: "#fb923c", iconBg: "rgba(251,146,60,0.14)" },
-  { name: "Eleven Sports", price: "+10 zł", icon: Activity, iconColor: "#34d399", iconBg: "rgba(52,211,153,0.14)" },
-  { name: "FilmBox", price: "+10 zł", icon: Film, iconColor: "#fbbf24", iconBg: "rgba(251,191,36,0.14)" },
-  { name: "Dla Dorosłych", price: "+10 zł", icon: Lock, iconColor: "#f472b6", iconBg: "rgba(244,114,182,0.14)" },
+  { name: "HBO + HBO Max", price: "+25 zł", icon: Clapperboard, iconColor: "#c084fc", iconBg: "rgba(192,132,252,0.14)", addonKey: "hbo" },
+  { name: "Canal+ Prestige", price: "+50 zł", icon: PlayCircle, iconColor: "#fb7185", iconBg: "rgba(251,113,133,0.14)", addonKey: "canal-plus-prestige" },
+  { name: "Canal+ Select", price: "+35 zł", icon: PlayCircle, iconColor: "#60a5fa", iconBg: "rgba(96,165,250,0.14)", addonKey: "canal-plus-select" },
+  { name: "Polsat Sport Premium", price: "+20 zł", icon: Trophy, iconColor: "#fb923c", iconBg: "rgba(251,146,60,0.14)", addonKey: "polsat-sport-premium" },
+  { name: "Eleven Sports", price: "+10 zł", icon: Activity, iconColor: "#34d399", iconBg: "rgba(52,211,153,0.14)", addonKey: "eleven-sports" },
+  { name: "FilmBox", price: "+10 zł", icon: Film, iconColor: "#fbbf24", iconBg: "rgba(251,191,36,0.14)", addonKey: "filmbox" },
+  { name: "Dla Dorosłych", price: "+10 zł", icon: Lock, iconColor: "#f472b6", iconBg: "rgba(244,114,182,0.14)", addonKey: "dorosli" },
+  // Kombinacja dwóch dodatków naraz — brak jednego wspólnego wpisu na stronie
+  // pomocy, więc linkujemy do ogólnej sekcji "Pakiety" zamiast do konkretnego akordeonu.
   { name: "Polsat Sport Premium + Eleven Sports", price: "+20 zł", icon: Medal, iconColor: "#2dd4bf", iconBg: "rgba(45,212,191,0.14)" },
 ];
 
 /** Dekoracyjna ilustracja hero: monitor + laptop z neonowym "MAX". */
 function HeroDevices({ reduceMotion }: { reduceMotion: boolean | null }) {
   return (
-    <m.div
-      initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6, delay: 0.25, ease: "easeOut" }}
-      className="relative mx-auto h-[220px] w-full max-w-[300px] shrink-0 sm:h-[260px] sm:w-[360px] sm:max-w-none lg:mx-0"
-    >
+<m.div
+  initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
+  whileInView={{ opacity: 1, scale: 1 }}
+  viewport={{ once: true }}
+  transition={{ duration: 0.6, delay: 0.25, ease: "easeOut" }}
+  className="relative mx-auto hidden h-[260px] w-[360px] max-w-none shrink-0 sm:block lg:mx-0"
+>
       <svg
         viewBox="0 0 360 260"
         className="absolute inset-0 h-full w-full overflow-visible"
@@ -315,7 +333,7 @@ export default function OfferMaxSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative mx-8 box-border flex max-w-305 flex-col items-center gap-8 overflow-hidden rounded-[20px] border border-white/[0.08] px-4 pb-10 pt-10 text-center sm:mx-auto sm:px-6 sm:pb-12 sm:pt-14 lg:flex-row lg:justify-between lg:gap-10 lg:px-14 lg:text-left "
+className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-col items-center gap-8 overflow-hidden rounded-[20px] border border-white/[0.08] px-4 pb-10 pt-10 text-center sm:w-[calc(100%-3rem)] sm:px-6 sm:pb-12 sm:pt-14 lg:flex-row lg:justify-between lg:gap-10 lg:px-14 lg:text-left"
           style={{
             background:
               "radial-gradient(120% 160% at 15% 0%, rgba(236,72,153,.25), transparent 55%), " +
@@ -495,6 +513,7 @@ export default function OfferMaxSection() {
                 icon={pkg.icon}
                 iconColor={pkg.iconColor}
                 iconBg={pkg.iconBg}
+                addonKey={pkg.addonKey}
                 index={index}
                 reduceMotion={reduceMotion}
               />

@@ -16,9 +16,9 @@ interface FooterLink {
 
 const FOOTER_LINKS: FooterLink[] = [
   { label: "Polityka Prywatności", href: "/polityka-prywatnosci" },
-  { label: "Pomoc", href: "/pomoc" },
+  { label: "Pomoc", href: "/pomoc/faq" },
   { label: "Blog", href: "/blog" },
-  { label: "Kontakt", href: "/kontakt" },
+  { label: "Kontakt", href: "/pomoc/awarie" },
 
 ];
 

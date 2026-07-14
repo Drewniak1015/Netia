@@ -43,7 +43,14 @@ const SELECTABLE_TIERS: { tier: Tier; name: string; desc: string }[] = [
     desc: "Dla Wymagających — pełna baza: M + dokumentalne, muzyczne, więcej sportu.",
   },
 ];
-
+const SCROLL_OFFSET = 96;
+const EXTRA_WYZEJ = -50;
+function scrollToLocalSection(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.pageYOffset - SCROLL_OFFSET + EXTRA_WYZEJ;
+  window.scrollTo({ top, behavior: "smooth" });
+}
 type ThemeGroup = {
   icon: ElementType;
   title: string;
@@ -240,12 +247,16 @@ export default function Przewodnik({
 
           <div className="relative z-10 mt-4">
             <a 
-              href="#pelna-lista"
-              className="inline-flex items-center gap-2 rounded-xl bg-teal-400 px-6 py-3 text-xs sm:text-sm font-bold text-[#0B2A3D] shadow-lg shadow-teal-500/10"
-            >
-              Sprawdź pełną listę kanałów
-              <ChevronDown size={15} />
-            </a>
+href="#pelna-lista"
+  onClick={(e) => {
+    e.preventDefault();
+    scrollToLocalSection("pelna-lista");
+  }}
+  className="inline-flex items-center gap-2 rounded-xl bg-teal-400 px-6 py-3 text-xs sm:text-sm font-bold text-[#0B2A3D] shadow-lg shadow-teal-500/10 cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98]"
+>
+  Sprawdź pełną listę kanałów
+  <ChevronDown size={15} />
+</a>
           </div>
         </motion.div>
 

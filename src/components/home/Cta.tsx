@@ -27,7 +27,8 @@ function useIsDesktop() {
 export default function ContactSection({
   advisorName = "Jarosław Sitek",
   advisorRole = "Twój doradca w sprawie internetu",
-  advisorPhotoUrl,
+  // TODO: podmień ścieżkę, jeśli plik leży gdzie indziej niż /public.
+  advisorPhotoUrl = "/images/Jaroslaw.webp",
   phoneNumber = "+48 883 334 124",
 }: ContactSectionProps) {
   const isDesktop = useIsDesktop();

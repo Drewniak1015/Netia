@@ -4,7 +4,13 @@ import { useMemo, useState } from "react";
 import {
   Search,
   ChevronDown,
-  ArrowRight,
+  ArrowRight,  
+  Wifi,
+  Antenna,
+  MonitorPlay,
+  Layers,
+  Users,
+  MapPin,
   FileX,
   ShieldCheck,
   Clock,
@@ -100,7 +106,6 @@ const FAQ_ITEMS: FaqItem[] = [
     q: "Mam umowę z obecnym operatorem — czy zapłacę karę?",
     a: "W większości przypadków pomożemy Ci to sprawdzić telefonicznie, zanim cokolwiek podpiszesz. Doradca oceni Twoją obecną umowę i powie wprost, czy przejście się opłaca — bez zobowiązań z Twojej strony.",
     category: "Umowy i rozliczenia",
-    more: { label: "Dowiedz się więcej", href: "/pomoc" },
   },
   {
     icon: ShieldCheck,
@@ -316,6 +321,55 @@ const FAQ_ITEMS: FaqItem[] = [
     a: "Wystarczy zadzwonić lub wysłać SMS z tego miejsca — nasz doradca oddzwoni w kilka minut i przeprowadzi Cię przez cały proces zamówienia.",
     category: "Zamówienie i instalacja",
   },
+    // — FAQ sprzedażowe / najczęstsze pytania klientów —
+  {
+    icon: Tv,
+    q: "Czy mogę wybrać pojedyncze kanały zamiast całego pakietu?",
+    a: "Netia oferuje pakiety kanałów, a nie pojedynczy wybór każdej stacji. Możesz wybrać pakiet główny S, M lub L oraz rozszerzyć go dodatkami tematycznymi i premium, np. HBO, CANAL+, Eleven Sports czy FilmBox.",
+    category: "Telewizja",
+  },
+  {
+    icon: FileCheck,
+    q: "Czy mogę zmienić pakiet telewizji lub internetu w trakcie umowy?",
+    a: "Tak, możesz rozszerzyć swoją ofertę, np. dodać wyższy pakiet telewizji, kanały premium lub zwiększyć prędkość internetu. Dostępność zmian zależy od aktualnych warunków Twojej umowy.",
+    category: "Umowy i rozliczenia",
+  },
+  {
+    icon: Antenna,
+    q: "Czy do telewizji Netia potrzebuję anteny satelitarnej?",
+    a: "Nie. Telewizja Netia działa przez internet, dlatego nie potrzebujesz anteny satelitarnej. Wystarczy odpowiednie łącze internetowe oraz dekoder Netia podłączony do telewizora.",
+    category: "Telewizja",
+  },
+  {
+    icon: Smartphone,
+    q: "Czy mogę oglądać telewizję Netia poza dekoderem?",
+    a: "Tak, wybrane treści mogą być dostępne również na urządzeniach mobilnych oraz przez dodatkowe aplikacje zgodnie z wybranym pakietem i prawami nadawców.",
+    category: "Telewizja",
+  },
+  {
+    icon: Users,
+    q: "Na ilu urządzeniach mogę korzystać z usług Netii?",
+    a: "Liczba urządzeń zależy od wybranych usług oraz dostępnych opcji dodatkowych. Możesz korzystać z dekodera, aplikacji oraz dodatkowych urządzeń zgodnie z warunkami konkretnej usługi.",
+    category: "Telewizja",
+  },
+  {
+    icon: MapPin,
+    q: "Jak sprawdzić dostępność usług Netii pod moim adresem?",
+    a: "Dostępność internetu światłowodowego i wybranych prędkości zależy od lokalizacji. Najlepiej sprawdzić ją podczas konfiguracji oferty lub poprzez kontakt z doradcą.",
+    category: "Zamówienie i instalacja",
+  },
+  {
+    icon: Wifi,
+    q: "Czy mogę połączyć internet i telewizję Netia w jednej ofercie?",
+    a: "Tak. Możesz połączyć internet światłowodowy, telewizję, usługi mobilne oraz dodatki premium w jednym pakiecie i korzystać z jednej umowy oraz jednej faktury.",
+    category: "Internet",
+  },
+  {
+    icon: MonitorPlay,
+    q: "Czy muszę mieć telewizor 4K, aby korzystać z telewizji Netia?",
+    a: "Nie. Telewizja działa również na telewizorach Full HD. Telewizor 4K jest potrzebny tylko wtedy, gdy chcesz wykorzystać materiały w jakości UHD/4K dostępne w wybranych usługach.",
+    category: "Telewizja",
+  },
 ];
 
 /* ---------- animations (global keyframes) ---------- */
@@ -480,7 +534,7 @@ function FaqRow({
   defaultOpen?: boolean;
   delay?: number;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [open, setOpen] = useState(false);
   const Icon = item.icon;
 
   return (

@@ -79,19 +79,21 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
       .sort((a, b) => a.number - b.number);
   }, [query, tier, selectedAddon]);
 
-  const handleDownload = () => {
-    const header = "Numer,Nazwa,Pakiet\n";
-    const rows = results
-      .map((ch) => `${ch.number},${ch.name},${ch.tier}`)
-      .join("\n");
-    const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "lista-kanalow-netia.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+const handleDownload = async () => {
+  const response = await fetch("/pdf/NETIA_Lista_Kanałów.pdf");
+  const blob = await response.blob();
+
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "netialista-kanalow.pdf";
+  document.body.appendChild(a);
+  a.click();
+
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+};
 
   return (
     <section style={{ backgroundColor: "#0B2A3D" }} className="w-full py-16 px-6 font-sans overflow-hidden">
@@ -225,7 +227,7 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
               className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/[0.08] px-4 py-2.5 text-sm font-semibold text-white transition-colors"
             >
               <FileDown size={16} />
-              Pobierz listę kanałów (CSV)
+              Pobierz listę kanałów (PDF)
             </motion.button>
           </div>
         </motion.div>

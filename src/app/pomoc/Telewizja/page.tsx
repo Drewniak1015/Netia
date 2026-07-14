@@ -586,6 +586,7 @@ function ChannelChip({ channel }: { channel: Channel }) {
    0fr → 1fr trick, which is the only reliable way to transition to/from
    an "auto" height smoothly. */
 function CollapsibleCard({
+  id,
   name,
   count,
   description,
@@ -594,6 +595,7 @@ function CollapsibleCard({
   onToggle,
   note,
 }: {
+  id?: string;
   name: string;
   count: number;
   description: string;
@@ -605,11 +607,13 @@ function CollapsibleCard({
   return (
     <Reveal y={18}>
       <div
+        id={id}
         className="rounded-xl overflow-hidden mb-3"
         style={{
           background: c.card,
           border: `1px solid ${isOpen ? c.tealBorder : c.border}`,
           transition: "border-color .35s ease",
+          scrollMarginTop: SCROLL_OFFSET,
         }}
       >
         <button
@@ -682,6 +686,24 @@ function CollapsibleCard({
   );
 }
 
+/* ---------- helpers: deep-linking do konkretnego pakietu/dodatku ----------
+   Inne strony (np. OfferMaxSection) mogą linkować bezpośrednio do konkretnego
+   pakietu/dodatku, np. href="/pomoc/telewizja#pakiet-addon-hbo". Format kotwicy
+   to zawsze "pakiet-" + klucz z dwukropkiem zamienionym na myślnik
+   ("tier:xs" -> "pakiet-tier-xs", "addon:hbo" -> "pakiet-addon-hbo"). */
+function anchorIdForPackageKey(key: string): string {
+  return `pakiet-${key.replace(":", "-")}`;
+}
+
+function packageKeyFromAnchorId(anchor: string): string | null {
+  const prefiks = "pakiet-";
+  if (!anchor.startsWith(prefiks)) return null;
+  const reszta = anchor.slice(prefiks.length); // np. "addon-hbo" albo "tier-xs"
+  const [rodzaj, ...idParts] = reszta.split("-");
+  if (rodzaj !== "tier" && rodzaj !== "addon") return null;
+  return `${rodzaj}:${idParts.join("-")}`;
+}
+
 /* ---------- page ---------- */
 
 export default function NetiaTelewizjaPomocPage() {
@@ -703,6 +725,34 @@ export default function NetiaTelewizjaPomocPage() {
   const toggleDecoder = (key: string) => {
     setOpenDecoderKey((current) => (current === key ? null : key));
   };
+
+  // Deep-linking: jeśli ktoś wchodzi na stronę z kotwicą wskazującą na
+  // konkretny pakiet/dodatek (np. z OfferMaxSection -> #pakiet-addon-hbo),
+  // automatycznie rozwiń tę pozycję i przewiń do niej po zamontowaniu strony.
+  useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, "");
+    if (!hash) return;
+    const key = packageKeyFromAnchorId(hash);
+    if (!key) return;
+
+    setOpenPackageKey(key);
+    // Poczekaj aż akordeon zdąży się wyrenderować, zanim przewiniemy do niego.
+const DEEP_LINK_EXTRA_OFFSET = 50;
+
+const id = requestAnimationFrame(() => {
+  const el = document.getElementById(hash);
+  if (el) {
+    const top =
+      el.getBoundingClientRect().top +
+      window.pageYOffset -
+      SCROLL_OFFSET -
+      DEEP_LINK_EXTRA_OFFSET;
+    window.scrollTo({ top, behavior: "smooth" });
+  }
+});
+    return () => cancelAnimationFrame(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const pills = [
  <Pill key="faq" icon={<HelpCircle size={15} style={{ color: c.teal }} />} href="/pomoc/faq">
@@ -900,6 +950,7 @@ export default function NetiaTelewizjaPomocPage() {
               return (
                 <CollapsibleCard
                   key={tier}
+                  id={anchorIdForPackageKey(key)}
                   name={TIER_LABELS[tier]}
                   count={displayCount}
                   description={TIER_DESCRIPTIONS[tier]}
@@ -922,6 +973,7 @@ export default function NetiaTelewizjaPomocPage() {
               return (
                 <CollapsibleCard
                   key={addon.key}
+                  id={anchorIdForPackageKey(key)}
                   name={addon.label}
                   count={channels.length}
                   description={ADDON_DESCRIPTIONS[addon.key] ?? ""}
