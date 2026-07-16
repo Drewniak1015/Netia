@@ -16,9 +16,122 @@ export const meta: BlogPostMeta = {
   readingMinutes: 8,
 };
 
+/* ---------------------------------------------------------------------- */
+/*  Style artykułu — tabele, blockquote, listy, nagłówki. Skopiowane w     */
+/*  duchu reszty serwisu (tło #0B2A3D, akcent teal-300/400). Jeśli masz    */
+/*  już globalny wrapper `.prose` dla artykułów bloga, możesz usunąć ten   */
+/*  <style> blok i podmienić klasę kontenera na swoją — te reguły są      */
+/*  scope'owane do klasy `.post-body`, więc nie wyciekną poza ten wrapper. */
+/* ---------------------------------------------------------------------- */
+function PostStyles() {
+  return (
+    <style>{`
+      .post-body {
+        color: rgba(255,255,255,0.8);
+        font-size: 1rem;
+        line-height: 1.75;
+      }
+      .post-body p {
+        margin: 0 0 1.25rem;
+      }
+      .post-body h2 {
+        color: #fff;
+        font-weight: 800;
+        font-size: 1.5rem;
+        line-height: 1.3;
+        margin: 2.5rem 0 1rem;
+      }
+      .post-body h3 {
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.15rem;
+        line-height: 1.4;
+        margin: 1.75rem 0 0.75rem;
+      }
+      .post-body ul {
+        margin: 0 0 1.25rem;
+        padding-left: 1.25rem;
+        list-style: none;
+      }
+      .post-body ul li {
+        position: relative;
+        padding-left: 1.1rem;
+        margin-bottom: 0.6rem;
+      }
+      .post-body ul li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.55em;
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: #2DD4BF;
+      }
+      .post-body blockquote {
+        margin: 1.75rem 0;
+        padding: 1rem 1.25rem;
+        border-left: 3px solid #2DD4BF;
+        background: rgba(45, 212, 191, 0.08);
+        border-radius: 0 12px 12px 0;
+        color: rgba(255,255,255,0.85);
+        font-style: italic;
+      }
+      .post-body table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.75rem 0;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        overflow: hidden;
+        font-size: 0.9rem;
+      }
+      .post-body thead {
+        background: rgba(255,255,255,0.06);
+      }
+      .post-body th {
+        text-align: left;
+        color: #99F6E4;
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+      }
+      .post-body td {
+        padding: 0.85rem 1rem;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        color: rgba(255,255,255,0.75);
+        vertical-align: top;
+      }
+      .post-body tbody tr:nth-child(odd) {
+        background: rgba(255,255,255,0.02);
+      }
+      .post-body td:first-child {
+        color: #fff;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      @media (max-width: 640px) {
+        .post-body table {
+          display: block;
+          overflow-x: auto;
+        }
+        .post-body th,
+        .post-body td {
+          padding: 0.65rem 0.75rem;
+        }
+      }
+    `}</style>
+  );
+}
+
 export default function Post1() {
   return (
-    <>
+    <div className="post-body">
+      <PostStyles />
+
       <p>
         Wybierając optymalny internet dla graczy, często skupiamy się wyłącznie na liczbie Mb/s,
         jednak nawet najwyższy pakiet prędkości nie gwarantuje sukcesu, gdy podczas ważnego meczu
@@ -181,6 +294,43 @@ export default function Post1() {
         w dynamicznych strzelankach czy rozgrywkach e-sportowych.
       </p>
 
+      <table>
+        <thead>
+          <tr>
+            <th>Technologia</th>
+            <th>Typowy ping</th>
+            <th>Stabilność</th>
+            <th>Najlepsza dla</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Światłowód</td>
+            <td>Najniższy</td>
+            <td>Bardzo wysoka</td>
+            <td>Gier rankingowych i e-sportu</td>
+          </tr>
+          <tr>
+            <td>Internet kablowy</td>
+            <td>Niski</td>
+            <td>Wysoka, spada przy dużym obciążeniu sieci</td>
+            <td>Bloków i budynków wielorodzinnych</td>
+          </tr>
+          <tr>
+            <td>5G / LTE</td>
+            <td>Średni, zmienny</td>
+            <td>Zależna od odległości od stacji i liczby użytkowników</td>
+            <td>Mobilności i rozwiązań awaryjnych</td>
+          </tr>
+          <tr>
+            <td>Satelita</td>
+            <td>Wysoki</td>
+            <td>Ograniczona</td>
+            <td>Lokalizacji bez dostępu do sieci naziemnych</td>
+          </tr>
+        </tbody>
+      </table>
+
       <h2>Ethernet czy Wi-Fi? W grze rankingowej wybór jest prosty</h2>
       <p>
         Komputer lub konsolę warto podłączyć za pomocą kabla ethernet bezpośrednio do routera.
@@ -338,6 +488,6 @@ export default function Post1() {
         niskim pingiem i stabilnym przesyłem danych daje przewagę, której potrzebujesz, aby
         wygrywać.
       </p>
-    </>
+    </div>
   );
 }

@@ -74,7 +74,7 @@ const INFO_ITEMS: Record<string, InfoItem> = {
     id: "router-wifi",
     model: "HUAWEI HG8245Q",
     podtytul: "Router instalowany do Internetu Światłowodowego Netii przy prędkościach do 600 Mb/s i niższych",
-    zdjecie: "/LowRouter.webp",
+    zdjecie: "/images/LowRouter.webp",
     sections: [
       {
         title: "Opis urządzenia",
@@ -119,14 +119,14 @@ const INFO_ITEMS: Record<string, InfoItem> = {
         },
       },
     ],
-    instrukcjaUrl: "https://uslugi-netia.pl/docs/Instrukcja_Router_Huawei_HG8245Q.pdf",
+    instrukcjaUrl: "/pdf/Instrukcja_Router_Huawei_HG8245Q.pdf",
   },
 
   "router-wifi6": {
     id: "router-wifi6",
     model: "HUAWEI HG8245X6-10",
     podtytul: "Router instalowany do Internetu Światłowodowego Netii przy prędkościach do 1 Gb/s",
-    zdjecie: "/MidRouter.webp",
+    zdjecie: "/images/MidRouter.webp",
     sections: [
       {
         title: "Opis urządzenia",
@@ -184,14 +184,14 @@ const INFO_ITEMS: Record<string, InfoItem> = {
         },
       },
     ],
-    instrukcjaUrl: "https://uslugi-netia.pl/docs/Instrukcja_Router_Huawei_HG8245X6_10.pdf",
+    instrukcjaUrl: "/pdf/Instrukcja_Router_Huawei_HG8245X6_10.pdf",
   },
 
   "router-wifi7": {
     id: "router-wifi7",
     model: "HUAWEI HG8145B7N",
     podtytul: "Router instalowany do Internetu Światłowodowego Netii przy prędkościach do 2 Gb/s",
-    zdjecie: "/TopRouter.webp",
+    zdjecie: "/images/TopRouter.webp",
     sections: [
       {
         title: "Opis urządzenia",
@@ -250,7 +250,7 @@ const INFO_ITEMS: Record<string, InfoItem> = {
       },
     ],
     instrukcjaUrl:
-      "https://uslugi-netia.pl/docs/Instrukcja_Router_ONTCombo_HuaweiHG8145B7N-_2-5G_WiFi7.pdf",
+      "/pdf/Instrukcja_Router_ONTCombo_HuaweiHG8145B7N-_2-5G_WiFi7.pdf",
   },
 
   "dekoder-evobox": {
@@ -299,8 +299,8 @@ const INFO_ITEMS: Record<string, InfoItem> = {
       },
     ],
     instrukcjaUrl:
-      "https://uslugi-netia.pl/docs/Instrukcja_uzytkownika_netia_dekodera_evobox_4K.pdf",
-  },
+    "/pdf/Instrukcja_uzytkownika_netia_dekodera_evobox_4K.pdf"
+    },
 
   "netia-go": {
     id: "netia-go",
@@ -488,21 +488,21 @@ const BANNER_AKCENTY: Record<
     text: "text-teal-300",
     soft: "bg-teal-300/15",
   },
-  // "subrosa" — rgb(238,18,100)
+  // Różowy/magenta — jak karta "VIP 5G" na zrzucie: jasny pink w lewym
+  // górnym rogu, przechodzący w ciemny bordowy/plum w prawym dolnym.
   red: {
-    border: "border-[rgb(238,18,100)]/40",
-    background:
-      "radial-gradient(130% 160% at 15% 0%, rgba(238,18,100,.55), transparent 60%), linear-gradient(135deg, #5c0a2e 0%, #1a0310 100%)",
-    text: "text-[rgb(238,18,100)]",
-    soft: "bg-[rgb(238,18,100)]/15",
+    border: "border-[#e0399e]/40",
+    background: "linear-gradient(135deg, #d6409f 0%, #8a2570 55%, #4a1240 100%)",
+    text: "text-[#f472b6]",
+    soft: "bg-[#e0399e]/15",
   },
-  // rgb(166,206,58)
+  // Limonkowy — jak karta "GIGA 5G" na zrzucie: jasna limonka w lewym
+  // górnym rogu, przechodząca w ciemniejszą oliwkową zieleń w prawym dolnym.
   lime: {
-    border: "border-[rgb(166,206,58)]/40",
-    background:
-      "radial-gradient(130% 160% at 15% 0%, rgba(166,206,58,.55), transparent 60%), linear-gradient(135deg, #3a4a15 0%, #12180a 100%)",
-    text: "text-[rgb(166,206,58)]",
-    soft: "bg-[rgb(166,206,58)]/15",
+    border: "border-[#a3d146]/40",
+    background: "linear-gradient(135deg, #8bc34a 0%, #5c9c2e 55%, #33540f 100%)",
+    text: "text-[#c3e86b]",
+    soft: "bg-[#a3d146]/15",
   },
 };
 
@@ -689,25 +689,25 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
             className="relative flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/10 text-left sm:max-h-[88vh]"
             style={{ backgroundColor: "#0B2A3D" }}
           >
-            {/* Nagłówek — zawsze widoczny, nazwa się nie chowa */}
-            <div className="shrink-0 border-b border-white/10 px-6 pb-4 pt-6 sm:px-8 sm:pt-8">
-              <div className="flex items-center gap-2 text-teal-300">
-                <Info size={18} />
-                <span className="text-xs font-bold uppercase tracking-wide">Szczegóły</span>
-              </div>
-              <h3 className="mt-2 text-2xl font-extrabold text-white sm:text-3xl">{item.model}</h3>
-              {item.podtytul && <p className="mt-1 text-sm text-white/60">{item.podtytul}</p>}
-            </div>
+            {(() => {
+              const akcent = BANNER_AKCENTY[item.bannerAkcent ?? "teal"];
 
-            {/* Środkowa część — jedyny scrollowalny fragment okna */}
-            <div className="flex-1 overflow-y-auto px-6 py-5 sm:px-8">
-              {item.zdjecie && <IkonaProduktu zdjecie={item.zdjecie} model={item.model} />}
+              return (
+                <>
+                  {/* Nagłówek — zawsze widoczny, kolor zależny od typu popupu */}
+                  <div className="shrink-0 border-b border-white/10 px-6 pb-4 pt-6 sm:px-8 sm:pt-8">
+                    <div className={`flex items-center gap-2 ${akcent.text}`}>
+                      <Info size={18} />
+                      <span className="text-xs font-bold uppercase tracking-wide">Szczegóły</span>
+                    </div>
+                    <h3 className="mt-2 text-2xl font-extrabold text-white sm:text-3xl">{item.model}</h3>
+                    {item.podtytul && <p className="mt-1 text-sm text-white/60">{item.podtytul}</p>}
+                  </div>
 
-              {(() => {
-                const akcent = BANNER_AKCENTY[item.bannerAkcent ?? "teal"];
+                  {/* Środkowa część — jedyny scrollowalny fragment okna */}
+                  <div className="flex-1 overflow-y-auto px-6 py-5 sm:px-8">
+                    {item.zdjecie && <IkonaProduktu zdjecie={item.zdjecie} model={item.model} />}
 
-                return (
-                  <>
                     {item.banner && (
                       <div
                         className={`mb-6 overflow-hidden rounded-2xl border ${akcent.border} px-5 py-7 text-center sm:px-8 sm:py-9`}
@@ -754,29 +754,29 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
                         </div>
                       );
                     })}
-                  </>
-                );
-              })()}
 
-              {item.uwaga && (
-                <p className="mt-6 border-t border-white/10 pt-4 text-[11px] leading-relaxed text-white/40">
-                  {item.uwaga}
-                </p>
-              )}
+                    {item.uwaga && (
+                      <p className="mt-6 border-t border-white/10 pt-4 text-[11px] leading-relaxed text-white/40">
+                        {item.uwaga}
+                      </p>
+                    )}
 
-              {item.instrukcjaUrl && (
-                <a
-                  href={item.instrukcjaUrl}
-                  download
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-6 flex items-center justify-between gap-2 rounded-xl border border-teal-300/30 bg-teal-300/10 px-4 py-3 text-sm font-semibold text-teal-200 transition-colors hover:bg-teal-300/20"
-                >
-                  Instrukcja użytkownika {item.model}
-                  <ChevronRight size={16} />
-                </a>
-              )}
-            </div>
+                    {item.instrukcjaUrl && (
+                      <a
+                        href={item.instrukcjaUrl}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-6 flex items-center justify-between gap-2 rounded-xl border border-teal-300/30 bg-teal-300/10 px-4 py-3 text-sm font-semibold text-teal-200 transition-colors hover:bg-teal-300/20"
+                      >
+                        Instrukcja użytkownika {item.model}
+                        <ChevronRight size={16} />
+                      </a>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
 
             {/* Stopka — zawsze na dole, jedyny przycisk zamknięcia */}
             <div className="shrink-0 border-t border-white/10 px-6 py-4 sm:px-8">
@@ -798,15 +798,12 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
 
 type Offer = {
   id: string;
-  /* Nagłówek prędkości — dwupoziomowy, jak "Internet do" / "300 Mb/s + TV S" */
   eyebrow: string;
   speedBold: string;
   speedSuffix?: string;
-  /* Blok promocji — etykieta / duży nagłówek / dopisek gwiazdką */
   promoEyebrow?: string;
   promoHeadline?: string;
   promoNote?: string;
-  /* Fallback, gdy oferta nie ma trzyczęściowego bloku promo (np. "Najczęściej wybierany") */
   badgeLabel: string;
   features: { icon: React.ReactNode; label: string; infoId?: string }[];
   price: string;
@@ -961,12 +958,10 @@ export default function PopularneOferty() {
   const reduceMotion = useReducedMotion();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  // Który popup ze szczegółami pokazać (klucz z INFO_ITEMS, lub null = zamknięty)
   const [aktywnyInfoId, setAktywnyInfoId] = useState<string | null>(null);
 
   return (
     <LazyMotion features={domAnimation} strict>
-      {/* Pulsujący przycisk "Zadzwoń" w domykającym CTA — jak w NetiaFAQ.tsx */}
       <style>{`
         @keyframes popularne-oferty-faq-pulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.45); }
@@ -987,7 +982,6 @@ export default function PopularneOferty() {
         className="relative overflow-hidden font-sans py-20 sm:py-24 "
       >
         <div className="relative z-10 mx-auto max-w-320 px-5 sm:px-6 lg:px-8 pt-12">
-          {/* BANER PROMO — h1 + badge + grafika sygnału + CTA */}
           <m.div
             initial={reduceMotion ? false : { opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -1003,7 +997,6 @@ export default function PopularneOferty() {
           >
             <span className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-teal-400/70 to-transparent" />
 
-            {/* Grafika SVG — kwadraty, dekoracja po prawej stronie */}
             <svg
               className="pointer-events-none absolute -right-12 -top-14 hidden h-56 w-56 opacity-40 sm:block lg:h-72 lg:w-72"
               viewBox="0 0 200 200"
@@ -1011,7 +1004,6 @@ export default function PopularneOferty() {
               xmlns="http://www.w3.org/2000/svg"
               aria-hidden="true"
             >
-              {/* Duży obrócony kwadrat — kontur */}
               <rect
                 x="120"
                 y="25"
@@ -1023,7 +1015,6 @@ export default function PopularneOferty() {
                 strokeWidth="2"
                 transform="rotate(15 155 60)"
               />
-              {/* Mniejszy kwadrat — kontur */}
               <rect
                 x="140"
                 y="75"
@@ -1035,7 +1026,6 @@ export default function PopularneOferty() {
                 strokeWidth="2"
                 transform="rotate(-10 161 96)"
               />
-              {/* Wypełnione kwadraty w różnych rozmiarach */}
               <rect
                 x="60"
                 y="120"
@@ -1077,7 +1067,6 @@ export default function PopularneOferty() {
               />
             </svg>
 
-            {/* Grafika SVG — gwiazdki i kółka, dekoracja po lewej stronie */}
             <svg
               className="pointer-events-none absolute -left-10 -bottom-10 hidden h-52 w-52 opacity-40 sm:block lg:h-64 lg:w-64"
               viewBox="0 0 200 200"
@@ -1085,7 +1074,6 @@ export default function PopularneOferty() {
               xmlns="http://www.w3.org/2000/svg"
               aria-hidden="true"
             >
-              {/* Kółka o różnej wielkości, w stylu "orbit" */}
               <circle cx="40" cy="150" r="4" fill="#2DD4BF" />
               <circle
                 cx="40"
@@ -1114,7 +1102,6 @@ export default function PopularneOferty() {
                 strokeWidth="1.5"
               />
 
-              {/* Gwiazdki (4-ramienne, "sparkle") w kilku miejscach */}
               <path
                 d="M75 90 L79 100 L89 104 L79 108 L75 118 L71 108 L61 104 L71 100 Z"
                 fill="#2DD4BF"
@@ -1136,7 +1123,6 @@ export default function PopularneOferty() {
                 opacity="0.5"
               />
 
-              {/* Drobne kropki dla wypełnienia */}
               <circle cx="60" cy="30" r="2.5" fill="#2DD4BF" opacity="0.6" />
               <circle cx="170" cy="70" r="2" fill="#99F6E4" opacity="0.5" />
               <circle cx="15" cy="110" r="2" fill="#2DD4BF" opacity="0.5" />
@@ -1207,31 +1193,28 @@ export default function PopularneOferty() {
             </m.div>
           </m.div>
 
-          {/* Siatka ofert */}
-          {/* Siatka ofert — items-stretch wyrównuje wysokość kart w każdym wierszu */}
-<div className="mt-14 grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
-  {offers.map((offer, i) => (
-    <m.div
-      key={offer.id}
-      initial={reduceMotion ? false : "hidden"}
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.3 }}
-      variants={fadeUp}
-      transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.08 }}
-      whileHover={reduceMotion ? undefined : { y: -4 }}
-      className={`relative flex h-full flex-col rounded-2xl border p-6 ${
-        offer.highlighted
-          ? "border-amber-400/60 bg-white/5"
-          : "border-white/10 bg-white/5"
-      }`}
-    >
+          <div className="mt-14 grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {offers.map((offer, i) => (
+              <m.div
+                key={offer.id}
+                initial={reduceMotion ? false : "hidden"}
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.3 }}
+                variants={fadeUp}
+                transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.08 }}
+                whileHover={reduceMotion ? undefined : { y: -4 }}
+                className={`relative flex h-full flex-col rounded-2xl border p-6 ${
+                  offer.highlighted
+                    ? "border-amber-400/60 bg-white/5"
+                    : "border-white/10 bg-white/5"
+                }`}
+              >
                 {offer.highlighted && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#0B2A3D]">
                     Najczęściej wybierany
                   </span>
                 )}
 
-                {/* Nagłówek: mała etykieta + duża prędkość */}
                 <p className="text-xs font-semibold text-white/50">
                   {offer.eyebrow}
                 </p>
@@ -1244,7 +1227,6 @@ export default function PopularneOferty() {
                   )}
                 </h3>
 
-                {/* Blok promocji: etykieta / duży nagłówek / dopisek — lub pigułka zastępcza */}
                 {offer.promoHeadline ? (
                   <div className="mt-4">
                     <p className="text-xs font-semibold uppercase tracking-wider text-orange-400">
@@ -1295,7 +1277,6 @@ export default function PopularneOferty() {
                   ))}
                 </ul>
 
-                {/* Boks z ceną — wyśrodkowany, w ramce */}
                 <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.03] py-4 text-center">
                   <div className="flex items-baseline justify-center gap-1.5">
                     <span className="text-3xl font-extrabold text-white">
@@ -1332,7 +1313,6 @@ export default function PopularneOferty() {
             ))}
           </div>
 
-          {/* Zapisek prawny / regulaminowy — pod ofertami */}
           <m.div
             initial={reduceMotion ? false : "hidden"}
             whileInView="visible"
@@ -1388,9 +1368,6 @@ export default function PopularneOferty() {
             </p>
           </m.div>
 
-          {/* FAQ — styl zunifikowany z NetiaFAQ.tsx: ikona per-pytanie w kolorowym
-              boksie, "Plus" obracający się o 45° zamiast ChevronDown, oraz kolory
-              otwartej karty (teal-400/10 bg, teal-400/30 border). */}
           <div className="mx-auto mt-16 max-w-310">
             <div className="text-center">
               <m.div
@@ -1497,7 +1474,6 @@ export default function PopularneOferty() {
             </div>
           </div>
 
-          {/* Dolne CTA */}
           <m.div
             initial={reduceMotion ? false : "hidden"}
             whileInView="visible"
@@ -1561,7 +1537,6 @@ export default function PopularneOferty() {
           </m.div>
         </div>
 
-        {/* Popup ze szczegółami — wspólny dla wszystkich klikalnych cech na kartach */}
         <InfoModal infoId={aktywnyInfoId} onClose={() => setAktywnyInfoId(null)} />
       </section>
     </LazyMotion>

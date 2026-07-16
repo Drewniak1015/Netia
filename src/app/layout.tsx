@@ -1,7 +1,6 @@
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { KonfiguratorProvider } from '@/components/Konfigurator/konfigurator';
-import PodsumowanieFixed from '@/components/Konfigurator/konfiguratorFixed';
 import './globals.css';
 
 export const metadata = {
@@ -21,14 +20,6 @@ export default function RootLayout({
           <Header />
           {children}
           <Footer />
-<PodsumowanieFixed
-  ukryjNaSciezkach={[
-    '/',              // strona główna\
-    '/oferty/max',
-    '/oferty/popularne',
-    '/pomoc/awarie',  // ta konkretna podstrona pomocy
-  ]}
-/>
         </KonfiguratorProvider>
       </body>
     </html>

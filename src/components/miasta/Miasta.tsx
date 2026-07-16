@@ -4,6 +4,8 @@ import { MapPin, ArrowRight, Wifi } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { CITIES } from "./miasta-dane";
 
+const VISIBLE_LIMIT = 25;
+
 function formatPopulation(n: number): string {
   return n.toLocaleString("pl-PL").replace(/,/g, " ");
 }
@@ -51,10 +53,62 @@ function useRevealOnScroll<T extends HTMLElement>(options?: IntersectionObserver
   return { ref, visible };
 }
 
+/**
+ * Pojedyncza karta miasta — wydzielona, żeby nie duplikować JSX
+ * pomiędzy siatką "zawsze widoczną" a siatką "rozwijaną".
+ */
+function CityCard({
+  city,
+  index,
+  visible,
+  baseHref,
+}: {
+  city: (typeof CITIES)[number];
+  index: number;
+  visible: boolean;
+  baseHref: string;
+}) {
+  return (
+    <a
+      href={`${baseHref}/${city.slug}`}
+      title={`Internet i telewizja w ${city.locative} — sprawdź ofertę`}
+      aria-label={`Sprawdź dostępność internetu i telewizji w ${city.locative}`}
+      className="group flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-left transition-all duration-200 hover:border-teal-400/40 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D]"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(20px)",
+        transitionProperty: "opacity, transform, border-color, background-color",
+        transitionDuration: "600ms, 600ms, 200ms, 200ms",
+        transitionTimingFunction: "ease-out",
+        transitionDelay: visible ? `${index * 60}ms` : "0ms",
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-teal-300">
+          <MapPin size={18} strokeWidth={2} />
+        </span>
+        <span>
+          <span className="block text-[15px] font-semibold text-white">{city.name}</span>
+          <span className="block text-sm text-white/60">{formatPopulation(city.population)}</span>
+        </span>
+      </div>
+      <ArrowRight
+        size={18}
+        className="shrink-0 text-teal-300 transition-transform duration-200 group-hover:translate-x-1"
+      />
+    </a>
+  );
+}
+
 export default function Miasta({ baseHref = "/internet-miasta", onShowFullList }: MiastaProps) {
   const header = useRevealOnScroll<HTMLDivElement>();
   const grid = useRevealOnScroll<HTMLDivElement>();
   const footer = useRevealOnScroll<HTMLDivElement>();
+
+  const [expanded, setExpanded] = useState(false);
+  const visibleCities = CITIES.slice(0, VISIBLE_LIMIT);
+  const restCities = CITIES.slice(VISIBLE_LIMIT);
+  const hasMore = restCities.length > 0;
 
   return (
     <section
@@ -86,44 +140,67 @@ export default function Miasta({ baseHref = "/internet-miasta", onShowFullList }
           </p>
         </div>
 
-        {/* City grid */}
+        {/* City grid — pierwsze 25 zawsze widoczne */}
         <div ref={grid.ref} className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {CITIES.map((city, i) => (
-            <a
+          {visibleCities.map((city, i) => (
+            <CityCard
               key={city.slug}
-              href={`${baseHref}/${city.slug}`}
-              title={`Internet i telewizja w ${city.locative} — sprawdź ofertę`}
-              aria-label={`Sprawdź dostępność internetu i telewizji w ${city.locative}`}
-              className="group flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-left transition-all duration-200 hover:border-teal-400/40 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D]"
-              style={{
-                opacity: grid.visible ? 1 : 0,
-                transform: grid.visible ? "translateY(0)" : "translateY(20px)",
-                transitionProperty: "opacity, transform, border-color, background-color",
-                transitionDuration: "600ms, 600ms, 200ms, 200ms",
-                transitionTimingFunction: "ease-out",
-                transitionDelay: grid.visible ? `${i * 60}ms` : "0ms",
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-teal-300">
-                  <MapPin size={18} strokeWidth={2} />
-                </span>
-                <span>
-                  <span className="block text-[15px] font-semibold text-white">
-                    {city.name}
-                  </span>
-                  <span className="block text-sm text-white/60">
-                    {formatPopulation(city.population)}
-                  </span>
-                </span>
-              </div>
-              <ArrowRight
-                size={18}
-                className="shrink-0 text-teal-300 transition-transform duration-200 group-hover:translate-x-1"
-              />
-            </a>
+              city={city}
+              index={i}
+              visible={grid.visible}
+              baseHref={baseHref}
+            />
           ))}
         </div>
+
+        {/* Reszta miast — zawsze w DOM (SEO), wizualnie zwijana grid-rows trickiem */}
+        {hasMore && (
+          <>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateRows: expanded ? "1fr" : "0fr",
+                transition: "grid-template-rows .25s cubic-bezier(.16,1,.3,1)",
+              }}
+            >
+              <div style={{ overflow: "hidden" }}>
+                <div
+                  className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-5"
+                  style={{
+                    opacity: expanded ? 1 : 0,
+                    transition: `opacity ${expanded ? ".2s ease .05s" : ".1s ease"}`,
+                  }}
+                >
+                  {restCities.map((city, i) => (
+                    <CityCard
+                      key={city.slug}
+                      city={city}
+                      index={i}
+                      visible={expanded}
+                      baseHref={baseHref}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setExpanded((v) => !v)}
+                aria-expanded={expanded}
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              >
+                {expanded ? "Pokaż mniej miast" : `Pokaż więcej miast (${restCities.length})`}
+                <ArrowRight
+                  size={16}
+                  className="transition-transform duration-300"
+                  style={{ transform: expanded ? "rotate(-90deg)" : "rotate(90deg)" }}
+                />
+              </button>
+            </div>
+          </>
+        )}
 
         {/* Footer callout */}
       </div>

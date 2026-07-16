@@ -44,7 +44,7 @@ function ChannelIcon({ ch, size }: { ch: Channel; size: number }) {
           src={ch.logoUrl}
           alt={ch.alt ?? ch.name}
           onError={() => setFailed(true)}
-          className="h-full w-full object-cover"
+          className="max-h-full max-w-full w-auto h-auto object-contain"
         />
       ) : (
         <span
@@ -96,7 +96,7 @@ const handleDownload = async () => {
 };
 
   return (
-    <section style={{ backgroundColor: "#0B2A3D" }} className="w-full py-16 px-6 font-sans overflow-hidden">
+    <section style={{ backgroundColor: "#0B2A3D" }} className="w-full py-16 px-6 font-sans overflow-hidden scroll-mt-[50px]" id="wyszukiwarka">
       <div className="max-w-5xl mx-auto">
         <motion.div className="flex justify-center mb-5" initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.6 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">

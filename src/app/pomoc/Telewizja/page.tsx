@@ -186,7 +186,7 @@ ukraina:
 /* Pills can now optionally act as in-page anchor links. Passing a
    `targetId` makes the pill smooth-scroll to that section's id,
    offset for the sticky header height (see SCROLL_OFFSET below). */
-const SCROLL_OFFSET = 96; // px – tweak if the fixed header height changes
+const SCROLL_OFFSET = 140; // px – tweak if the fixed header height changes
 
 function scrollToSection(id: string) {
   const el = document.getElementById(id);

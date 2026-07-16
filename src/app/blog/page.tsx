@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState,useRef } from "react";
 import { LazyMotion, domAnimation, m, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ChevronRight, ChevronLeft, Calendar, Clock, Tag, ImageOff, Home, Search, X } from "lucide-react";
 import { CATEGORY_LIST, CATEGORIES, isValidCategory, type CategorySlug } from "@/lib/blog/categories";
 import { POSTS } from "@/app/content/blog/posts";
 import type { BlogPostMeta } from "@/lib/blog/types";
 import { urlPosta } from "@/app/blog/url";
-
 /* ---------------------------------------------------------------------- */
 /*  Strona bloga — "Moja Netia" > "Blog" > [Kategoria, jeśli wybrana].     */
 /*  Filtr kategorii sterowany parametrem ?kategoria=<slug>, filtr tagów    */
@@ -152,11 +151,16 @@ function FiltrKategorii({
   );
 }
 
+
 /* ---------------------------------------------------------------------- */
-/*  Filtr tagów — klikalne chipy, wielokrotny wybór (dopasowanie: post     */
-/*  pasuje, jeśli ma CHOCIAŻ JEDEN z zaznaczonych tagów). Lista dostępnych */
-/*  tagów jest kontekstowa — pokazuje tylko tagi występujące w aktualnie   */
-/*  wybranej kategorii, żeby nie proponować pustych filtrów.               */
+/*  Filtr tagów — wyszukiwarka + rozwijana lista (combobox). Wpisany tekst */
+/*  filtruje pozycje listy, klik na pozycję dodaje/usuwa tag z filtra      */
+/*  postów. Aktywne tagi pokazane jako usuwalne pigułki nad polem.         */
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+/*  Filtr tagów — sztywny układ 3 kolumn (grid):                          */
+/*  [1] etykieta "Tagi"  [2] wyszukiwarka + combobox (stała szerokość,     */
+/*  zawsze w tym samym miejscu)  [3] wybrane tagi, lecące dalej w prawo.   */
 /* ---------------------------------------------------------------------- */
 function FiltrTagow({
   dostepneTagi,
@@ -169,32 +173,127 @@ function FiltrTagow({
   szukaj: string;
   activeTags: string[];
 }) {
+  const router = useRouter();
+  const [szukajTagu, setSzukajTagu] = useState("");
+  const [otwarte, setOtwarte] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // Zamknij panel przy kliknięciu poza nim.
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setOtwarte(false);
+      }
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
   if (dostepneTagi.length === 0) return null;
 
+  const fraza = normalizujTekst(szukajTagu.trim());
+  const wyswietlaneTagi = fraza
+    ? dostepneTagi.filter((tag) => normalizujTekst(tag).includes(fraza))
+    : dostepneTagi;
+
+function przelaczTag(tag: string) {
+  const noweTagi = activeTags.includes(tag)
+    ? activeTags.filter((t) => t !== tag)
+    : [...activeTags, tag];
+  router.push(urlStrony(activeCategory, szukaj, noweTagi, 1), { scroll: false });
+}
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-white/35">
+    <div className="grid grid-cols-[auto_14rem_1fr] items-start gap-4">
+      {/* Kolumna 1: etykieta */}
+      <span className="mt-2 inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-white/35">
         <Tag size={12} />
         Tagi:
       </span>
-      {dostepneTagi.map((tag) => {
-        const active = activeTags.includes(tag);
-        const noweTagi = active ? activeTags.filter((t) => t !== tag) : [...activeTags, tag];
-        return (
-          <Link
-            key={tag}
-            href={urlStrony(activeCategory, szukaj, noweTagi, 1)}
-            className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-              active
-                ? "border-teal-400/50 bg-teal-400/15 text-teal-200"
-                : "border-white/10 bg-white/[0.03] text-white/50 hover:bg-white/10 hover:text-white"
-            }`}
-          >
-            {active && <X size={11} />}
-            {tag}
-          </Link>
-        );
-      })}
+
+      {/* Kolumna 2: wyszukiwarka + combobox — szerokość stała (14rem),       */}
+      {/* nigdy się nie rusza niezależnie od tego, co dzieje się w kolumnie 3 */}
+      <div ref={wrapperRef} className="relative w-56">
+        <div className="relative">
+          <Search
+            size={12}
+            className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-white/30"
+          />
+          <input
+            type="text"
+            value={szukajTagu}
+            onChange={(e) => setSzukajTagu(e.target.value)}
+            onFocus={() => setOtwarte(true)}
+            placeholder="Szukaj tagu…"
+            aria-label="Szukaj i wybierz tag"
+            className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-1.5 pl-7 pr-6 text-xs text-white placeholder:text-white/30 outline-none transition-colors focus:border-teal-400/50 focus:bg-white/[0.07]"
+          />
+          {szukajTagu && (
+            <button
+              type="button"
+              onClick={() => setSzukajTagu("")}
+              aria-label="Wyczyść wyszukiwanie tagu"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-white/30 transition-colors hover:text-white/70"
+            >
+              <X size={11} />
+            </button>
+          )}
+        </div>
+
+        {otwarte && (
+          <div className="absolute left-0 top-full z-20 mt-1.5 max-h-56 w-full overflow-y-auto rounded-lg border border-white/10 bg-[#0B2A3D] shadow-lg shadow-black/30">
+            {wyswietlaneTagi.length > 0 ? (
+              <ul className="py-1">
+                {wyswietlaneTagi.map((tag) => {
+                  const active = activeTags.includes(tag);
+                  return (
+                    <li key={tag}>
+                      <button
+                        type="button"
+                        onClick={() => przelaczTag(tag)}
+                        className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs transition-colors ${
+                          active
+                            ? "bg-teal-400/15 text-teal-200"
+                            : "text-white/65 hover:bg-white/10 hover:text-white"
+                        }`}
+                      >
+                        <span className="inline-flex items-center gap-1.5">
+                          <Tag size={11} />
+                          {tag}
+                        </span>
+                        {active && <X size={11} />}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="px-3 py-3 text-xs text-white/35">
+                Brak tagów pasujących do „{szukajTagu}”.
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Kolumna 3: wybrane tagi — lecą tu dalej w prawo (i zawijają się     */}
+      {/* niżej, gdy jest ich dużo), nie wpływając na kolumnę 2 obok.         */}
+      <div className="flex min-h-[2.25rem] flex-wrap items-center gap-1.5 pt-0.5">
+        {activeTags.length > 0 ? (
+          activeTags.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => przelaczTag(tag)}
+              className="inline-flex items-center gap-1 rounded-full border border-teal-400/50 bg-teal-400/15 px-2.5 py-1 text-[11px] font-medium text-teal-200 transition-colors hover:bg-teal-400/25"
+            >
+              {tag}
+              <X size={10} />
+            </button>
+          ))
+        ) : (
+          <span className="text-[11px] text-white/25">Brak wybranych tagów</span>
+        )}
+      </div>
     </div>
   );
 }
@@ -280,7 +379,7 @@ function SzukajkaPostow({
           onChange={(e) => setWartosc(e.target.value)}
           onFocus={() => setWFokusie(true)}
           onBlur={() => setWFokusie(false)}
-          placeholder="Szukaj po tytule, opisie lub tagu…"
+          placeholder="Szukaj po tytule, opisie"
           aria-label="Szukaj artykułów"
           className="w-full rounded-full border border-white/10 bg-white/5 py-2.5 pl-10 pr-9 text-sm text-white placeholder:text-white/35 outline-none transition-colors focus:border-teal-400/50 focus:bg-white/[0.07]"
         />

@@ -474,7 +474,7 @@ export default function NetiaUslugiMobilnePomocPage() {
             </span>
           </Paragraph>
 
-          <div id="5g" className="scroll-mt-24">
+          <div id="5g" className="scroll-mt-[140px]">
             <SectionHeading>Sieć 5G – szybkość i zasięg</SectionHeading>
             <Paragraph>
               Usługi mobilne Netii działają na infrastrukturze sieci Plus, która jest pierwszą w
@@ -491,7 +491,7 @@ export default function NetiaUslugiMobilnePomocPage() {
             />
           </div>
 
-          <div id="plany" className="scroll-mt-24">
+          <div id="plany" className="scroll-mt-[140px]">
             <SectionHeading>Dostępne plany taryfowe</SectionHeading>
             <Paragraph>
               Netia oferuje trzy plany mobilne 5G, każdy z nielimitowanymi rozmowami, SMS-ami i
@@ -541,7 +541,7 @@ export default function NetiaUslugiMobilnePomocPage() {
             </Note>
           </div>
 
-          <div id="funkcje" className="scroll-mt-24">
+          <div id="funkcje" className="scroll-mt-[140px]">
             <SectionHeading>Co zawiera każdy plan?</SectionHeading>
             <Paragraph>Niezależnie od wybranego planu, każdy abonent otrzymuje:</Paragraph>
             <AdvantagesBox
@@ -556,7 +556,7 @@ export default function NetiaUslugiMobilnePomocPage() {
             />
           </div>
 
-          <div id="promocje" className="scroll-mt-24">
+          <div id="promocje" className="scroll-mt-[140px]">
             <SectionHeading>Promocje i rabaty</SectionHeading>
             <Paragraph>Netia oferuje atrakcyjne promocje dla nowych klientów:</Paragraph>
             <AdvantagesBox
@@ -571,7 +571,7 @@ export default function NetiaUslugiMobilnePomocPage() {
             <Note>Szczegółowe warunki promocji dostępne są w regulaminie oferty.</Note>
           </div>
 
-          <div id="przeniesienie-numeru" className="scroll-mt-24">
+          <div id="przeniesienie-numeru" className="scroll-mt-[140px]">
             <SectionHeading>Przeniesienie numeru do Netii</SectionHeading>
             <Paragraph>Możesz łatwo przenieść swój obecny numer telefonu do Netii:</Paragraph>
             <Reveal y={16}>
@@ -588,7 +588,7 @@ export default function NetiaUslugiMobilnePomocPage() {
             <Note>Proces przeniesienia numeru trwa zazwyczaj do kilku dni roboczych.</Note>
           </div>
 
-          <div id="pakiety-laczone" className="scroll-mt-24">
+          <div id="pakiety-laczone" className="scroll-mt-[140px]">
             <SectionHeading>Pakiety łączone – oszczędzaj więcej</SectionHeading>
             <Paragraph>
               Połączenie usług mobilnych z internetem światłowodowym i telewizją daje dodatkowe
@@ -619,27 +619,27 @@ export default function NetiaUslugiMobilnePomocPage() {
                     className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                     style={{ background: "rgba(7,28,41,.16)" }}
                   >
-                    <Layers size={20} style={{ color: c.bgDeep }} />
+                    <Layers size={20} style={{ color: "white"}} />
                   </div>
                   <div>
-                    <div className="text-[15px] font-extrabold" style={{ color: c.bgDeep }}>
+                    <div className="text-[15px] font-extrabold" style={{ color: "white" }}>
                       Sprawdź konfigurator oferty
                     </div>
-                    <div className="text-[12.5px] font-medium" style={{ color: "rgba(7,28,41,.7)" }}>
+                    <div className="text-[12.5px] font-medium" style={{ color: "white" }}>
                       Dobierz usługi do swoich potrzeb
                     </div>
                   </div>
                 </div>
                 <ArrowRight
                   size={20}
-                  style={{ color: c.bgDeep, flexShrink: 0 }}
+                  style={{ color: "white", flexShrink: 0 }}
                   className="transition-transform duration-200 group-hover:translate-x-1"
                 />
               </motion.a>
             </Reveal>
           </div>
 
-          <div id="porownanie" className="scroll-mt-24">
+          <div id="porownanie" className="scroll-mt-[140px]">
             <SectionHeading>Porównanie planów</SectionHeading>
             <Paragraph>Porównanie planów taryfowych SUPER, VIP i GIGA:</Paragraph>
             <ComparisonTable />

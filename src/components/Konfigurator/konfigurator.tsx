@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { Suspense, createContext, useContext, useEffect, useMemo, useState, type ReactNode,useRef} from "react";
 import { useSearchParams } from "next/navigation";
 import { LazyMotion, domAnimation, m, useReducedMotion, AnimatePresence } from "framer-motion";
 // TODO: popraw ścieżkę importu, jeśli lib/channels.ts leży gdzie indziej niż @/lib/channels
@@ -8,7 +8,10 @@ import {
   channelsForTier,
   TIER_LABELS,
   TIER_CHANNEL_COUNTS,
+  channelsForAddon,
+    ADDONS,
   channelId,
+  
   type Tier,
   type Channel,
 } from "@/lib/channels";
@@ -31,12 +34,12 @@ import {
   Wallet,
   LayoutGrid,
 } from "lucide-react";
-
+import Uslugi5GModal, { type Oferta5G } from "@/components/Konfigurator/Oferta5G";
+import PodsumowanieFixed from '@/components/Konfigurator/konfiguratorFixed';
 /* ---------------------------------------------------------------------- */
 /*  Wspólny stan wybranej oferty (umowa / pakiet / TV / 5G / dodatki)      */
-/*  Trzymany WYŁĄCZNIE w pamięci (bez localStorage/cookies/requestów) —   */
-/*  dzięki temu <PodsumowanieFixed /> może być osadzony na innych         */
-/*  stronach i widzieć ten sam, sesyjny wybór. Owiń tym providerem root   */
+/*  Trzymany w pamięci + sessionStorage — przetrwa nawigację i F5,         */
+/*  znika po zamknięciu karty/przeglądarki. Owiń tym providerem root      */
 /*  layout aplikacji (patrz komentarz przy `KonfiguratorProvider` niżej). */
 /* ---------------------------------------------------------------------- */
 export type UmowaType = "24" | "bez";
@@ -52,7 +55,7 @@ interface KonfiguratorState {
   pakiet: WybranaPozycja | null;
   tv: WybranaPozycja | null;
   uslugi5g: WybranaPozycja | null;
-  dodatki: WybranaPozycja | null;
+  dodatki: WybranaPozycja[];
 }
 
 interface KonfiguratorContextValue extends KonfiguratorState {
@@ -60,27 +63,85 @@ interface KonfiguratorContextValue extends KonfiguratorState {
   setPakiet: (pakiet: WybranaPozycja | null) => void;
   setTv: (tv: WybranaPozycja | null) => void;
   setUslugi5g: (uslugi5g: WybranaPozycja | null) => void;
-  setDodatki: (dodatki: WybranaPozycja | null) => void;
+  toggleDodatek: (dodatek: WybranaPozycja) => void;
   suma: number;
   maWybor: boolean;
 }
-
 const initialState: KonfiguratorState = {
   umowa: "24",
   pakiet: null,
   tv: null,
   uslugi5g: null,
-  dodatki: null,
+  dodatki: [],
 };
-
+const DODATKI_WYMAGAJACE_TV = new Set([
+  "hbo",
+  "canal-plus-select",
+  "canal-plus-prestige",
+  "eleven-sports",
+  "filmbox",
+  "cinemax",
+  "polsat-sport-premium",
+  "dorosli",
+  "ukraina",
+  "dzieci",
+]);
 const KonfiguratorContext = createContext<KonfiguratorContextValue | undefined>(
   undefined
 );
+const STORAGE_KEY = "netia-konfigurator-stan";
+
+function wczytajZeSessionStorage(): KonfiguratorState {
+  if (typeof window === "undefined") return initialState;
+  try {
+    const surowy = window.localStorage.getItem(STORAGE_KEY);
+    if (!surowy) return initialState;
+    const sparsowany = JSON.parse(surowy);
+    return {
+      umowa: sparsowany?.umowa === "bez" ? "bez" : "24",
+      pakiet: sparsowany?.pakiet ?? null,
+      tv: sparsowany?.tv ?? null,
+      uslugi5g: sparsowany?.uslugi5g ?? null,
+      dodatki: Array.isArray(sparsowany?.dodatki) ? sparsowany.dodatki : [],
+    };
+  } catch {
+    return initialState;
+  }
+}
+
+function zapiszDoSessionStorage(state: KonfiguratorState) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // sessionStorage może być niedostępny (np. tryb prywatny) — po prostu nie zapisujemy
+  }
+}
 
 /** Owiń tym całą aplikację (np. w app/layout.tsx), żeby <PodsumowanieFixed />
- *  na innych stronach widział wybór zrobiony w konfiguratorze. */
+ *  na innych stronach widział wybór zrobiony w konfiguratorze. Stan jest też
+ *  zapisywany w sessionStorage — przetrwa odświeżenie strony (F5) i nawigację
+ *  (nawet pełny reload przez zwykły <a>), a znika dopiero po zamknięciu karty. */
 export function KonfiguratorProvider({ children }: { children: ReactNode }) {
+  // Zaczynamy od initialState (identyczne na serwerze i kliencie, żeby uniknąć
+  // hydration mismatch) — prawdziwy zapisany stan wczytujemy w useEffect,
+  // czyli już po stronie klienta.
   const [state, setState] = useState<KonfiguratorState>(initialState);
+  const [wczytanoZStorage, setWczytanoZStorage] = useState(false);
+
+  // Wczytanie zapisanego stanu przy montowaniu (tylko raz, po stronie klienta)
+  useEffect(() => {
+    setState(wczytajZeSessionStorage());
+    setWczytanoZStorage(true);
+  }, []);
+
+  // Zapis do sessionStorage przy każdej zmianie stanu — pomijamy pierwszy
+  // render, żeby nie nadpisać zapisanego stanu pustym `initialState` zanim
+  // zdążymy go wczytać
+  useEffect(() => {
+    if (!wczytanoZStorage) return;
+    zapiszDoSessionStorage(state);
+  }, [state, wczytanoZStorage]);
 
   const setUmowa = (umowa: UmowaType) =>
     // Zmiana umowy = reset wszystkich wyborów
@@ -88,26 +149,45 @@ export function KonfiguratorProvider({ children }: { children: ReactNode }) {
 
   const setPakiet = (pakiet: WybranaPozycja | null) =>
     setState((prev) => ({ ...prev, pakiet }));
-  const setTv = (tv: WybranaPozycja | null) =>
-    setState((prev) => ({ ...prev, tv }));
+const setTv = (tv: WybranaPozycja | null) =>
+  setState((prev) => ({
+    ...prev,
+    tv,
+    // Odznaczenie TV kasuje też wszystkie wybrane dodatki zależne od TV
+    // (Canal+, HBO, Eleven Sports itd.) — bez pakietu TV nie mają sensu.
+    dodatki:
+      tv === null
+        ? prev.dodatki.filter((d) => !DODATKI_WYMAGAJACE_TV.has(d.id))
+        : prev.dodatki,
+  }));
   const setUslugi5g = (uslugi5g: WybranaPozycja | null) =>
     setState((prev) => ({ ...prev, uslugi5g }));
-  const setDodatki = (dodatki: WybranaPozycja | null) =>
-    setState((prev) => ({ ...prev, dodatki }));
 
-  const suma =
-    (state.pakiet?.cena ?? 0) +
-    (state.tv?.cena ?? 0) +
-    (state.uslugi5g?.cena ?? 0) +
-    (state.dodatki?.cena ?? 0);
 
-  const maWybor = state.pakiet !== null;
+const toggleDodatek = (dodatek: WybranaPozycja) =>
+  setState((prev) => {
+    const juzWybrany = prev.dodatki.some((d) => d.id === dodatek.id);
+    return {
+      ...prev,
+      dodatki: juzWybrany
+        ? prev.dodatki.filter((d) => d.id !== dodatek.id)
+        : [...prev.dodatki, dodatek],
+    };
+  });
 
-  const value = useMemo<KonfiguratorContextValue>(
-    () => ({ ...state, setUmowa, setPakiet, setTv, setUslugi5g, setDodatki, suma, maWybor }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state]
-  );
+const suma =
+  (state.pakiet?.cena ?? 0) +
+  (state.tv?.cena ?? 0) +
+  (state.uslugi5g?.cena ?? 0) +
+  state.dodatki.reduce((suma, d) => suma + d.cena, 0);
+
+const maWybor = state.pakiet !== null;
+
+const value = useMemo<KonfiguratorContextValue>(
+  () => ({ ...state, setUmowa, setPakiet, setTv, setUslugi5g, toggleDodatek, suma, maWybor }),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [state]
+);
 
   return (
     <KonfiguratorContext.Provider value={value}>
@@ -125,7 +205,6 @@ export function useKonfigurator() {
   }
   return ctx;
 }
-
 /* ---------------------------------------------------------------------- */
 /*  Dane routerów — wyświetlane w oknie "Szczegóły dołączonego routera"    */
 /*  Na razie WSZYSTKIE pakiety wskazują na klucz "domyslny" (ten sam       */
@@ -161,7 +240,7 @@ const HUAWEI_HG8245Q: RouterInfo = {
   podtytul:
     "Router instalowany do Internetu Światłowodowego Netii przy prędkościach do 600 Mb/s i niższych",
   // TODO: jeśli plik leży w innym miejscu niż /public, popraw ścieżkę.
-  zdjecie: "/LowRouter.webp",
+  zdjecie: "/images/LowRouter.webp",
   opis: [
     "Huawei HG8245Q to stabilny i sprawdzony terminal optyczny GPON stosowany w instalacjach światłowodowych Netii. Urządzenie łączy funkcję routera Wi-Fi, gigabitowego przełącznika, bramy VoIP i optycznego ONT w jednej obudowie.",
     "Zaprojektowany do pracy ciągłej, oferuje pewne połączenie internetowe, obsługę usług IPTV oraz telefonię VoIP. Dwupasmowe Wi-Fi 2.4 / 5 GHz zapewnia stabilne działanie sieci bezprzewodowej w mieszkaniu, a cztery porty LAN ułatwiają podłączanie telewizora, konsoli lub komputera po kablu.",
@@ -185,7 +264,7 @@ const HUAWEI_HG8245Q: RouterInfo = {
   kosztInfo:
     "Dostarczany i instalowany przez technika w dniu instalacji usługi Internetu bez dodatkowych kosztów.",
   instrukcjaUrl:
-    "https://uslugi-netia.pl/docs/Instrukcja_Router_Huawei_HG8245Q.pdf",
+    "/pdf/Instrukcja_Router_Huawei_HG8245Q.pdf",
 };
 
 const ROUTERY: Record<string, RouterInfo> = {
@@ -193,10 +272,10 @@ const ROUTERY: Record<string, RouterInfo> = {
   // TODO (szablon do podmiany): router dla pakietów do 1000 Mb/s (WiFi 6).
   // Zdjęcie już podpięte (MidRouter.webp) — reszta danych (model, opis,
   // specyfikacja) to na razie kopia HG8245Q, podmień na docelowy tekst.
-  "szablon-1": { ...HUAWEI_HG8245Q, id: "szablon-1", zdjecie: "/MidRouter.webp" },
+  "szablon-1": { ...HUAWEI_HG8245Q, id: "szablon-1", zdjecie: "/images/MidRouter.webp" },
   // TODO (szablon do podmiany): router dla pakietów do 2000 Mb/s (WiFi 7 / ONT combo).
   // Zdjęcie już podpięte (TopRouter.webp) — reszta danych to na razie kopia HG8245Q.
-  "szablon-2": { ...HUAWEI_HG8245Q, id: "szablon-2", zdjecie: "/TopRouter.webp" },
+  "szablon-2": { ...HUAWEI_HG8245Q, id: "szablon-2", zdjecie: "/images/TopRouter.webp" },
 };
 
 /* ---------------------------------------------------------------------- */
@@ -269,7 +348,7 @@ const INFO_ITEMS: Record<string, InfoItem> = {
         },
       },
     ],
-    instrukcjaUrl: "https://uslugi-netia.pl/docs/Instrukcja_uzytkownika_netia_dekodera_evobox_4K.pdf",
+    instrukcjaUrl: "/pdf/Instrukcja_uzytkownika_netia_dekodera_evobox_4K.pdf",
   },
 };
 
@@ -442,7 +521,94 @@ function KafelekKanalu({ channel }: { channel: Channel }) {
     </div>
   );
 }
+function AddonKanalyModal({
+  addonKey,
+  onClose,
+}: {
+  addonKey: string | null;
+  onClose: () => void;
+}) {
+  const reduceMotion = useReducedMotion();
+  const kanaly = useMemo(() => (addonKey ? channelsForAddon(addonKey) : []), [addonKey]);
+  const etykieta = ADDONS.find((a) => a.key === addonKey)?.label ?? "";
 
+  useEffect(() => {
+    if (!addonKey) return;
+    const poprzednieOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = poprzednieOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addonKey]);
+
+  return (
+    <AnimatePresence>
+      {addonKey && (
+        <m.div
+          key="addon-kanaly-modal-overlay"
+          initial={reduceMotion ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm sm:p-8"
+          onClick={onClose}
+        >
+          <m.div
+            key="addon-kanaly-modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-label={etykieta}
+            initial={reduceMotion ? false : { opacity: 0, y: 20, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12, scale: 0.98 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/10 text-left sm:max-h-[88vh]"
+            style={{ backgroundColor: "#0B2A3D" }}
+          >
+            <div className="shrink-0 border-b border-white/10 px-6 pb-4 pt-6 sm:px-8 sm:pt-8">
+              <div className="flex items-center gap-2 text-teal-300">
+                <LayoutGrid size={18} />
+                <span className="text-xs font-bold uppercase tracking-wide">Lista kanałów</span>
+              </div>
+              <h3 className="mt-2 text-2xl font-extrabold text-white sm:text-3xl">{etykieta}</h3>
+              <p className="mt-1 text-sm text-white/60">{kanaly.length} kanałów w cenie dodatku</p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-6 py-5 sm:px-8">
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                {kanaly.map((channel) => (
+                  <KafelekKanalu key={channelId(channel)} channel={channel} />
+                ))}
+              </div>
+              <p className="mt-5 text-[11px] leading-relaxed text-white/40">
+                * kanał gwarantowany — zawsze dostępny w ramach dodatku. Lista kanałów
+                może ulec zmianie zgodnie z aktualną ofertą Netii.
+              </p>
+            </div>
+
+            <div className="shrink-0 border-t border-white/10 px-6 py-4 sm:px-8">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-bold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+              >
+                <X size={16} />
+                Zamknij
+              </button>
+            </div>
+          </m.div>
+        </m.div>
+      )}
+    </AnimatePresence>
+  );
+}
 function KanalyModal({ tier, onClose }: { tier: Tier | null; onClose: () => void }) {
   const reduceMotion = useReducedMotion();
   const kanaly = useMemo(() => (tier ? channelsForTier(tier) : []), [tier]);
@@ -647,7 +813,7 @@ const PAKIETY_BEZ: Pakiet[] = [
 /*  Dane dodatkowych sekcji ofert                                          */
 /*  TODO: podmień na realne nazwy / opisy / ceny                          */
 /* ---------------------------------------------------------------------- */
-interface Oferta {
+export interface Oferta {
   id: string;
   nazwa: string;
   opis: string;
@@ -693,41 +859,78 @@ const OFERTY_KANALY_PLACEHOLDER: Oferta[] = [
   { id: "kanal-ph-rozrywka", nazwa: "Pakiet Rozrywka+ (PH)", opis: "Placeholder — do uzupełnienia", cena: 500 },
 ];
 
-const OFERTY_5G: Oferta[] = [
+
+const OFERTY_5G: Oferta5G[] = [
   {
     id: "5g-super",
     nazwa: "SUPER (5G)",
     opis: "Nielimitowane połączenia, SMS-y i MMS-y. 60 GB internetu mobilnego w Polsce.",
     cena: 30,
+    gradient: "from-teal-500 to-teal-800",
+    szczegoly: [
+      "Nielimitowane połączenia, SMS-y i MMS-y w kraju",
+      "60 GB Internetu mobilnego w Polsce",
+      "8,5 GB Internetu Mobilnego w roamingu EU",
+      "6 mc za 0 zł, potem 30 zł",
+      "Umowa na 24 miesiące",
+      "Aktywacja: 0 zł",
+    ],
   },
   {
     id: "5g-vip",
     nazwa: "VIP (5G)",
     opis: "Nielimitowane połączenia, SMS-y i MMS-y. 100 GB internetu mobilnego w Polsce.",
     cena: 40,
+    gradient: "from-pink-500 to-purple-800",
+    szczegoly: [
+      "Nielimitowane połączenia, SMS-y i MMS-y w kraju",
+      "100 GB Internetu mobilnego w Polsce",
+      "11 GB Internetu Mobilnego w roamingu EU",
+      "6 mc za 0 zł, potem 40 zł",
+      "Umowa na 24 miesiące",
+      "Aktywacja: 0 zł",
+    ],
   },
   {
     id: "5g-giga",
     nazwa: "GIGA (5G)",
     opis: "Nielimitowane połączenia, SMS-y i MMS-y. 200 GB internetu mobilnego w Polsce.",
     cena: 60,
+    gradient: "from-lime-500 to-green-800",
+    szczegoly: [
+      "Nielimitowane połączenia, SMS-y i MMS-y w kraju",
+      "200 GB Internetu mobilnego w Polsce",
+      "15 GB Internetu Mobilnego w roamingu EU",
+      "6 mc za 0 zł, potem 60 zł",
+      "Umowa na 24 miesiące",
+      "Aktywacja: 0 zł",
+    ],
   },
 ];
 
 // TODO: nazwa tej sekcji nie została podana — zmień na docelową
-const OFERTY_DODATKOWE: Oferta[] = [
-  {
-    id: "bezpieczny-internet",
-    nazwa: "Bezpieczny Internet",
-    opis: "Ochrona urządzeń i bezpieczeństwo podczas korzystania z internetu.",
-    cena: 10,
-  },
-  {
-    id: "stale-ip",
-    nazwa: "Stałe IP",
-    opis: "Publiczny, niezmienny adres IP do zdalnego dostępu i serwerów.",
-    cena: 10,
-  },
+interface OfertaDodatek extends Oferta {
+  /** Klucz z lib/channels.ts (pole ADDONS[].key) — jeśli podany, kafelek
+   *  pokaże dodatkowy przycisk "Zobacz kanały" otwierający listę kanałów. */
+  addonKey?: string;
+}
+
+const OFERTY_DODATKOWE: OfertaDodatek[] = [
+  { id: "multiroom", nazwa: "Multiroom", opis: "Oglądaj telewizję na dodatkowym telewizorze w innym pokoju.", cena: 10 },
+  { id: "multiroom-4k", nazwa: "Multiroom 4K", opis: "Dodatkowy dekoder 4K w innym pomieszczeniu.", cena: 15 },
+  { id: "giga-nagrywarka-maxi", nazwa: "Giga Nagrywarka Maxi", opis: "Więcej miejsca na nagrania programów w chmurze.", cena: 15 },
+  { id: "bezpieczny-internet", nazwa: "Bezpieczny Internet", opis: "Ochrona urządzeń i bezpieczeństwo podczas korzystania z internetu.", cena: 10 },
+  { id: "stale-ip", nazwa: "Stałe IP", opis: "Publiczny, niezmienny adres IP do zdalnego dostępu i serwerów.", cena: 10 },
+  { id: "hbo", nazwa: "HBO + MAX", opis: "Kanały HBO oraz dostęp do platformy streamingowej Max.", cena: 25, addonKey: "hbo" },
+  { id: "canal-plus-select", nazwa: "CANAL+ Select", opis: "Pakiet kanałów sportowych i filmowych Canal+ Select.", cena: 35, addonKey: "canal-plus-select" },
+  { id: "canal-plus-prestige", nazwa: "CANAL+ Prestige", opis: "Najszerszy pakiet Canal+ — sport, filmy, seriale i dokumenty.", cena: 50, addonKey: "canal-plus-prestige" },
+  { id: "eleven-sports", nazwa: "Eleven Sports", opis: "Kanały sportowe Eleven Sports, w tym transmisje w 4K.", cena: 10, addonKey: "eleven-sports" },
+  { id: "filmbox", nazwa: "FilmBox", opis: "Pakiet kanałów filmowych FilmBox+.", cena: 10, addonKey: "filmbox" },
+  { id: "cinemax", nazwa: "Cinemax", opis: "Kanały filmowe Cinemax HD i Cinemax 2 HD.", cena: 10, addonKey: "cinemax-hd" },
+  { id: "polsat-sport-premium", nazwa: "Polsat Sport Premium", opis: "Pakiet kanałów sportowych Polsat Sport Premium.", cena: 20, addonKey: "polsat-sport-premium" },
+  { id: "dorosli", nazwa: "Dla Dorosłych", opis: "Pakiet kanałów dla dorosłych, chroniony kodem PIN.", cena: 10, addonKey: "dorosli" },
+  { id: "ukraina", nazwa: "Pakiet Ukraina", opis: "Kanały informacyjne, rozrywkowe i sportowe w języku ukraińskim.", cena: 10, addonKey: "ukraina" },
+  { id: "dzieci", nazwa: "Dla Dzieci", opis: "Bajki, programy edukacyjne i kanały dla najmłodszych.", cena: 10, addonKey: "dzieci" },
 ];
 
 // TODO: osobne oferty 5G / Dodatki dla wariantu bez zobowiązań (jeśli mają się różnić)
@@ -924,34 +1127,35 @@ function KafelekPakietu({
       </span>
 
       {/* Chip sprzętu w cenie — klikalny, otwiera okno ze szczegółami routera */}
-      <m.button
-        type="button"
-        onClick={() => onPokazRouter(pakiet.routerId)}
-        whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-        whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-        className="mt-4 flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-center text-sm font-medium text-white/70 transition-colors hover:border-teal-300/50 hover:bg-white/10 hover:text-white"
-      >
-        <Info size={14} className="shrink-0 text-teal-300" />
-        <span>{pakiet.wyposazenie}</span>
-        <span className="text-[11px] font-normal text-white/40">(pokaż router)</span>
-      </m.button>
+      {/* Chip sprzętu w cenie — klikalny, otwiera okno ze szczegółami routera */}
+<m.button
+  type="button"
+  onClick={() => onPokazRouter(pakiet.routerId)}
+  whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+  whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+  className="mt-4 flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-center text-sm font-medium text-white/70 transition-colors hover:border-white/25 hover:bg-white/10 hover:text-white"
+>
+  <Info size={14} className="shrink-0 text-white/50" />
+  <span>{pakiet.wyposazenie}</span>
+  <span className="text-[11px] font-normal text-white/40">(pokaż router)</span>
+</m.button>
 
-      {/* CTA — jedyny klikalny element odpowiadający za wybór pakietu */}
-      <m.button
-        type="button"
-        onClick={onWybierz}
-        aria-pressed={wybrany}
-        whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-        whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-        className={`mt-4 flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-colors ${
-          wybrany
-            ? "border border-teal-300 bg-teal-400 text-[#0B2A3D] hover:bg-teal-300"
-            : "border border-white/15 bg-transparent text-white/80 hover:border-teal-300/50 hover:bg-white/10 hover:text-white"
-        }`}
-      >
-        {wybrany && <Check size={16} />}
-        {wybrany ? "Wybrane" : "Wybierz"}
-      </m.button>
+{/* CTA — jedyny klikalny element odpowiadający za wybór pakietu */}
+<m.button
+  type="button"
+  onClick={onWybierz}
+  aria-pressed={wybrany}
+  whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+  whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+  className={`mt-4 flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-colors ${
+    wybrany
+      ? "border-2 border-teal-400 bg-teal-400 text-[#0B2A3D] hover:bg-teal-300"
+      : "border-2 border-teal-300/50 bg-teal-300/5 text-teal-200 hover:border-teal-300 hover:bg-teal-300/15"
+  }`}
+>
+  {wybrany && <Check size={16} />}
+  {wybrany ? "Wybrane" : "Wybierz"}
+</m.button>
     </m.div>
   );
 }
@@ -963,56 +1167,91 @@ function KafelekOferty({
   oferta,
   wybrana,
   onWybierz,
+  onPokazSzczegoly,
+  onPokazKanaly,
+  gradient,
   delay,
 }: {
   oferta: Oferta;
   wybrana: boolean;
   onWybierz: () => void;
+  onPokazSzczegoly?: () => void;
+  onPokazKanaly?: () => void;
+  gradient?: string;
   delay: number;
 }) {
   const reduceMotion = useReducedMotion();
-
   return (
-    <m.button
-      type="button"
-      onClick={onWybierz}
-      initial={reduceMotion ? false : "hidden"}
-      animate="visible"
-      variants={fadeUp}
-      transition={{ duration: 0.4, ease: "easeOut", delay }}
-      whileHover={reduceMotion ? undefined : { scale: 1.015 }}
-      whileTap={reduceMotion ? undefined : { scale: 0.99 }}
-      className={`flex h-full flex-col rounded-2xl border p-5 text-left transition-colors ${
-        wybrana
-          ? "border-teal-300 bg-white/[0.04]"
-          : "border-white/10 bg-transparent hover:bg-white/[0.03]"
-      }`}
-    >
-      <h3 className="text-lg font-extrabold text-white">{oferta.nazwa}</h3>
-      <p className="mt-2 text-sm leading-snug text-white/65">{oferta.opis}</p>
+<m.div
+  initial={reduceMotion ? false : "hidden"}
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.2 }}
+  variants={fadeUp}
+  transition={{ duration: 0.4, ease: "easeOut", delay }}
+  whileHover={reduceMotion ? undefined : { scale: 1.015 }}
+  whileTap={reduceMotion ? undefined : { scale: 0.99 }}
+  className={`flex h-full flex-col rounded-2xl border p-5 text-left transition-colors ${
+    wybrana
+      ? "border-teal-300 bg-white/[0.04]"
+      : "border-white/10 bg-transparent hover:bg-white/[0.03]"
+  }`}
+>
+      <button type="button" onClick={onWybierz} className="flex flex-1 flex-col text-left">
+        <h3 className="text-lg font-extrabold text-white">{oferta.nazwa}</h3>
+        <p className="mt-2 text-sm leading-snug text-white/65">{oferta.opis}</p>
+        <div className="mt-4 flex items-end gap-1.5">
+          <span className="text-2xl font-extrabold text-white">{oferta.cena} zł</span>
+          <span className="mb-0.5 text-xs text-white/60">/mies.</span>
+        </div>
+      </button>
 
-      <div className="mt-4 flex items-end gap-1.5">
-        <span className="text-2xl font-extrabold text-white">{oferta.cena} zł</span>
-        <span className="mb-0.5 text-xs text-white/60">/mies.</span>
-      </div>
+<div className="mt-4 flex gap-2">
+        {onPokazSzczegoly && (
+          <m.button
+            type="button"
+            onClick={onPokazSzczegoly}
+            whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+            whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+            className={`flex flex-1 basis-1/2 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r ${
+              gradient ?? "from-teal-600 to-teal-800"
+            } px-3 py-2.5 text-center text-xs font-bold text-white transition-opacity hover:opacity-90`}
+          >
+            <Info size={13} />
+            Szczegóły
+          </m.button>
+        )}
 
-      <div
-        className={`mt-4 flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold ${
-          wybrana
-            ? "border border-teal-300 bg-teal-300/10 text-teal-200"
-            : "border border-white/15 text-white/80"
-        }`}
-      >
-        <span className="flex items-center gap-2">
+        {onPokazKanaly && (
+          <m.button
+            type="button"
+            onClick={onPokazKanaly}
+            whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+            whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+            className="flex flex-1 basis-1/2 items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-center text-xs font-semibold text-white/70 transition-colors hover:border-white/25 hover:bg-white/10 hover:text-white"
+          >
+            <LayoutGrid size={13} />
+            Zobacz kanały
+          </m.button>
+        )}
+
+        <button
+          type="button"
+          onClick={onWybierz}
+          className={`flex flex-1 basis-1/2 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors ${
+            wybrana
+              ? "border border-teal-400 bg-teal-400 text-[#0B2A3D]"
+              : "border border-teal-300/50 bg-teal-300/5 text-teal-200"
+          }`}
+        >
           {wybrana && <Check size={14} />}
           {wybrana ? "Wybrano" : "Wybierz"}
-        </span>
-        <ChevronRight size={14} />
+        </button>
       </div>
-    </m.button>
+      
+
+    </m.div>
   );
 }
-
 /* ---------------------------------------------------------------------- */
 /*  Kafelek pakietu TV — badge w rogu, pigułka "Abonament...", chipy       */
 /*  (Dekoder 4K / liczba kanałów) i gradientowy przycisk Wybierz.          */
@@ -1036,29 +1275,30 @@ function KafelekTV({
   const reduceMotion = useReducedMotion();
 
   return (
-    <m.div
-      role="button"
-      tabIndex={0}
-      aria-pressed={wybrana}
-      onClick={onWybierz}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onWybierz();
-        }
-      }}
-      initial={reduceMotion ? false : "hidden"}
-      animate="visible"
-      variants={fadeUp}
-      transition={{ duration: 0.4, ease: "easeOut", delay }}
-      whileHover={reduceMotion ? undefined : { scale: 1.015 }}
-      whileTap={reduceMotion ? undefined : { scale: 0.99 }}
-      className={`flex h-full cursor-pointer flex-col rounded-2xl border p-5 text-left transition-colors ${
-        wybrana
-          ? "border-teal-300 bg-white/[0.04]"
-          : "border-white/10 bg-transparent hover:bg-white/[0.03]"
-      }`}
-    >
+  <m.div
+  role="button"
+  tabIndex={0}
+  aria-pressed={wybrana}
+  onClick={onWybierz}
+  onKeyDown={(e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onWybierz();
+    }
+  }}
+  initial={reduceMotion ? false : "hidden"}
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.2 }}
+  variants={fadeUp}
+  transition={{ duration: 0.4, ease: "easeOut", delay }}
+  whileHover={reduceMotion ? undefined : { scale: 1.015 }}
+  whileTap={reduceMotion ? undefined : { scale: 0.99 }}
+  className={`flex h-full cursor-pointer flex-col rounded-2xl border p-5 text-left transition-colors ${
+    wybrana
+      ? "border-teal-300 bg-white/[0.04]"
+      : "border-white/10 bg-transparent hover:bg-white/[0.03]"
+  }`}
+>
       {/* Nagłówek: nazwa pakietu + badge (np. "Najpopularniejszy") */}
       <div className="flex items-start justify-between gap-2">
         <h3 className="text-lg font-extrabold text-white">{oferta.nazwa}</h3>
@@ -1108,11 +1348,11 @@ function KafelekTV({
 
       {/* CTA — gradient blue → teal, jak na referencyjnym screenie */}
       <div
-        className={`mt-4 flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white ${
-          wybrana
-            ? "bg-gradient-to-r from-teal-500 to-teal-400"
-            : "bg-gradient-to-r from-blue-500 to-teal-400"
-        }`}
+className={`mt-4 flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-colors ${
+  wybrana
+    ? "border border-teal-400 bg-teal-400 text-[#0B2A3D]"
+    : "border border-teal-300/50 bg-teal-300/5 text-teal-200"
+}`}
       >
         {wybrana && <Check size={16} />}
         {wybrana ? "Wybrano" : "Wybierz"}
@@ -1383,6 +1623,9 @@ function NotaPrawna() {
 /* ---------------------------------------------------------------------- */
 /*  Główny komponent (czyta ?umowa=24 lub ?umowa=bez z URL)                */
 /* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+/*  Główny komponent (czyta ?umowa=24 lub ?umowa=bez z URL)                */
+/* ---------------------------------------------------------------------- */
 function KonfiguratorZawartosc() {
   const searchParams = useSearchParams();
   const reduceMotion = useReducedMotion();
@@ -1397,12 +1640,12 @@ function KonfiguratorZawartosc() {
     pakiet: wybranyPakietObj,
     tv: wybranaTvObj,
     uslugi5g: wybrana5gObj,
-    dodatki: wybranaDodatkiObj,
+    dodatki: wybraneDodatki,
     setUmowa,
     setPakiet,
     setTv,
     setUslugi5g,
-    setDodatki,
+    toggleDodatek,
   } = useKonfigurator();
 
   // Czy animacja rozwinięcia sekcji ofert się zakończyła — dopóki trwa animacja
@@ -1421,6 +1664,9 @@ function KonfiguratorZawartosc() {
 
   // Placeholder — wybrany dodatkowy pakiet kanałów (PH, do podmiany na docelową logikę)
   const [wybranyKanalId, setWybranyKanalId] = useState<string | null>(null);
+
+  const [aktywnaOferta5G, setAktywnaOferta5G] = useState<Oferta5G | null>(null);
+  const [aktywnyDodatekAddon, setAktywnyDodatekAddon] = useState<string | null>(null);
 
   // Pakiety i oferty zależne od wybranej umowy
   const pakiety = umowa === "24" ? PAKIETY_24 : PAKIETY_BEZ;
@@ -1450,16 +1696,46 @@ function KonfiguratorZawartosc() {
 
   const toggleTv = toggleOferta(setTv, wybranaTvObj);
   const toggle5g = toggleOferta(setUslugi5g, wybrana5gObj);
-  const toggleDodatki = toggleOferta(setDodatki, wybranaDodatkiObj);
 
   // Zmiana umowy = pełny reset wszystkich zaznaczeń (obsłużone w kontekście)
   const zmienUmowe = (nowaUmowa: UmowaType) => {
     setUmowa(nowaUmowa);
   };
 
+  // Czy już zdążyliśmy choć raz zareagować na parametr z URL w tej sesji
+  // komponentu — zapobiega to resetowi przy zwykłym ponownym wejściu na
+  // stronę / przeklikaniu się nawigacją, gdy paramUmowa się nie zmienił
+  // względem tego, co user miał wcześniej ustawione (i co jest już wczytane
+  // z localStorage do kontekstu).
+  const poprzedniParamUmowa = useRef<string | null>(null);
+  const pierwszyRender = useRef(true);
+
   useEffect(() => {
-    if (paramUmowa === "bez" || paramUmowa === "24") {
-      zmienUmowe(paramUmowa);
+    if (paramUmowa !== "bez" && paramUmowa !== "24") {
+      pierwszyRender.current = false;
+      return;
+    }
+
+    // Pierwszy render tego komponentu: jeśli parametr z URL zgadza się
+    // z już zapisaną (wczytaną z localStorage) umową — NIC nie rób, cały
+    // istniejący wybór (pakiet/tv/5g/dodatki) zostaje nietknięty.
+    if (pierwszyRender.current) {
+      pierwszyRender.current = false;
+      poprzedniParamUmowa.current = paramUmowa;
+      if (paramUmowa !== umowa) {
+        zmienUmowe(paramUmowa);
+      }
+      return;
+    }
+
+    // Kolejne zmiany parametru w trakcie życia komponentu (np. user kliknął
+    // link ze zmienionym ?umowa=...) — reaguj tylko na faktyczną ZMIANĘ
+    // parametru, nie na samą jego obecność.
+    if (paramUmowa !== poprzedniParamUmowa.current) {
+      poprzedniParamUmowa.current = paramUmowa;
+      if (paramUmowa !== umowa) {
+        zmienUmowe(paramUmowa);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paramUmowa]);
@@ -1645,71 +1921,60 @@ function KonfiguratorZawartosc() {
                         />
                       ))}
                     </div>
-
-                    {/* Placeholder — dostępne pakiety kanałów, widoczne dopiero po
-                        wybraniu konkretnego pakietu TV. Dane (nazwy i ceny) są
-                        tymczasowe (PH) — do podmiany na docelowe pakiety kanałów. */}
-                    <AnimatePresence>
-                      {wybranaTvObj !== null && (
-                        <m.div
-                          initial={reduceMotion ? false : { opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.35, ease: "easeOut" }}
-                          className="overflow-hidden"
-                        >
-                          <div className="mt-8">
-                            <h3 className="flex items-center gap-2 text-base font-bold text-white/85 sm:text-lg">
-                              <Sparkles size={18} className="text-teal-300" />
-                              Dostępne pakiety kanałów
-                            </h3>
-                            <p className="mt-1 text-xs text-white/40">
-                              Placeholder — ceny i nazwy pakietów do uzupełnienia (PH).
-                            </p>
-                            <div className="mt-5 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
-                              {OFERTY_KANALY_PLACEHOLDER.map((oferta, i) => (
-                                <KafelekOferty
-                                  key={oferta.id}
-                                  oferta={oferta}
-                                  wybrana={wybranyKanalId === oferta.id}
-                                  onWybierz={() =>
-                                    setWybranyKanalId(
-                                      wybranyKanalId === oferta.id ? null : oferta.id
-                                    )
-                                  }
-                                  delay={0.08 * i}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        </m.div>
-                      )}
-                    </AnimatePresence>
                   </div>
                 )}
-                <SekcjaOfert
-                  tytul="Usługi Mobilne 5G"
-                  ikona={<Smartphone size={22} className="text-teal-300" />}
-                  oferty={oferty5g}
-                  wybrana={wybrana5gObj?.id ?? null}
-                  onToggle={(id) => {
-                    const oferta = oferty5g.find((o) => o.id === id);
-                    if (oferta) toggle5g(oferta);
-                  }}
-                />
-                <SekcjaOfert
-                  tytul="Usługi Dodatkowe"
-                  ikona={<Gift size={22} className="text-teal-300" />}
-                  oferty={ofertyDodatkowe}
-                  wybrana={wybranaDodatkiObj?.id ?? null}
-                  onToggle={(id) => {
-                    const oferta = ofertyDodatkowe.find((o) => o.id === id);
-                    if (oferta) toggleDodatki(oferta);
-                  }}
-                />
+
+                <div className="mt-12 lg:mt-16">
+                  <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
+                    <Smartphone size={22} className="text-teal-300" />
+                    Usługi Mobilne 5G
+                  </h2>
+                  <div className="mt-6 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
+                    {oferty5g.map((oferta, i) => (
+                      <KafelekOferty
+                        key={oferta.id}
+                        oferta={oferta}
+                        wybrana={wybrana5gObj?.id === oferta.id}
+                        onWybierz={() => toggle5g(oferta)}
+                        onPokazSzczegoly={
+                          "gradient" in oferta ? () => setAktywnaOferta5G(oferta as Oferta5G) : undefined
+                        }
+                        gradient={"gradient" in oferta ? (oferta as Oferta5G).gradient : undefined}
+                        delay={0.08 * i}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-12 lg:mt-16">
+                  <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
+                    <Gift size={22} className="text-teal-300" />
+                    Usługi Dodatkowe
+                  </h2>
+                  <div className="mt-6 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
+                    {(ofertyDodatkowe as OfertaDodatek[])
+                      .filter((oferta) => !oferta.addonKey || wybranaTvObj !== null)
+                      .map((oferta, i) => (
+                        <KafelekOferty
+                          key={oferta.id}
+                          oferta={oferta}
+                          wybrana={wybraneDodatki.some((d) => d.id === oferta.id)}
+                          onWybierz={() =>
+                            toggleDodatek({ id: oferta.id, nazwa: oferta.nazwa, cena: oferta.cena })
+                          }
+                          onPokazKanaly={
+                            oferta.addonKey ? () => setAktywnyDodatekAddon(oferta.addonKey!) : undefined
+                          }
+                          delay={0.08 * i}
+                        />
+                      ))}
+                  </div>
+                </div>
               </m.div>
             )}
           </AnimatePresence>
+
+          <PodsumowanieFixed />
 
           {/* CTA — spójne z Hero */}
           <m.div
@@ -1780,6 +2045,14 @@ function KonfiguratorZawartosc() {
         <KanalyModal
           tier={aktywnyKanalyTier}
           onClose={() => setAktywnyKanalyTier(null)}
+        />
+        <Uslugi5GModal
+          oferta={aktywnaOferta5G}
+          onClose={() => setAktywnaOferta5G(null)}
+        />
+        <AddonKanalyModal
+          addonKey={aktywnyDodatekAddon}
+          onClose={() => setAktywnyDodatekAddon(null)}
         />
       </section>
     </LazyMotion>

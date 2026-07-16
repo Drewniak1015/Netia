@@ -135,22 +135,22 @@ function PackageCard({
 
       <div className="flex flex-wrap gap-3">
         <m.a
-          href="#"
+          href="tel:+48883334124"
           whileHover={reduceMotion ? undefined : { scale: 1.02 }}
           whileTap={reduceMotion ? undefined : { scale: 0.98 }}
           className="inline-flex min-w-[140px] flex-1 items-center justify-center gap-2 rounded-[10px] border border-transparent bg-pink-500 px-4 py-3 text-sm font-bold text-white shadow-[0_8px_20px_-8px_rgba(236,72,153,0.6)]"
         >
           <Phone size={16} />
-          Zadzwoń
+          Zadzwoń +48 883 334 124
         </m.a>
         <m.a
-          href="#"
+          href="sms:+48883334124"
           whileHover={reduceMotion ? undefined : { scale: 1.02 }}
           whileTap={reduceMotion ? undefined : { scale: 0.98 }}
           className="inline-flex min-w-[140px] flex-1 items-center justify-center gap-2 rounded-[10px] border border-white/20 bg-white/5 px-4 py-3 text-sm font-bold text-white"
         >
           <MessageCircle size={16} />
-          Zamów SMS
+          Wyślij SMS
         </m.a>
       </div>
     </m.div>
@@ -469,7 +469,7 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
               </span>
             </div>
 <m.a
-  href="/kanaly"
+  href="/kanaly#wyszukiwarka"
   whileHover={reduceMotion ? undefined : { scale: 1.03 }}
   whileTap={reduceMotion ? undefined : { scale: 0.97 }}
   className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-pink-400 px-4 py-2.5 text-[13px] font-bold text-pink-400 no-underline cursor-pointer"

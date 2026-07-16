@@ -8,15 +8,11 @@ import {
   Clock,
   Wallet,
   CheckCircle2,
-  Smartphone,
-  Cable,
-  RotateCw,
-  Radio,
-  Cable as WanIcon,
-  Wifi,
+  Copy,
+  Check,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { type ReactNode } from "react";
+import { type ReactNode, type MouseEvent, useState } from "react";
 
 /* ---------- design tokens ----------
    Same palette as the Internet / Telewizja / Telefon help pages so
@@ -34,6 +30,7 @@ const c = {
   text: "#eef5f7",
   muted: "#a7b9c6",
   faint: "#8fa4b5",
+  amber: "#f0b429",
 };
 
 /* Same ease-out-expo-ish curve used on the Internet and Usługi Mobilne
@@ -62,14 +59,7 @@ const stagger = {
 };
 
 /* RevealGroup: wraps a block of children in the stagger variant so
-   they cascade in on scroll, once, instead of appearing together.
-   Collapses the repeated
-     variants={stagger} initial="hidden" whileInView="show"
-     viewport={{ once: true, margin: "-60px" }}
-   boilerplate that was previously copy-pasted at every call site into
-   one place — same visual result, easier to retune later. Children
-   should use the fadeUp/fadeIn variants (or their own) with no
-   explicit initial/animate so they inherit state from this wrapper. */
+   they cascade in on scroll, once, instead of appearing together. */
 function RevealGroup({
   children,
   as = "div",
@@ -77,11 +67,12 @@ function RevealGroup({
   delay = 0,
 }: {
   children: ReactNode;
-  as?: "div" | "ul";
+  as?: "div" | "ul" | "ol";
   className?: string;
   delay?: number;
 }) {
-  const MotionTag = as === "ul" ? motion.ul : motion.div;
+  const MotionTag =
+    as === "ul" ? motion.ul : as === "ol" ? motion.ol : motion.div;
   return (
     <MotionTag
       variants={stagger}
@@ -136,7 +127,10 @@ function Pill({
 }) {
   const scrollToTarget = () => {
     if (!targetId) return;
-    document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 140;
+    window.scrollTo({ top, behavior: "smooth" });
   };
 
   return (
@@ -168,7 +162,7 @@ function SectionHeading({ children }: { children: ReactNode }) {
       whileInView="show"
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.55, ease: EASE }}
-      className="text-[22px] font-extrabold tracking-tight mt-12 mb-3"
+      className="text-[22px] font-extrabold tracking-tight mt-14 mb-3"
       style={{ color: c.text }}
     >
       {children}
@@ -200,55 +194,166 @@ function Note({ children }: { children: ReactNode }) {
       whileInView="show"
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.5, ease: EASE, delay: 0.1 }}
-      className="text-[13.5px] italic mb-3"
+      className="flex items-center gap-2 text-[13px] mb-3"
       style={{ color: c.faint }}
     >
+      <span
+        className="h-1.5 w-1.5 rounded-full flex-shrink-0"
+        style={{ background: c.teal, boxShadow: `0 0 0 3px ${c.tealDim}` }}
+      />
       {children}
     </motion.p>
   );
 }
 
-/* ---------- numbered repair step ----------
-   Icon + number live together as one badge (icon on top, index as a
-   small caption below it) so each step reads as a single unit instead
-   of two separate marks fighting for attention. */
+/* ---------- live signal motif ----------
+   Small ambient signal-strength meter used once, in the hero. Ties
+   the visual language directly to the subject (a connection that
+   drops out and needs checking) instead of an arbitrary decoration. */
 
-function Step({
+function SignalPulse() {
+  const bars = [0.45, 0.7, 1];
+  return (
+    <div className="flex items-end gap-1 h-7" aria-hidden="true">
+      {bars.map((h, i) => (
+        <span
+          key={i}
+          className="w-[5px] rounded-full"
+          style={{ background: c.teal, height: `${h * 100}%` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ---------- copyable phone number ----------
+   The number is the single most useful piece of data on this page —
+   letting people grab it without a long-press-and-select on desktop
+   is a real usability win, not decoration. */
+
+function CopyableNumber({
   number,
-  icon,
+  href,
+  size = "text-[19px]",
+}: {
+  number: string;
+  href: string;
+  size?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    try {
+      await navigator.clipboard.writeText(number);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // clipboard unavailable — the tel: link below still works
+    }
+  };
+
+  return (
+    <span className="inline-flex items-center gap-2">
+      <a
+        href={href}
+        className={`inline-flex items-center gap-2 font-mono font-extrabold tracking-tight no-underline hover:underline ${size}`}
+        style={{ color: c.teal }}
+      >
+        <Phone size={16} />
+        {number}
+      </a>
+      <button
+        type="button"
+        onClick={handleCopy}
+        aria-label={copied ? "Numer skopiowany" : "Kopiuj numer"}
+        className="flex items-center justify-center h-6 w-6 rounded-md transition-colors"
+        style={{
+          color: copied ? c.teal : c.faint,
+          background: copied ? c.tealDim : "transparent",
+        }}
+      >
+        {copied ? <Check size={13} /> : <Copy size={13} />}
+      </button>
+    </span>
+  );
+}
+
+/* ---------- alternating timeline ----------
+   A centered vertical line with steps alternating left/right of it —
+   odd steps (1, 3, 5) sit on the right, even steps (2, 4, 6) on the
+   left, each with a dot centered on the line, a badge ("KROK 01")
+   above the title, then a bold title and description. Built as a
+   three-column grid (content / dot / content) per row so only one
+   side is ever populated and the dot always lands dead-center. */
+
+function TimelineList({ children }: { children: ReactNode }) {
+  return (
+    <RevealGroup as="ol" delay={0.05} className="relative my-6">
+      <span
+        className="absolute left-[5px] sm:left-1/2 top-0 bottom-0 w-px sm:-translate-x-1/2"
+        style={{ background: c.border }}
+        aria-hidden="true"
+      />
+      {children}
+    </RevealGroup>
+  );
+}
+
+function TimelineStep({
+  number,
   title,
   children,
 }: {
   number: number;
-  icon: ReactNode;
   title: string;
   children: ReactNode;
 }) {
-  return (
-    <motion.div
-      variants={fadeUp}
-      transition={{ duration: 0.5, ease: EASE }}
-      whileHover={{ y: -3 }}
-      className="rounded-2xl p-5 h-full flex flex-col"
-      style={{ background: "#0d1f31", border: `1px solid ${c.border}` }}
-    >
-      <div className="flex items-center gap-3 mb-3">
-        <div
-          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-extrabold text-[14px]"
-          style={{ background: c.tealDim, border: `1px solid ${c.tealBorder}`, color: c.teal }}
-        >
-          {number}
-        </div>
-        <div className="font-bold text-[14.5px] leading-tight" style={{ color: c.text }}>
-          {title}
-        </div>
+  const isRight = number % 2 === 1; // 1, 3, 5 -> right · 2, 4, 6 -> left
+
+  const content = (
+    <div className={`min-w-0 ${isRight ? "sm:text-left" : "sm:text-right"}`}>
+      <span
+        className="inline-block rounded-full px-3 py-1 text-[11px] font-bold tracking-wide mb-2"
+        style={{ background: c.teal, color: c.bgDeep }}
+      >
+        KROK {String(number).padStart(2, "0")}
+      </span>
+      <div className="font-extrabold text-[16px] leading-snug mb-1.5" style={{ color: c.text }}>
+        {title}
       </div>
-      <p className="text-[13.5px] leading-relaxed" style={{ color: c.muted }}>
+      <p
+        className={`text-[13.5px] leading-relaxed ${isRight ? "sm:ml-0" : "sm:ml-auto"} max-w-[42ch]`}
+        style={{ color: c.muted }}
+      >
         {children}
       </p>
-    </motion.div>
+    </div>
+  );
+
+  return (
+    <motion.li
+      variants={fadeUp}
+      transition={{ duration: 0.5, ease: EASE }}
+      className="relative grid grid-cols-[auto_1fr] sm:grid-cols-[1fr_auto_1fr] gap-x-5 sm:gap-x-8 items-start pb-9 last:pb-0"
+    >
+      {/* left slot (desktop only) */}
+      <div className="hidden sm:block">{!isRight && content}</div>
+
+      {/* dot, centered on the line */}
+      <span
+        className="relative z-10 flex-shrink-0 mt-[6px] h-[11px] w-[11px] rounded-full"
+        style={{ background: c.teal, boxShadow: `0 0 0 4px ${c.tealDim}` }}
+        aria-hidden="true"
+      />
+
+      {/* right slot on desktop; on mobile everything collapses into this single column */}
+      <div className="sm:hidden">{content}</div>
+      <div className="hidden sm:block">{isRight && content}</div>
+    </motion.li>
   );
 }
+
 /* ---------- quick-call button ---------- */
 
 function CallButton({
@@ -265,33 +370,33 @@ function CallButton({
   bg?: string;
 }) {
   return (
-    <motion.a
-      href={href}
+    <motion.div
       variants={fadeUp}
       transition={{ duration: 0.5, ease: EASE }}
       whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.98 }}
-      className="flex-1 min-w-[220px] rounded-xl px-5 py-4 flex items-center gap-3.5 no-underline transition-colors hover:border-white/25"
+      className="flex-1 min-w-[220px] rounded-xl px-5 py-4 flex items-center justify-between gap-3.5 transition-colors hover:border-white/25"
       style={{
         background: bg ?? (featured ? c.tealDim : c.cardAlt),
         border: `1px solid ${featured ? c.tealBorder : c.border}`,
       }}
     >
-      <div
-        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-        style={{ background: featured ? c.teal : c.card, color: featured ? c.bgDeep : c.teal }}
-      >
-        <PhoneCall size={17} />
-      </div>
-      <div>
-        <div className="text-[12.5px] font-semibold" style={{ color: c.muted }}>
-          {label}
+      <div className="flex items-center gap-3.5">
+        <a
+          href={href}
+          aria-label={`${label}: zadzwoń pod ${number}`}
+          className="w-10 h-10 flex items-center justify-center flex-shrink-0"
+          style={{ color: c.teal }}
+        >
+          <PhoneCall size={20} />
+        </a>
+        <div>
+          <div className="text-[12.5px] font-semibold" style={{ color: c.muted }}>
+            {label}
+          </div>
+          <CopyableNumber number={number} href={href} size="text-[17px]" />
         </div>
-        <div className="text-[18px] font-extrabold" style={{ color: c.text }}>
-          {number}
-        </div>
       </div>
-    </motion.a>
+    </motion.div>
   );
 }
 
@@ -305,6 +410,7 @@ function HotlineCard({
   number,
   href,
   hours,
+  live = false,
   description,
   featured = false,
 }: {
@@ -312,6 +418,7 @@ function HotlineCard({
   number: string;
   href: string;
   hours: string;
+  live?: boolean;
   description: string;
   featured?: boolean;
 }) {
@@ -329,16 +436,15 @@ function HotlineCard({
       <div className="font-extrabold text-[15px] mb-3" style={{ color: c.text }}>
         {title}
       </div>
-      <a
-        href={href}
-        className="inline-flex items-center gap-2 text-[19px] font-extrabold mb-3 no-underline hover:underline"
-        style={{ color: c.teal }}
-      >
-        <Phone size={16} />
-        {number}
-      </a>
+      <div className="mb-3">
+        <CopyableNumber number={number} href={href} />
+      </div>
       <div className="flex items-center gap-2 text-[13px] mb-3" style={{ color: c.faint }}>
-        <Clock size={14} style={{ flexShrink: 0 }} />
+        {live ? (
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ background: c.teal }} />
+        ) : (
+          <Clock size={14} style={{ flexShrink: 0 }} />
+        )}
         {hours}
       </div>
       <p className="text-[13.5px] leading-relaxed" style={{ color: c.muted }}>
@@ -373,7 +479,15 @@ function ReasonRow({ title, desc }: { title: string; desc: string }) {
 
 export default function NetiaZglaszanieAwariiPomocPage() {
   return (
-    <div style={{ backgroundColor: c.bg, color: c.text }} className="font-sans leading-relaxed">
+    <div
+      style={{
+        backgroundColor: c.bg,
+        color: c.text,
+        backgroundImage: `radial-gradient(${c.border} 1px, transparent 1px)`,
+        backgroundSize: "26px 26px",
+      }}
+      className="font-sans leading-relaxed"
+    >
       <div className="max-w-[820px] mx-auto px-6 py-10 pt-36">
         {/* HERO CARD */}
         <motion.div
@@ -386,23 +500,28 @@ export default function NetiaZglaszanieAwariiPomocPage() {
             border: `1px solid ${c.borderStrong}`,
           }}
         >
-          <div className="flex items-center gap-4 mb-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.7 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.1, ease: EASE }}
-              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: c.tealDim, border: `1px solid ${c.tealBorder}`, color: c.teal }}
-            >
-              <AlertTriangle size={22} />
-            </motion.div>
-            <div>
-              <h1 className="text-[24px] font-extrabold tracking-tight" style={{ color: c.text }}>
-                Zgłaszanie Awarii
-              </h1>
-              <p className="text-[14px] mt-0.5" style={{ color: c.muted }}>
-                Instrukcja postępowania i szybki kontakt z infolinią.
-              </p>
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div className="flex items-center gap-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.7 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.1, ease: EASE }}
+                className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: c.tealDim, border: `1px solid ${c.tealBorder}`, color: c.teal }}
+              >
+                <AlertTriangle size={22} />
+              </motion.div>
+              <div>
+                <h1 className="text-[24px] font-extrabold tracking-tight" style={{ color: c.text }}>
+                  Zgłaszanie Awarii
+                </h1>
+                <p className="text-[14px] mt-0.5" style={{ color: c.muted }}>
+                  Instrukcja postępowania i szybki kontakt z infolinią.
+                </p>
+              </div>
+            </div>
+            <div className="hidden sm:block flex-shrink-0 pt-1">
+              <SignalPulse />
             </div>
           </div>
           <motion.div
@@ -420,56 +539,40 @@ export default function NetiaZglaszanieAwariiPomocPage() {
 
         {/* CONTENT */}
         <div className="mt-2">
-          <Paragraph>
-            <span className="block mt-8">
-              Instrukcja postępowania przy awarii usług oraz numery kontaktowe.
-            </span>
-          </Paragraph>
-
           <div id="steps">
             <SectionHeading>Co zrobić w przypadku awarii</SectionHeading>
             <Paragraph>
-              Zanim zgłosisz problem, wykonaj poniższe kroki — często pozwalają szybko przywrócić
-              połączenie i przyspieszają obsługę zgłoszenia:
+              Zanim zgłosisz problem, przejdź poniższe kroki po kolei — często pozwalają szybko
+              przywrócić połączenie i przyspieszają obsługę zgłoszenia, jeśli mimo wszystko okaże
+              się konieczne.
             </Paragraph>
 
-            {/* Framed card wrapping the whole repair-steps block, so it
-                reads as one distinct unit on the page. */}
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.55, ease: EASE }}
-              className="rounded-2xl px-5 py-3 my-4"
-              style={{ background: c.card, border: `1px solid ${c.border}` }}
-            >
-<RevealGroup delay={0.05} className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4">
-  <Step number={1} icon={<Smartphone size={16} />} title="Sprawdź urządzenie">
-    Sprawdź, czy problem występuje tylko na jednym urządzeniu. Jeśli tak — spróbuj
-    ponownie połączyć się z Wi-Fi lub przetestuj inne urządzenie.
-  </Step>
-  <Step number={2} icon={<Cable size={16} />} title="Sprawdź kable i zasilanie">
-    Upewnij się, że router (i ONT przy światłowodzie) są podłączone, a wszystkie
-    wtyczki dobrze osadzone.
-  </Step>
-  <Step number={3} icon={<RotateCw size={16} />} title="Zrestartuj sprzęt">
-    Odłącz router (i ONT) na 30 sekund, włącz najpierw ONT, po 60 s włącz router
-    i odczekaj 2–3 minuty.
-  </Step>
-  <Step number={4} icon={<Radio size={16} />} title="Sprawdź diody">
-    PON/DSL — stała zielona = sygnał OK, miganie/czerwona/brak = problem z linią.
-    Internet/WAN — zielona ciągła = online.
-  </Step>
-  <Step number={5} icon={<WanIcon size={16} />} title="Test połączenia przewodowego">
-    Podłącz jedno urządzenie kablem LAN do routera. Jeśli też nie działa — to nie
-    problem z Wi-Fi.
-  </Step>
-  <Step number={6} icon={<Wifi size={16} />} title="Zgłoś awarię">
-    Jeśli Internet nadal nie działa — zgłoś awarię. Przygotuj numer klienta lub
-    PESEL oraz adres instalacji.
-  </Step>
-</RevealGroup>
-            </motion.div>
+            <TimelineList>
+              <TimelineStep number={1} title="Sprawdź urządzenie">
+                Sprawdź, czy problem występuje tylko na jednym urządzeniu. Jeśli tak — spróbuj
+                ponownie połączyć się z Wi-Fi lub przetestuj inne urządzenie.
+              </TimelineStep>
+              <TimelineStep number={2} title="Sprawdź kable i zasilanie">
+                Upewnij się, że router (i ONT przy światłowodzie) są podłączone, a wszystkie
+                wtyczki dobrze osadzone.
+              </TimelineStep>
+              <TimelineStep number={3} title="Zrestartuj sprzęt">
+                Odłącz router (i ONT) na 30 sekund, włącz najpierw ONT, po 60 s włącz router
+                i odczekaj 2–3 minuty.
+              </TimelineStep>
+              <TimelineStep number={4} title="Sprawdź diody">
+                PON/DSL — stała zielona = sygnał OK, miganie/czerwona/brak = problem z linią.
+                Internet/WAN — zielona ciągła = online.
+              </TimelineStep>
+              <TimelineStep number={5} title="Test połączenia przewodowego">
+                Podłącz jedno urządzenie kablem LAN do routera. Jeśli też nie działa — to nie
+                problem z Wi-Fi.
+              </TimelineStep>
+              <TimelineStep number={6} title="Zgłoś awarię">
+                Jeśli Internet nadal nie działa — zgłoś awarię. Przygotuj numer klienta lub
+                PESEL oraz adres instalacji.
+              </TimelineStep>
+            </TimelineList>
 
             <RevealGroup className="flex flex-col md:flex-row gap-3 my-4">
               <CallButton
@@ -485,30 +588,29 @@ export default function NetiaZglaszanieAwariiPomocPage() {
                 bg="#1c394b"
               />
             </RevealGroup>
-            <Note>Godziny Pracy Infolinii Technicznej: Całodobowo, 7 Dni w Tygodniu.</Note>
+            <Note>Godziny pracy infolinii technicznej: całodobowo, 7 dni w tygodniu.</Note>
           </div>
 
           <div id="phones">
             <SectionHeading>Infolinia Netia — telefony, godziny i koszt połączeń</SectionHeading>
             <Paragraph>
-              Pod jakim numerem działa infolinia Netii? Netia udostępnia trzy główne numery — w
-              zależności od tego, czy zgłaszasz awarię, chcesz zamówić usługę, czy szukasz wsparcia
-              ogólnego. Wszystkie połączenia są bezpłatne z polskich sieci komórkowych i
-              stacjonarnych.
+              Netia udostępnia trzy główne numery — w zależności od tego, czy zgłaszasz awarię,
+              chcesz zamówić usługę, czy szukasz wsparcia ogólnego. Wszystkie połączenia są
+              bezpłatne z polskich sieci komórkowych i stacjonarnych.
             </Paragraph>
 
-            {/* Top row: 2 cards side by side */}
             <RevealGroup className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
               <HotlineCard
-                title="Infolinia techniczna 24/7 (Obsługa istniejących klientów, reklamacje)"
+                title="Infolinia techniczna 24/7 (obsługa istniejących klientów, reklamacje)"
                 number="+48 793 800 300"
                 href="tel:+48793800300"
                 hours="Czynna 24 godziny na dobę, 7 dni w tygodniu"
+                live
                 description="Główna infolinia techniczna Netii — zgłaszanie awarii Internetu, Telewizji i usług mobilnych. Konsultant sprawdzi status łącza po stronie sieci i nada numer zgłoszenia. Przygotuj numer umowy lub PESEL i adres montażu."
               />
 
               <HotlineCard
-                title="Kontakt z Przedstawicielem Netii (Zamawianie nowych usług internetu i TV)"
+                title="Kontakt z przedstawicielem Netii (zamawianie nowych usług internetu i TV)"
                 number="+48 883 334 124"
                 href="tel:+48883334124"
                 hours="Pn–Ndz: 8:00–21:00"
@@ -516,13 +618,13 @@ export default function NetiaZglaszanieAwariiPomocPage() {
               />
             </RevealGroup>
 
-            {/* Bottom row: 1 card, centered, narrower so it reads as secondary */}
             <Reveal delay={0.1} className="w-full mt-4">
               <HotlineCard
-                title="Infolinia stacjonarna Netia (Obsługa istniejących klientów, reklamacje)"
+                title="Infolinia stacjonarna Netia (obsługa istniejących klientów, reklamacje)"
                 number="+48 22 711 11 11"
                 href="tel:+48227111111"
                 hours="Czynna całodobowo"
+                live
                 description="Standardowy numer stacjonarny Netii — alternatywa dla infolinii komórkowej, przydatna gdy preferujesz dzwonienie z telefonu domowego lub gdy hotline 793 800 300 jest zajęty."
               />
             </Reveal>
@@ -531,7 +633,7 @@ export default function NetiaZglaszanieAwariiPomocPage() {
           <div id="kiedy-dzwonic">
             <SectionHeading>Kiedy zadzwonić na infolinię?</SectionHeading>
             <Paragraph>Najczęstsze powody, dla których klienci dzwonią na infolinię Netii:</Paragraph>
-            <RevealGroup as="ul" className="mb-4">
+            <RevealGroup as="ul" className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 mb-4">
               <ReasonRow
                 title="Awaria Internetu lub Telewizji"
                 desc="brak sygnału, miganie diody PON, błąd na dekoderze 4K."

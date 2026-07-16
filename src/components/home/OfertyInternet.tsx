@@ -157,11 +157,11 @@ export default function OfertyInternet() {
 
                 <div className="mt-6 flex justify-center">
                   <m.a
-                    href="tel:+48883334124"
+                    href="/oferty/popularne"
                     whileHover={reduceMotion ? undefined : { scale: 1.01 }}
                     whileTap={reduceMotion ? undefined : { scale: 0.99 }}
                     transition={{ duration: 0.15 }}
-                    className="flex items-center justify-center rounded-xl bg-teal-400 px-8 py-2.5 text-sm font-bold text-[#0a1a2b] transition-colors hover:bg-teal-300"
+                    className="flex items-center justify-center rounded-xl bg-teal-400 px-8 py-2.5 text-sm font-bold text-white transition-colors hover:bg-teal-300"
                   >
                     Sprawdź ofertę Internet Netia
                   </m.a>

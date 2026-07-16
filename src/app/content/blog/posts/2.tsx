@@ -103,32 +103,52 @@ export default function Post2() {
         swoją wydajność. Najlepiej zawsze zostawić sobie rozsądny zapas przepustowości.
       </p>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Liczba domowników</th>
-            <th>Typowe korzystanie</th>
-            <th>Rekomendowana prędkość pobierania</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1-2 osoby</td>
-            <td>Strony, social media, filmy HD, jedna wideorozmowa</td>
-            <td>100-300 Mb/s</td>
-          </tr>
-          <tr>
-            <td>3-4 osoby</td>
-            <td>Praca zdalna, nauka online, streaming 4K, konsola</td>
-            <td>600 Mb/s</td>
-          </tr>
-          <tr>
-            <td>5+ osób</td>
-            <td>Kilka ekranów 4K, gry online, chmura, wiele urządzeń</td>
-            <td>1 Gb/s lub 2 Gb/s</td>
-          </tr>
-        </tbody>
-      </table>
+      <div className="not-prose my-6 -mx-4 overflow-x-auto sm:mx-0">
+        <table className="w-full min-w-[560px] border-collapse text-sm sm:min-w-0 sm:text-base">
+          <thead>
+            <tr className="border-b border-white/15 bg-white/5">
+              <th className="px-3 py-2.5 text-left font-semibold text-white sm:px-4">
+                Liczba domowników
+              </th>
+              <th className="px-3 py-2.5 text-left font-semibold text-white sm:px-4">
+                Typowe korzystanie
+              </th>
+              <th className="px-3 py-2.5 text-left font-semibold text-white sm:px-4">
+                Rekomendowana prędkość pobierania
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b border-white/10">
+              <td className="whitespace-nowrap px-3 py-2.5 sm:px-4">1-2 osoby</td>
+              <td className="px-3 py-2.5 sm:px-4">
+                Strony, social media, filmy HD, jedna wideorozmowa
+              </td>
+              <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-teal-300 sm:px-4">
+                100-300 Mb/s
+              </td>
+            </tr>
+            <tr className="border-b border-white/10">
+              <td className="whitespace-nowrap px-3 py-2.5 sm:px-4">3-4 osoby</td>
+              <td className="px-3 py-2.5 sm:px-4">
+                Praca zdalna, nauka online, streaming 4K, konsola
+              </td>
+              <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-teal-300 sm:px-4">
+                600 Mb/s
+              </td>
+            </tr>
+            <tr>
+              <td className="whitespace-nowrap px-3 py-2.5 sm:px-4">5+ osób</td>
+              <td className="px-3 py-2.5 sm:px-4">
+                Kilka ekranów 4K, gry online, chmura, wiele urządzeń
+              </td>
+              <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-teal-300 sm:px-4">
+                1 Gb/s lub 2 Gb/s
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <p>
         Dla jednej lub dwóch osób pakiet 100 Mb/s może być w zupełności wystarczający. Sprawdzi

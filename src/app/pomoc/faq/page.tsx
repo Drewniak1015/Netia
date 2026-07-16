@@ -379,17 +379,10 @@ const ANIM_CSS = `
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-@keyframes faqFloat {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
-}
-@keyframes faqFloatAlt {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-5px); }
-}
+
+
 .faq-fade-up  { animation: faqFadeUp .55s cubic-bezier(.22,.8,.32,1) both; }
-.faq-float    { animation: faqFloat 5s ease-in-out infinite; }
-.faq-float-alt{ animation: faqFloatAlt 4s ease-in-out .6s infinite; }
+
 
 .faq-card { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
 .faq-card:hover { transform: translateY(-2px); }
@@ -408,7 +401,7 @@ const ANIM_CSS = `
 .faq-collapse.open .faq-answer { opacity: 1; }
 
 @media (prefers-reduced-motion: reduce) {
-  .faq-fade-up, .faq-float, .faq-float-alt { animation: none; }
+.faq-fade-up { animation: none; }
   .faq-card, .faq-pill, .faq-collapse, .faq-collapse .faq-answer { transition: none; }
   .faq-card:hover { transform: none; }
 }
@@ -441,8 +434,7 @@ function HeroBubbles() {
       {/* cień pod całością — jedna elipsa zamiast filtrów */}
       <ellipse cx="165" cy="224" rx="105" ry="11" fill="#02121d" opacity=".35" />
 
-      {/* dymek główny — znak zapytania */}
-      <g className="faq-float">
+      <g >
         <path
           d="M138 18c-58 0-104 38-104 86 0 47 46 85 104 85 10 0 20-1 29-3l34 22-6-34c29-16 47-42 47-70 0-48-46-86-104-86z"
           fill="url(#fbTeal)"
@@ -467,7 +459,7 @@ function HeroBubbles() {
       </g>
 
       {/* dymek drugi — Wi-Fi */}
-      <g className="faq-float-alt">
+      <g>
         <path
           d="M228 78c-38 0-68 25-68 56 0 31 30 56 68 56 7 0 13-1 19-2l24 16-4-24c18-11 29-27 29-46 0-31-30-56-68-56z"
           fill="url(#fbNavy)"

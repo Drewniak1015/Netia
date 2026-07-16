@@ -71,7 +71,7 @@ const INFO_ITEMS: Record<string, InfoItem> = {
     id: "router-wifi6",
     model: "HUAWEI HG8245X6-10",
     podtytul: "Router instalowany do Internetu Światłowodowego Netii przy prędkościach do 1 Gb/s",
-    zdjecie: "/MidRouter.webp",
+    zdjecie: "/images/MidRouter.webp",
     sections: [
       {
         title: "Opis urządzenia",
@@ -129,14 +129,14 @@ const INFO_ITEMS: Record<string, InfoItem> = {
         },
       },
     ],
-    instrukcjaUrl: "https://uslugi-netia.pl/docs/Instrukcja_Router_Huawei_HG8245X6_10.pdf",
+    instrukcjaUrl: "pdf/Instrukcja_Router_Huawei_HG8245X6_10.pdf",
   },
 
   "router-wifi7": {
     id: "router-wifi7",
     model: "HUAWEI HG8145B7N",
     podtytul: "Router instalowany do Internetu Światłowodowego Netii przy prędkościach do 2 Gb/s",
-    zdjecie: "/TopRouter.webp",
+    zdjecie: "/images/TopRouter.webp",
     sections: [
       {
         title: "Opis urządzenia",
@@ -195,7 +195,7 @@ const INFO_ITEMS: Record<string, InfoItem> = {
       },
     ],
     instrukcjaUrl:
-      "https://uslugi-netia.pl/docs/Instrukcja_Router_ONTCombo_HuaweiHG8145B7N-_2-5G_WiFi7.pdf",
+      "/pdf/Instrukcja_Router_ONTCombo_HuaweiHG8145B7N-_2-5G_WiFi7.pdf",
   },
 
   "dekoder-evobox": {
@@ -244,7 +244,7 @@ const INFO_ITEMS: Record<string, InfoItem> = {
       },
     ],
     instrukcjaUrl:
-      "https://uslugi-netia.pl/docs/Instrukcja_uzytkownika_netia_dekodera_evobox_4K.pdf",
+      "/pdf/Instrukcja_uzytkownika_netia_dekodera_evobox_4K.pdf",
   },
 
   "netia-go": {
@@ -533,45 +533,34 @@ function IkonaProduktu({ zdjecie, model }: { zdjecie: string; model: string }) {
 }
 
 /* ---------------------------------------------------------------------- */
-/*  Kolorystyka banera-hasła (Netia GO / Giganagrywarka) — akcent (lime    */
-/*  / red / domyślnie teal) jest tu GŁÓWNYM kolorem gradientu w tle, nie   */
-/*  tylko subtelną poświatą.                                               */
+/*  Kolorystyka banera-hasła (Netia GO / Giganagrywarka) — spójna z        */
+/*  PopularneOferty.tsx: przekątny linear-gradient jasny → ciemny, żeby    */
+/*  kolory były identyczne w całym serwisie.                               */
 /* ---------------------------------------------------------------------- */
 const BANNER_AKCENTY: Record<
   "teal" | "red" | "lime",
   { border: string; background: string; text: string; soft: string }
 > = {
   teal: {
-    border: "border-teal-300/40",
-    background: `
-      radial-gradient(circle at 15% 10%, rgba(45,212,191,.45), transparent 35%),
-      radial-gradient(circle at 100% 100%, rgba(56,189,248,.18), transparent 45%),
-      linear-gradient(135deg, #184b66 0%, #123f59 45%, #0f3045 100%)
-    `,
+    border: "border-teal-300/25",
+    background:
+      "radial-gradient(130% 160% at 15% 0%, rgba(45,212,191,.45), transparent 60%), linear-gradient(135deg, #0f3550 0%, #0B2A3D 100%)",
     text: "text-teal-300",
     soft: "bg-teal-300/15",
   },
-
+  // Różowy/magenta — spójny z PopularneOferty.tsx.
   red: {
-    border: "border-[rgb(238,18,100)]/40",
-    background: `
-      radial-gradient(circle at 15% 10%, rgba(255,82,149,.5), transparent 35%),
-      radial-gradient(circle at 100% 100%, rgba(255,130,170,.18), transparent 45%),
-      linear-gradient(135deg, #8d1f4e 0%, #6d173d 45%, #471126 100%)
-    `,
-    text: "text-[rgb(238,18,100)]",
-    soft: "bg-[rgb(238,18,100)]/15",
+    border: "border-[#e0399e]/40",
+    background: "linear-gradient(135deg, #d6409f 0%, #8a2570 55%, #4a1240 100%)",
+    text: "text-[#f472b6]",
+    soft: "bg-[#e0399e]/15",
   },
-
+  // Limonkowy — spójny z PopularneOferty.tsx.
   lime: {
-    border: "border-[rgb(166,206,58)]/40",
-    background: `
-      radial-gradient(circle at 15% 10%, rgba(190,230,80,.45), transparent 35%),
-      radial-gradient(circle at 100% 100%, rgba(220,255,120,.18), transparent 45%),
-      linear-gradient(135deg, #5f7d28 0%, #4b661f 45%, #2f4115 100%)
-    `,
-    text: "text-[rgb(166,206,58)]",
-    soft: "bg-[rgb(166,206,58)]/15",
+    border: "border-[#a3d146]/40",
+    background: "linear-gradient(135deg, #8bc34a 0%, #5c9c2e 55%, #33540f 100%)",
+    text: "text-[#c3e86b]",
+    soft: "bg-[#a3d146]/15",
   },
 };
 
@@ -725,25 +714,25 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
             className="relative flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/10 text-left sm:max-h-[88vh]"
             style={{ backgroundColor: "#0B2A3D" }}
           >
-            {/* Nagłówek — zawsze widoczny, nazwa się nie chowa */}
-            <div className="shrink-0 border-b border-white/10 px-6 pb-4 pt-6 sm:px-8 sm:pt-8">
-              <div className="flex items-center gap-2 text-teal-300">
-                <Info size={18} />
-                <span className="text-xs font-bold uppercase tracking-wide">Szczegóły</span>
-              </div>
-              <h3 className="mt-2 text-2xl font-extrabold text-white sm:text-3xl">{item.model}</h3>
-              {item.podtytul && <p className="mt-1 text-sm text-white/60">{item.podtytul}</p>}
-            </div>
+            {(() => {
+              const akcent = BANNER_AKCENTY[item.bannerAkcent ?? "teal"];
 
-            {/* Środkowa część — jedyny scrollowalny fragment okna */}
-            <div className="flex-1 overflow-y-auto px-6 py-5 sm:px-8">
-              {item.zdjecie && <IkonaProduktu zdjecie={item.zdjecie} model={item.model} />}
+              return (
+                <>
+                  {/* Nagłówek — zawsze widoczny, kolor zależny od typu popupu */}
+                  <div className="shrink-0 border-b border-white/10 px-6 pb-4 pt-6 sm:px-8 sm:pt-8">
+                    <div className={`flex items-center gap-2 ${akcent.text}`}>
+                      <Info size={18} />
+                      <span className="text-xs font-bold uppercase tracking-wide">Szczegóły</span>
+                    </div>
+                    <h3 className="mt-2 text-2xl font-extrabold text-white sm:text-3xl">{item.model}</h3>
+                    {item.podtytul && <p className="mt-1 text-sm text-white/60">{item.podtytul}</p>}
+                  </div>
 
-              {(() => {
-                const akcent = BANNER_AKCENTY[item.bannerAkcent ?? "teal"];
+                  {/* Środkowa część — jedyny scrollowalny fragment okna */}
+                  <div className="flex-1 overflow-y-auto px-6 py-5 sm:px-8">
+                    {item.zdjecie && <IkonaProduktu zdjecie={item.zdjecie} model={item.model} />}
 
-                return (
-                  <>
                     {item.banner && (
                       <div
                         className={`mb-6 overflow-hidden rounded-2xl border ${akcent.border} px-5 py-7 text-center sm:px-8 sm:py-9`}
@@ -790,29 +779,29 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
                         </div>
                       );
                     })}
-                  </>
-                );
-              })()}
 
-              {item.uwaga && (
-                <p className="mt-6 border-t border-white/10 pt-4 text-[11px] leading-relaxed text-white/40">
-                  {item.uwaga}
-                </p>
-              )}
+                    {item.uwaga && (
+                      <p className="mt-6 border-t border-white/10 pt-4 text-[11px] leading-relaxed text-white/40">
+                        {item.uwaga}
+                      </p>
+                    )}
 
-              {item.instrukcjaUrl && (
-                <a
-                  href={item.instrukcjaUrl}
-                  download
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-6 flex items-center justify-between gap-2 rounded-xl border border-teal-300/30 bg-teal-300/10 px-4 py-3 text-sm font-semibold text-teal-200 transition-colors hover:bg-teal-300/20"
-                >
-                  Instrukcja użytkownika {item.model}
-                  <ChevronRight size={16} />
-                </a>
-              )}
-            </div>
+                    {item.instrukcjaUrl && (
+                      <a
+                        href={item.instrukcjaUrl}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-6 flex items-center justify-between gap-2 rounded-xl border border-teal-300/30 bg-teal-300/10 px-4 py-3 text-sm font-semibold text-teal-200 transition-colors hover:bg-teal-300/20"
+                      >
+                        Instrukcja użytkownika {item.model}
+                        <ChevronRight size={16} />
+                      </a>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
 
             {/* Stopka — zawsze na dole, jedyny przycisk zamknięcia */}
             <div className="shrink-0 border-t border-white/10 px-6 py-4 sm:px-8">
@@ -912,7 +901,7 @@ const OfferCard = memo(function OfferCard({
         whileHover={reduceMotion ? undefined : { scale: 1.02 }}
         whileTap={reduceMotion ? undefined : { scale: 0.98 }}
         transition={{ duration: 0.15 }}
-        className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-teal-400 px-4 py-3 text-sm font-bold text-[#0a1a2b] transition-colors hover:bg-teal-300"
+        className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-teal-400 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-teal-300"
       >
          <Phone className="h-4 w-4" />
          ZADZWOŃ {PHONE}

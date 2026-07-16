@@ -18,6 +18,7 @@ import {
   Download,
   ChevronRight,
   Plus,
+  Sliders,
 } from "lucide-react";
 
 const FAQ_ITEMS = [
@@ -252,7 +253,10 @@ const [openIndex, setOpenIndex] = useState<number | null>(null);
           })}
         </div>
 
-        {/* Closing CTA — matched to this content: search the list or grab the PDF */}
+        {/* Closing CTA — self-service (PDF + Konfigurator wyróżniony), bez telefonu/SMS:
+            to sekcja o sprawdzaniu kanałów, nie o sprzedaży — nie chcemy zgłoszeń
+            telefonicznych typu "czy macie kanał X". Konfigurator to jedyna ścieżka
+            do zakupu i dlatego jest wyraźnie wyróżniony (pełny teal, pulsujący). */}
         <div
           className="faq-animate max-w-2xl mx-auto rounded-3xl border border-white/10 bg-white/5 px-6 py-8 sm:px-10 sm:py-10 text-center"
           style={{ animationDelay: `${240 + FAQ_ITEMS.length * 90 + 80}ms` }}
@@ -261,14 +265,13 @@ const [openIndex, setOpenIndex] = useState<number | null>(null);
             Nie znalazłeś swojego kanału?
           </h3>
           <p className="mb-6 text-sm sm:text-[0.9375rem] text-white/65">
-            Sprawdź go w wyszukiwarce z filtrami pakietów albo pobierz pełną
-            listę w PDF.
+            Sprawdź pełną listę w PDF, a jeśli już wiesz, czego szukasz —
+            skonfiguruj pakiet od razu online.
           </p>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-
             <a
-              href="/pliki/lista-kanalow-netia.pdf"
+              href="/pdf/NETIA_Lista_Kanałów.pdf"
               download
               className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] sm:min-w-60"
             >
@@ -286,6 +289,26 @@ const [openIndex, setOpenIndex] = useState<number | null>(null);
                 </span>
               </span>
               <ChevronRight size={18} className="text-white/50" />
+            </a>
+
+            <a
+              href="/konfigurator?umowa=24"
+              className="faq-cta-pulse flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] sm:min-w-60"
+            >
+              <span className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
+                  <Sliders size={16} />
+                </span>
+                <span className="text-left">
+                  <span className="block text-sm font-bold leading-tight">
+                    SKONFIGURUJ PAKIET
+                  </span>
+                  <span className="block text-xs text-white/85">
+                    Wybierz internet, TV i dodatki
+                  </span>
+                </span>
+              </span>
+              <ChevronRight size={18} className="text-white/70" />
             </a>
           </div>
         </div>
