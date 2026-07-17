@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { LazyMotion, domAnimation, m, useReducedMotion, type Variants } from "framer-motion";
 import { Check, Wifi, Cable, Smartphone } from "lucide-react";
-
+import DottedBackground from "@/components/ui/DottedBackground";
 type Column = {
   icon: typeof Wifi;
   title: string;
@@ -136,7 +136,9 @@ export default function PoradnikTechnologie() {
 
   return (
     <LazyMotion features={domAnimation} strict>
-      <section className="py-16 px-8" style={sectionBgStyle}>
+      <section className="relative overflow-hidden py-16 px-8" style={sectionBgStyle}>
+          <DottedBackground variant="grid-fade" size={40} opacity={0.15} focusY="50%" />
+        
         <div className="max-w-305  mx-auto">
           <m.div
             initial="hidden"

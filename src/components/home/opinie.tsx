@@ -11,7 +11,7 @@ import {
   MessageCircle,
   ChevronRight,
 } from "lucide-react";
-
+import DottedBackground from "@/components/ui/DottedBackground";
 type Review = {
   initials: string;
   name: string;
@@ -106,8 +106,9 @@ export default function NetiaSocialProof() {
     <section
       ref={sectionRef}
       style={{ backgroundColor: "#0B2A3D" }}
-      className="w-full py-16 px-6 font-sans"
+      className="relative overflow-hidden w-full py-16 px-6 font-sans"
     >
+   <DottedBackground variant="dots-accent" size={22} />
       <style>{`
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(16px); }

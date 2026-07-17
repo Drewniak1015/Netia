@@ -28,7 +28,7 @@ import {
   Table2,
   Wifi,
 } from "lucide-react";
-
+import DottedBackground from "@/components/ui/DottedBackground";
 /* Wspólny wariant fade-up — zgodnie z Hero.tsx */
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -1193,124 +1193,132 @@ export default function PopularneOferty() {
             </m.div>
           </m.div>
 
-          <div className="mt-14 grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {offers.map((offer, i) => (
-              <m.div
-                key={offer.id}
-                initial={reduceMotion ? false : "hidden"}
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-                variants={fadeUp}
-                transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.08 }}
-                whileHover={reduceMotion ? undefined : { y: -4 }}
-                className={`relative flex h-full flex-col rounded-2xl border p-6 ${
-                  offer.highlighted
-                    ? "border-amber-400/60 bg-white/5"
-                    : "border-white/10 bg-white/5"
-                }`}
-              >
-                {offer.highlighted && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#0B2A3D]">
-                    Najczęściej wybierany
-                  </span>
-                )}
+          <div className="relative mt-14">
+            {/* full-bleed tło — wychodzi poza max-w-320, sięga krawędzi viewportu,
+                ale wysokość dopasowuje się do siatki kart poniżej (inset-y-0) */}
+            <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
+              <DottedBackground variant="dots" size={22} />
+            </div>
 
-                <p className="text-xs font-semibold text-white/50">
-                  {offer.eyebrow}
-                </p>
-                <h3 className="mt-1 text-2xl font-extrabold leading-snug text-white">
-                  {offer.speedBold}
-                  {offer.speedSuffix && (
-                    <span className="ml-1.5 text-lg font-semibold text-white/85">
-                      {offer.speedSuffix}
+            <div className="relative grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {offers.map((offer, i) => (
+                <m.div
+                  key={offer.id}
+                  initial={reduceMotion ? false : "hidden"}
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.3 }}
+                  variants={fadeUp}
+                  transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.08 }}
+                  whileHover={reduceMotion ? undefined : { y: -4 }}
+                  className={`relative flex h-full flex-col rounded-2xl border p-6 ${
+                    offer.highlighted
+                      ? "border-amber-400/60 bg-white/5"
+                      : "border-white/10 bg-white/5"
+                  }`}
+                >
+                  {offer.highlighted && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#0B2A3D]">
+                      Najczęściej wybierany
                     </span>
                   )}
-                </h3>
 
-                {offer.promoHeadline ? (
-                  <div className="mt-4">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-orange-400">
-                      {offer.promoEyebrow}
-                    </p>
-                    <p className="text-lg font-extrabold leading-tight text-orange-300">
-                      {offer.promoHeadline}
-                    </p>
-                    {offer.promoNote && (
-                      <p className="mt-0.5 text-[11px] text-white/40">
-                        {offer.promoNote}
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <span className="mt-4 inline-flex w-fit items-center rounded-full bg-teal-500/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-teal-300">
-                    {offer.badgeLabel}
-                  </span>
-                )}
-
-                <div className="mt-5 border-t border-white/10" />
-
-                <ul className="mt-5 flex-1 space-y-2.5">
-                  {offer.features.map((f, idx) => (
-                    <li
-                      key={idx}
-                      className="flex items-center gap-2 text-xs text-white/70 sm:text-sm"
-                    >
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-400/15 text-teal-300">
-                        <Check size={12} />
+                  <p className="text-xs font-semibold text-white/50">
+                    {offer.eyebrow}
+                  </p>
+                  <h3 className="mt-1 text-2xl font-extrabold leading-snug text-white">
+                    {offer.speedBold}
+                    {offer.speedSuffix && (
+                      <span className="ml-1.5 text-lg font-semibold text-white/85">
+                        {offer.speedSuffix}
                       </span>
-                      {f.infoId ? (
-                        <button
-                          type="button"
-                          onClick={() => setAktywnyInfoId(f.infoId!)}
-                          className={`inline-flex cursor-pointer items-center gap-1 text-left underline decoration-dotted decoration-slate-500 underline-offset-4 transition-colors ${klasaCechy(
-                            f.infoId,
-                            aktywnyInfoId
-                          )}`}
-                        >
-                          {f.label}
-                          <Info size={12} className="shrink-0 opacity-60" />
-                        </button>
-                      ) : (
-                        <span>{f.label}</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                    )}
+                  </h3>
 
-                <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.03] py-4 text-center">
-                  <div className="flex items-baseline justify-center gap-1.5">
-                    <span className="text-3xl font-extrabold text-white">
-                      {offer.price}
+                  {offer.promoHeadline ? (
+                    <div className="mt-4">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-orange-400">
+                        {offer.promoEyebrow}
+                      </p>
+                      <p className="text-lg font-extrabold leading-tight text-orange-300">
+                        {offer.promoHeadline}
+                      </p>
+                      {offer.promoNote && (
+                        <p className="mt-0.5 text-[11px] text-white/40">
+                          {offer.promoNote}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="mt-4 inline-flex w-fit items-center rounded-full bg-teal-500/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-teal-300">
+                      {offer.badgeLabel}
                     </span>
-                    <span className="text-sm font-medium text-white/60">
-                      {offer.priceUnit}
+                  )}
+
+                  <div className="mt-5 border-t border-white/10" />
+
+                  <ul className="mt-5 flex-1 space-y-2.5">
+                    {offer.features.map((f, idx) => (
+                      <li
+                        key={idx}
+                        className="flex items-center gap-2 text-xs text-white/70 sm:text-sm"
+                      >
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-400/15 text-teal-300">
+                          <Check size={12} />
+                        </span>
+                        {f.infoId ? (
+                          <button
+                            type="button"
+                            onClick={() => setAktywnyInfoId(f.infoId!)}
+                            className={`inline-flex cursor-pointer items-center gap-1 text-left underline decoration-dotted decoration-slate-500 underline-offset-4 transition-colors ${klasaCechy(
+                              f.infoId,
+                              aktywnyInfoId
+                            )}`}
+                          >
+                            {f.label}
+                            <Info size={12} className="shrink-0 opacity-60" />
+                          </button>
+                        ) : (
+                          <span>{f.label}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.03] py-4 text-center">
+                    <div className="flex items-baseline justify-center gap-1.5">
+                      <span className="text-3xl font-extrabold text-white">
+                        {offer.price}
+                      </span>
+                      <span className="text-sm font-medium text-white/60">
+                        {offer.priceUnit}
+                      </span>
+                    </div>
+                    <span className="mt-1 block text-[11px] text-white/40">
+                      {offer.priceNote}
                     </span>
                   </div>
-                  <span className="mt-1 block text-[11px] text-white/40">
-                    {offer.priceNote}
-                  </span>
-                </div>
 
-                <div className="mt-auto flex flex-col gap-2.5 pt-6">
-                  <m.a
-                    href="tel:+48883334124"
-                    whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-                    whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                    className="flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-4 py-2.5 text-sm font-bold text-white"
-                  >
-                    <Phone size={14} /> ZADZWOŃ +48 883 334 124
-                  </m.a>
-                  <m.a
-                    href="sms:+48883334124?body=INTERNET"
-                    whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-                    whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white"
-                  >
-                    <MessageCircle size={14} /> WYŚLIJ SMS
-                  </m.a>
-                </div>
-              </m.div>
-            ))}
+                  <div className="mt-auto flex flex-col gap-2.5 pt-6">
+                    <m.a
+                      href="tel:+48883334124"
+                      whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+                      whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                      className="flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-4 py-2.5 text-sm font-bold text-white"
+                    >
+                      <Phone size={14} /> ZADZWOŃ +48 883 334 124
+                    </m.a>
+                    <m.a
+                      href="sms:+48883334124?body=INTERNET"
+                      whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+                      whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                      className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white"
+                    >
+                      <MessageCircle size={14} /> WYŚLIJ SMS
+                    </m.a>
+                  </div>
+                </m.div>
+              ))}
+            </div>
           </div>
 
           <m.div

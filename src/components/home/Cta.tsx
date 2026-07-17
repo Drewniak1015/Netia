@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Phone, MessageCircle, ChevronRight } from "lucide-react";
-
+import DottedBackground from "@/components/ui/DottedBackground";
 type ContactSectionProps = {
   advisorName?: string;
   advisorRole?: string;
@@ -59,6 +59,7 @@ export default function ContactSection({
       style={{ backgroundColor: "#0B2A3D" }}
       className="relative overflow-hidden font-sans"
     >
+  <DottedBackground variant="dots-accent" size={22} />
       <div className="relative z-10 mx-auto grid max-w-320 grid-cols-1 items-center gap-10 px-5 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8 lg:px-8 lg:py-16">
         {/* Kolumna tekstowa */}
         <div className="relative z-10 text-center lg:text-left">

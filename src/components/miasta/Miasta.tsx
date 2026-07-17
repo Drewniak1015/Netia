@@ -2,7 +2,7 @@
 
 import { MapPin, ArrowRight, Wifi } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { CITIES } from "./miasta-dane";
+import { CITIES } from "@/lib/cities";
 
 const VISIBLE_LIMIT = 25;
 

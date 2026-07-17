@@ -3,7 +3,6 @@
 import { memo, useState } from "react";
 import { LazyMotion, domAnimation, m, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
 import { Wifi, ChevronDown } from "lucide-react";
-
 type InternetOffer = {
   tech: string;
   speed: string;

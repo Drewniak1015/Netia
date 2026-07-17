@@ -129,7 +129,7 @@ const INFO_ITEMS: Record<string, InfoItem> = {
         },
       },
     ],
-    instrukcjaUrl: "pdf/Instrukcja_Router_Huawei_HG8245X6_10.pdf",
+    instrukcjaUrl: "/pdf/Instrukcja_Router_Huawei_HG8245X6_10.pdf",
   },
 
   "router-wifi7": {
@@ -921,7 +921,14 @@ const OfferCard = memo(function OfferCard({
   );
 });
 
-export default function Oferty() {
+interface OfertyProps {
+  /** Miejscownik miasta, np. "Kielcach" — jeśli podany, tytuł zmienia się na
+   *  "Specjalna oferta w {mieście}" zamiast domyślnego "Popularne oferty".
+   *  Używane na stronach /internet-miasta/[slug]. */
+  cityLocative?: string;
+}
+
+export default function Oferty({ cityLocative }: OfertyProps = {}) {
   // Respects the OS-level "reduce motion" preference — when set, we skip
   // hover/tap transforms and let entrance animations fall back to a plain
   // opacity fade (still declared via variants, just near-instant).
@@ -938,7 +945,7 @@ export default function Oferty() {
       <section
         className="relative w-full py-16 px-8 overflow-hidden"
         style={{ backgroundColor: "#0B2A3D" }}
-      >
+      > 
         {/* ambient background lines, consistent with hero */}
         <div
           aria-hidden
@@ -950,9 +957,6 @@ export default function Oferty() {
         />
 
         <div className="relative max-w-305 mx-auto">
-          {/* Header block now animates in on scroll (fade + slide-up, staggered).
-              This section sits below the Hero, so it's not an LCP candidate —
-              safe to animate unlike a hero heading would be. */}
           <m.div
             initial="hidden"
             whileInView="visible"
@@ -971,7 +975,15 @@ export default function Oferty() {
               variants={headerItemVariants}
               className="mt-6 text-4xl md:text-5xl font-extrabold text-white"
             >
-              Popularne <span className="text-teal-400">oferty</span>
+              {cityLocative ? (
+                <>
+                  Specjalna oferta w <span className="text-teal-400">{cityLocative}</span>
+                </>
+              ) : (
+                <>
+                  Popularne <span className="text-teal-400">oferty</span>
+                </>
+              )}
             </m.h2>
             <m.p
               variants={headerItemVariants}
@@ -998,9 +1010,6 @@ export default function Oferty() {
             ))}
           </m.div>
 
-          {/* Pasek mini-benefitów: krótkie, "miękkie" hasła wspierające decyzję,
-              oddzielone pionowymi separatorami na desktopie i ikoną w kółku
-              nawiązującą do stylu numerowanych kroków wyżej na stronie. */}
           <m.div
             initial="hidden"
             whileInView="visible"
@@ -1021,9 +1030,6 @@ export default function Oferty() {
             ))}
           </m.div>
 
-          {/* Nota prawna / disclaimer ofertowy — teraz z tą samą, lekką animacją
-              wejścia (fade + slide-up) co pozostałe sekcje, uruchamianą przy
-              wjechaniu w viewport. */}
           <m.div
             initial="hidden"
             whileInView="visible"

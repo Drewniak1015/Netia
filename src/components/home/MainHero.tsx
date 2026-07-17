@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   Zap,
 } from "lucide-react";
-
+import DottedBackground from "@/components/ui/DottedBackground";
 const TvMockup = dynamic(() => import("./Tvmockup"), {
   ssr: false,
   loading: () => null,
@@ -48,6 +48,7 @@ export default function Hero() {
         style={{ backgroundColor: "#0B2A3D" }}
         className="relative overflow-hidden font-sans pt-26"
       >
+  <DottedBackground variant="dots-fade" focusY="25%" size={24} />
 
         <div className="relative z-10 mx-auto grid max-w-320 grid-cols-1 items-center gap-10 px-5 py-16 sm:px-6 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8 lg:px-8 lg:py-28">
           {/* Kolumna tekstowa */}

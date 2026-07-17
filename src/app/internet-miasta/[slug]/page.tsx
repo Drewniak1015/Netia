@@ -1,70 +1,46 @@
-import MiastoPage from "@/components/miasta/MiastoPage"; // Dostosuj ścieżkę do swojego komponentu MiastoPage
-import Link from "next/link";
-import { ArrowLeft, Wifi, Tv, ShieldCheck } from "lucide-react";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { CITIES, getCityBySlug } from "@/lib/cities";
+import { getCityDistricts } from "@/lib/cityDistricts";
+import { getNearbyCities, generateCityFaq } from "@/lib/cityHelpers";
+import CityPageClient from "@/components/miasta/CityPageClient";
 
 interface PageProps {
-  params: Promise<{
-    slug: string;
-  }>;
+  params: Promise<{ slug: string }>;
 }
 
-export default async function Page({ params }: PageProps) {
+/** Generuje statyczne ścieżki dla wszystkich miast na etapie builda (SSG). */
+export function generateStaticParams() {
+  return CITIES.map((city) => ({ slug: city.slug }));
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+  const city = getCityBySlug(slug);
+  if (!city) return {};
+
+  const title = `Internet Netia w ${city.locative} — oferty, ceny, montaż`;
+  const description =
+    city.description?.slice(0, 155) ??
+    `Sprawdź ofertę Internetu światłowodowego i telewizji Netii w ${city.locative}. Szybki montaż, elastyczne umowy.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/internet-miasta/${city.slug}` },
+  };
+}
+
+export default async function InternetMiastoPage({ params }: PageProps) {
+  const { slug } = await params;
+  const city = getCityBySlug(slug);
+  if (!city) notFound();
+
+  const districts = getCityDistricts(city.slug);
+  const nearbyCities = getNearbyCities(city.slug, 6);
+  const faq = generateCityFaq(city);
 
   return (
-    <main className="min-h-screen bg-[#0B2A3D] text-white font-sans">
-      {/* Górny pasek nawigacji / Powrót */}
-      <div className="mx-auto max-w-7xl px-5 pt-8 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm font-medium text-white/60 transition-colors hover:text-teal-300"
-        >
-          <ArrowLeft size={16} />
-          Powrót do listy miast
-        </Link>
-      </div>
-
-      {/* Główna sekcja z nagłówkiem */}
-      <section className="mx-auto max-w-7xl px-5 py-12 sm:px-6 sm:py-16 lg:px-8">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-8 md:p-12">
-          
-          {/* Wywołanie Twojego komponentu nagłówka */}
-          <MiastoPage slug={slug} />
-          
-          <p className="mt-4 max-w-2xl text-base text-white/70">
-            Wybierz najlepszy pakiet światłowodu i telewizji cyfrowej dopasowany do Twoich potrzeb. 
-            Sprawdź parametry techniczne i zamów instalację online.
-          </p>
-
-          {/* Przykładowy placeholder na dalszy content (cokolwiek po przeklikaniu) */}
-          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
-            <div className="rounded-xl bg-white/5 p-6 border border-white/5">
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-teal-400/10 text-teal-300">
-                <Wifi size={20} />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Internet Światłowodowy</h3>
-              <p className="text-sm text-white/60">Prędkości aż do 1 Gb/s bez limitu danych i spadków stabilności.</p>
-            </div>
-
-            <div className="rounded-xl bg-white/5 p-6 border border-white/5">
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-teal-400/10 text-teal-300">
-                <Tv size={20} />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Telewizja 4K</h3>
-              <p className="text-sm text-white/60">Ponad 180 kanałów, w tym sport i film w najwyższej jakości obrazu.</p>
-            </div>
-
-            <div className="rounded-xl bg-white/5 p-6 border border-white/5">
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-teal-400/10 text-teal-300">
-                <ShieldCheck size={20} />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Bezpieczna sieć</h3>
-              <p className="text-sm text-white/60">Ochrona przed cyberzagrożeniami i kontrola rodzicielska w cenie.</p>
-            </div>
-          </div>
-
-        </div>
-      </section>
-    </main>
+    <CityPageClient city={city} districts={districts} nearbyCities={nearbyCities} faq={faq} />
   );
 }
