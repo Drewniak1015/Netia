@@ -128,7 +128,7 @@ export default function Przewodnik({
   return (
     <section
       style={{ backgroundColor: "#0B2A3D" }}
-      className="w-full py-16 px-6 font-sans overflow-hidden"
+      className="w-full py-12 px-0  font-sans overflow-hidden"
     >
       <div className="relative z-10 mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-8 mt-20">
 

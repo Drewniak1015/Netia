@@ -340,7 +340,7 @@ export default function OfferMaxSection() {
 
   return (
     <LazyMotion features={domAnimation} strict>
-      <div className="overflow-x-hidden bg-[#0B2A3D] font-sans text-white sm:pt-36 pt-36">
+      <div className="overflow-x-hidden bg-[#0B2A3D] font-sans text-white sm:pt-36 pt-31.5">
         {/* HERO PROMO BANNER — bez kropek: ma własną dekorację (świecące
             urządzenia + gradient różu), dodanie tekstury by ją zagłuszyło. */}
         <m.section

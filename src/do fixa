@@ -1,0 +1,53 @@
+
+//home
+// // Zminimalizuj aktywność głównego wątku 13,0 s
+// //Other
+// 4320 ms
+// Style & Layout
+// 4027 ms
+// Script Evaluation
+// 2771 ms
+// Rendering
+// 1256 ms
+// // Skróć czas wykonywania JavaScriptu 2,9 s
+
+//Opóźnienie renderowania elementu
+// 3900 ms
+// Instalacja w 3 dni. Stała cena przez całą umowę — bez podwyżek co pół roku i be…
+// <h2 class="mx-auto mt-4 max-w-xl text-base font-normal leading-snug text-white/75 sm:…" style="opacity: 1; transform: none;"></h2>
+
+//fuckup na  obu 
+
+
+// blog
+
+
+LCP
+Ulepsz dostarczanie obrazów Szacunkowe zmniejszenie rozmiaru: 175 KiB
+Zoptymalizuj LCP, zapewniając natychmiastową wykrywalność obrazu LCP w kodzie HTML i unikając leniwego ładowaniaLCPBez oceny
+Należy zastosować fetchpriority=high
+Prośbę można znaleźć w dokumencie początkowym
+
+Aby przyspieszyć ładowanie strony, unikaj tworzenia łańcuchów żądań krytycznych: skróć łańcuchy, zmniejsz rozmiar pobieranych zasobów lub opóźnij pobieranie zasobów, które nie są niezbędne.LCPBez oceny
+
+TBT 
+
+Kategoria
+Spędzony czas
+Script Evaluation
+1730 ms
+Other
+1582 ms
+Style & Layout
+688 ms
+Script Parsing & Compilation
+300 ms
+Zminimalizuj aktywność głównego wątku 4,5 s
+
+
+
+clS  
+
+
+header
+ ma 
