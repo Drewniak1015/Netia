@@ -1210,10 +1210,8 @@ export default function PopularneOferty() {
                   variants={fadeUp}
                   transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.08 }}
                   whileHover={reduceMotion ? undefined : { y: -4 }}
-                  className={`relative flex h-full flex-col rounded-2xl border p-6 ${
-                    offer.highlighted
-                      ? "border-amber-400/60 bg-white/5"
-                      : "border-white/10 bg-white/5"
+                  className={`relative flex h-full flex-col rounded-2xl border p-6 bg-[#183648] ${
+                    offer.highlighted ? "border-amber-400/60" : "border-white/10"
                   }`}
                 >
                   {offer.highlighted && (
@@ -1260,7 +1258,7 @@ export default function PopularneOferty() {
                     {offer.features.map((f, idx) => (
                       <li
                         key={idx}
-                        className="flex items-center gap-2 text-xs text-white/70 sm:text-sm"
+                        className="flex items-center gap-2 text-xs text-white sm:text-sm"
                       >
                         <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-400/15 text-teal-300">
                           <Check size={12} />
@@ -1269,7 +1267,7 @@ export default function PopularneOferty() {
                           <button
                             type="button"
                             onClick={() => setAktywnyInfoId(f.infoId!)}
-                            className={`inline-flex cursor-pointer items-center gap-1 text-left underline decoration-dotted decoration-slate-500 underline-offset-4 transition-colors ${klasaCechy(
+                            className={`inline-flex cursor-pointer items-center gap-1 text-left underline decoration-dotted decoration-teal-300/40 underline-offset-4 transition-colors ${klasaCechy(
                               f.infoId,
                               aktywnyInfoId
                             )}`}

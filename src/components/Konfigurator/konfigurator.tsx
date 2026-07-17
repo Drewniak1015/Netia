@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import Uslugi5GModal, { type Oferta5G } from "@/components/Konfigurator/Oferta5G";
 import PodsumowanieFixed from '@/components/Konfigurator/konfiguratorFixed';
+import DottedBackground from "@/components/ui/DottedBackground";
 /* ---------------------------------------------------------------------- */
 /*  Wspólny stan wybranej oferty (umowa / pakiet / TV / 5G / dodatki)      */
 /*  Trzymany w pamięci + sessionStorage — przetrwa nawigację i F5,         */
@@ -1084,14 +1085,26 @@ function KafelekPakietu({
 
   return (
     <m.div
+      role="button"
+      tabIndex={0}
+      aria-pressed={wybrany}
+      onClick={onWybierz}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onWybierz();
+        }
+      }}
       initial={reduceMotion ? false : "hidden"}
       animate="visible"
       variants={fadeUp}
       transition={{ duration: 0.5, ease: "easeOut", delay }}
+      whileHover={reduceMotion ? undefined : { y: -4 }}
+      whileTap={reduceMotion ? undefined : { scale: 0.99 }}
       className={`relative flex h-full flex-col rounded-2xl border p-6 text-left transition-[border-color,background-color,box-shadow] duration-200 ${
         wybrany
-          ? "border-teal-300 bg-white/[0.04] shadow-[0_0_0_3px_rgba(45,212,191,0.15)]"
-          : "border-white/10 bg-transparent hover:border-white/20 hover:bg-white/[0.03] hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)]"
+          ? "border-teal-300 bg-[#183648] shadow-[0_0_0_3px_rgba(45,212,191,0.15)]"
+          : "border-white/10 bg-[#183648]"
       }`}
     >
       {pakiet.wyrozniony && (
@@ -1130,24 +1143,30 @@ function KafelekPakietu({
       {/* Chip sprzętu w cenie — klikalny, otwiera okno ze szczegółami routera */}
 <m.button
   type="button"
-  onClick={() => onPokazRouter(pakiet.routerId)}
+  onClick={(e) => {
+    e.stopPropagation();
+    onPokazRouter(pakiet.routerId);
+  }}
   whileHover={reduceMotion ? undefined : { scale: 1.02 }}
   whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-  className="mt-4 flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-center text-sm font-medium text-white/70 transition-colors hover:border-white/25 hover:bg-white/10 hover:text-white"
+  className="mt-4 flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-center text-sm font-medium text-white/70 transition-colors hover:border-white/25 hover:bg-white/10 hover:text-white cursor-pointer"
 >
   <Info size={14} className="shrink-0 text-white/50" />
   <span>{pakiet.wyposazenie}</span>
   <span className="text-[11px] font-normal text-white/40">(pokaż router)</span>
 </m.button>
 
-{/* CTA — jedyny klikalny element odpowiadający za wybór pakietu */}
+{/* CTA — zostaje też osobno klikalny, ale karta jako całość już wybiera ofertę */}
 <m.button
   type="button"
-  onClick={onWybierz}
+  onClick={(e) => {
+    e.stopPropagation();
+    onWybierz();
+  }}
   aria-pressed={wybrany}
   whileHover={reduceMotion ? undefined : { scale: 1.02 }}
   whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-  className={`mt-4 flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-colors ${
+  className={`mt-4 flex cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-colors ${
     wybrany
       ? "border-2 border-teal-400 bg-teal-400 text-[#0B2A3D] hover:bg-teal-300"
       : "border-2 border-teal-300/50 bg-teal-300/5 text-teal-200 hover:border-teal-300 hover:bg-teal-300/15"
@@ -1183,36 +1202,49 @@ function KafelekOferty({
   const reduceMotion = useReducedMotion();
   return (
 <m.div
+  role="button"
+  tabIndex={0}
+  aria-pressed={wybrana}
+  onClick={onWybierz}
+  onKeyDown={(e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onWybierz();
+    }
+  }}
   initial={reduceMotion ? false : "hidden"}
   whileInView="visible"
   viewport={{ once: true, amount: 0.2 }}
   variants={fadeUp}
   transition={{ duration: 0.4, ease: "easeOut", delay }}
-  whileHover={reduceMotion ? undefined : { scale: 1.015 }}
+  whileHover={reduceMotion ? undefined : { y: -4 }}
   whileTap={reduceMotion ? undefined : { scale: 0.99 }}
   className={`flex h-full flex-col rounded-2xl border p-5 text-left transition-colors ${
     wybrana
-      ? "border-teal-300 bg-white/[0.04]"
-      : "border-white/10 bg-transparent hover:bg-white/[0.03]"
+      ? "border-teal-300 bg-[#183648]"
+      : "border-white/10 bg-[#183648]"
   }`}
 >
-      <button type="button" onClick={onWybierz} className="flex flex-1 flex-col text-left">
+      <div className="flex flex-1 flex-col text-left">
         <h3 className="text-lg font-extrabold text-white">{oferta.nazwa}</h3>
         <p className="mt-2 text-sm leading-snug text-white/65">{oferta.opis}</p>
         <div className="mt-4 flex items-end gap-1.5">
           <span className="text-2xl font-extrabold text-white">{oferta.cena} zł</span>
           <span className="mb-0.5 text-xs text-white/60">/mies.</span>
         </div>
-      </button>
+      </div>
 
 <div className="mt-4 flex gap-2">
         {onPokazSzczegoly && (
           <m.button
             type="button"
-            onClick={onPokazSzczegoly}
+            onClick={(e) => {
+              e.stopPropagation();
+              onPokazSzczegoly();
+            }}
             whileHover={reduceMotion ? undefined : { scale: 1.02 }}
             whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-            className={`flex flex-1 basis-1/2 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r ${
+            className={`flex flex-1 basis-1/2 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r ${
               gradient ?? "from-teal-600 to-teal-800"
             } px-3 py-2.5 text-center text-xs font-bold text-white transition-opacity hover:opacity-90`}
           >
@@ -1224,10 +1256,13 @@ function KafelekOferty({
         {onPokazKanaly && (
           <m.button
             type="button"
-            onClick={onPokazKanaly}
+            onClick={(e) => {
+              e.stopPropagation();
+              onPokazKanaly();
+            }}
             whileHover={reduceMotion ? undefined : { scale: 1.02 }}
             whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-            className="flex flex-1 basis-1/2 items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-center text-xs font-semibold text-white/70 transition-colors hover:border-white/25 hover:bg-white/10 hover:text-white"
+            className="flex flex-1 basis-1/2 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-center text-xs font-semibold text-white/70 transition-colors hover:border-white/25 hover:bg-white/10 hover:text-white"
           >
             <LayoutGrid size={13} />
             Zobacz kanały
@@ -1236,8 +1271,11 @@ function KafelekOferty({
 
         <button
           type="button"
-          onClick={onWybierz}
-          className={`flex flex-1 basis-1/2 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors ${
+          onClick={(e) => {
+            e.stopPropagation();
+            onWybierz();
+          }}
+          className={`flex flex-1 basis-1/2 cursor-pointer items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors ${
             wybrana
               ? "border border-teal-400 bg-teal-400 text-[#0B2A3D]"
               : "border border-teal-300/50 bg-teal-300/5 text-teal-200"
@@ -1291,12 +1329,12 @@ function KafelekTV({
   viewport={{ once: true, amount: 0.2 }}
   variants={fadeUp}
   transition={{ duration: 0.4, ease: "easeOut", delay }}
-  whileHover={reduceMotion ? undefined : { scale: 1.015 }}
+  whileHover={reduceMotion ? undefined : { y: -4 }}
   whileTap={reduceMotion ? undefined : { scale: 0.99 }}
-  className={`flex h-full cursor-pointer flex-col rounded-2xl border p-5 text-left transition-colors ${
+  className={`flex h-full flex-col rounded-2xl border p-5 text-left transition-colors ${
     wybrana
-      ? "border-teal-300 bg-white/[0.04]"
-      : "border-white/10 bg-transparent hover:bg-white/[0.03]"
+      ? "border-teal-300 bg-[#183648]"
+      : "border-white/10 bg-[#183648]"
   }`}
 >
       {/* Nagłówek: nazwa pakietu + badge (np. "Najpopularniejszy") */}
@@ -1330,7 +1368,7 @@ function KafelekTV({
             e.stopPropagation();
             onPokazDekoder();
           }}
-          className="flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-center text-xs font-semibold text-white/70 transition-colors hover:border-teal-300/40 hover:bg-white/10 hover:text-white"
+          className="flex cursor-pointer items-center justify-center rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-center text-xs font-semibold text-white/70 transition-colors hover:border-teal-300/40 hover:bg-white/10 hover:text-white"
         >
           Dekoder 4K
         </button>
@@ -1340,7 +1378,7 @@ function KafelekTV({
             e.stopPropagation();
             onPokazKanaly(oferta.tier);
           }}
-          className="flex items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-blue-500 px-3 py-2 text-center text-xs font-bold text-white transition-opacity hover:opacity-90"
+          className="flex cursor-pointer items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-blue-500 px-3 py-2 text-center text-xs font-bold text-white transition-opacity hover:opacity-90"
         >
           {TIER_CHANNEL_COUNTS[oferta.tier]} kanałów
         </button>
@@ -1348,7 +1386,7 @@ function KafelekTV({
 
       {/* CTA — gradient blue → teal, jak na referencyjnym screenie */}
       <div
-className={`mt-4 flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-colors ${
+className={`mt-4 flex cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-colors ${
   wybrana
     ? "border border-teal-400 bg-teal-400 text-[#0B2A3D]"
     : "border border-teal-300/50 bg-teal-300/5 text-teal-200"
@@ -1383,16 +1421,21 @@ function SekcjaOfert({
         {ikona}
         {tytul}
       </h2>
-      <div className="mt-6 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
-        {oferty.map((oferta, i) => (
-          <KafelekOferty
-            key={oferta.id}
-            oferta={oferta}
-            wybrana={wybrana === oferta.id}
-            onWybierz={() => onToggle(oferta.id)}
-            delay={0.08 * i}
-          />
-        ))}
+      <div className="relative mt-6">
+        <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
+          <DottedBackground variant="dots" size={22} />
+        </div>
+        <div className="relative grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
+          {oferty.map((oferta, i) => (
+            <KafelekOferty
+              key={oferta.id}
+              oferta={oferta}
+              wybrana={wybrana === oferta.id}
+              onWybierz={() => onToggle(oferta.id)}
+              delay={0.08 * i}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -1763,7 +1806,9 @@ function KonfiguratorZawartosc() {
         id="konfigurator"
       >
         <div className="relative z-10 mx-auto max-w-320 px-5 sm:px-6 lg:px-8">
-          {/* BANER — h1 + badge + grafika sygnału + przełącznik umowy */}
+          {/* BANER — h1 + badge + grafika sygnału + przełącznik umowy.
+              Bez kropek: ma własną dekorację SVG (koncentryczne kręgi +
+              ścieżka sygnału światłowodowego). */}
           <m.div
             initial={reduceMotion ? false : { opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1867,167 +1912,125 @@ function KonfiguratorZawartosc() {
             </m.div>
           </m.div>
 
-          {/* Nagłówek "Internet" nad siatką pakietów — spójny z sekcjami TV/5G/Dodatki */}
-          <div className="mt-10 lg:mt-14">
-            <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
-              <Wifi size={22} className="text-teal-300" />
-              Internet
-            </h2>
+          {/* Cały blok wyboru oferty (Internet + TV + 5G + Dodatkowe) dzieli JEDNĄ
+              ciągłą strefę kratki w tle, zamiast osobnego prostokąta pod każdą
+              siatką — inaczej nagłówki i odstępy między sekcjami wypadały poza
+              teksturą i tworzyły widoczne, twarde przerwy między "łatkami". */}
+          <div className="relative mt-10 lg:mt-14">
+            <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
+              <DottedBackground variant="dots" size={22} />
+            </div>
 
-            {/* Siatka 3 pakietów internetowych — zależna od wybranej umowy */}
-            <div className="mt-6 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
-              {pakiety.map((pakiet, i) => (
-                <KafelekPakietu
-                  key={pakiet.id}
-                  pakiet={pakiet}
-                  umowa={umowa}
-                  wybrany={wybranyPakietObj?.id === pakiet.id}
-                  onWybierz={() => togglePakiet(pakiet)}
-                  onPokazRouter={setAktywnyRouterId}
-                  delay={0.1 * i}
-                />
-              ))}
+            <div className="relative">
+              {/* Nagłówek "Internet" nad siatką pakietów — spójny z sekcjami TV/5G/Dodatki */}
+              <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
+                <Wifi size={22} className="text-teal-300" />
+                Internet
+              </h2>
+
+              {/* Siatka 5 pakietów internetowych */}
+              <div className="mt-6 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
+                {pakiety.map((pakiet, i) => (
+                  <KafelekPakietu
+                    key={pakiet.id}
+                    pakiet={pakiet}
+                    umowa={umowa}
+                    wybrany={wybranyPakietObj?.id === pakiet.id}
+                    onWybierz={() => togglePakiet(pakiet)}
+                    onPokazRouter={setAktywnyRouterId}
+                    delay={0.1 * i}
+                  />
+                ))}
+              </div>
+
+              {/* Sekcje ofert — dopiero po wybraniu konkretnego pakietu internetowego */}
+              <AnimatePresence>
+                {wybranyPakietObj !== null && (
+                  <m.div
+                    initial={reduceMotion ? false : { opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    onAnimationComplete={() => setOfertyRozwiniete(true)}
+                    className={ofertyRozwiniete ? "overflow-visible" : "overflow-hidden"}
+                  >
+                    {/* TV — tylko dla umowy 24 miesiące */}
+                    {umowa === "24" && (
+                      <div className="mt-12 lg:mt-16">
+                        <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
+                          <Tv size={22} className="text-teal-300" />
+                          Telewizja
+                        </h2>
+                        <div className="mt-6 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
+                          {OFERTY_TV.map((oferta, i) => (
+                            <KafelekTV
+                              key={oferta.id}
+                              oferta={oferta}
+                              wybrana={wybranaTvObj?.id === oferta.id}
+                              onWybierz={() => toggleTv(oferta)}
+                              onPokazDekoder={() => setAktywnyInfoId("dekoder-evobox")}
+                              onPokazKanaly={setAktywnyKanalyTier}
+                              delay={0.08 * i}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="mt-12 lg:mt-16">
+                      <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
+                        <Smartphone size={22} className="text-teal-300" />
+                        Usługi Mobilne 5G
+                      </h2>
+                      <div className="mt-6 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
+                        {oferty5g.map((oferta, i) => (
+                          <KafelekOferty
+                            key={oferta.id}
+                            oferta={oferta}
+                            wybrana={wybrana5gObj?.id === oferta.id}
+                            onWybierz={() => toggle5g(oferta)}
+                            onPokazSzczegoly={
+                              "gradient" in oferta ? () => setAktywnaOferta5G(oferta as Oferta5G) : undefined
+                            }
+                            gradient={"gradient" in oferta ? (oferta as Oferta5G).gradient : undefined}
+                            delay={0.08 * i}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-12 lg:mt-16">
+                      <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
+                        <Gift size={22} className="text-teal-300" />
+                        Usługi Dodatkowe
+                      </h2>
+                      <div className="mt-6 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
+                        {(ofertyDodatkowe as OfertaDodatek[])
+                          .filter((oferta) => !oferta.addonKey || wybranaTvObj !== null)
+                          .map((oferta, i) => (
+                            <KafelekOferty
+                              key={oferta.id}
+                              oferta={oferta}
+                              wybrana={wybraneDodatki.some((d) => d.id === oferta.id)}
+                              onWybierz={() =>
+                                toggleDodatek({ id: oferta.id, nazwa: oferta.nazwa, cena: oferta.cena })
+                              }
+                              onPokazKanaly={
+                                oferta.addonKey ? () => setAktywnyDodatekAddon(oferta.addonKey!) : undefined
+                              }
+                              delay={0.08 * i}
+                            />
+                          ))}
+                      </div>
+                    </div>
+                  </m.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
-          {/* Sekcje ofert — dopiero po wybraniu konkretnego pakietu internetowego */}
-          <AnimatePresence>
-            {wybranyPakietObj !== null && (
-              <m.div
-                initial={reduceMotion ? false : { opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                onAnimationComplete={() => setOfertyRozwiniete(true)}
-                className={ofertyRozwiniete ? "overflow-visible" : "overflow-hidden"}
-              >
-                {/* TV — tylko dla umowy 24 miesiące */}
-                {umowa === "24" && (
-                  <div className="mt-12 lg:mt-16">
-                    <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
-                      <Tv size={22} className="text-teal-300" />
-                      Telewizja
-                    </h2>
-                    <div className="mt-6 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
-                      {OFERTY_TV.map((oferta, i) => (
-                        <KafelekTV
-                          key={oferta.id}
-                          oferta={oferta}
-                          wybrana={wybranaTvObj?.id === oferta.id}
-                          onWybierz={() => toggleTv(oferta)}
-                          onPokazDekoder={() => setAktywnyInfoId("dekoder-evobox")}
-                          onPokazKanaly={setAktywnyKanalyTier}
-                          delay={0.08 * i}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="mt-12 lg:mt-16">
-                  <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
-                    <Smartphone size={22} className="text-teal-300" />
-                    Usługi Mobilne 5G
-                  </h2>
-                  <div className="mt-6 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
-                    {oferty5g.map((oferta, i) => (
-                      <KafelekOferty
-                        key={oferta.id}
-                        oferta={oferta}
-                        wybrana={wybrana5gObj?.id === oferta.id}
-                        onWybierz={() => toggle5g(oferta)}
-                        onPokazSzczegoly={
-                          "gradient" in oferta ? () => setAktywnaOferta5G(oferta as Oferta5G) : undefined
-                        }
-                        gradient={"gradient" in oferta ? (oferta as Oferta5G).gradient : undefined}
-                        delay={0.08 * i}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-12 lg:mt-16">
-                  <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
-                    <Gift size={22} className="text-teal-300" />
-                    Usługi Dodatkowe
-                  </h2>
-                  <div className="mt-6 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
-                    {(ofertyDodatkowe as OfertaDodatek[])
-                      .filter((oferta) => !oferta.addonKey || wybranaTvObj !== null)
-                      .map((oferta, i) => (
-                        <KafelekOferty
-                          key={oferta.id}
-                          oferta={oferta}
-                          wybrana={wybraneDodatki.some((d) => d.id === oferta.id)}
-                          onWybierz={() =>
-                            toggleDodatek({ id: oferta.id, nazwa: oferta.nazwa, cena: oferta.cena })
-                          }
-                          onPokazKanaly={
-                            oferta.addonKey ? () => setAktywnyDodatekAddon(oferta.addonKey!) : undefined
-                          }
-                          delay={0.08 * i}
-                        />
-                      ))}
-                  </div>
-                </div>
-              </m.div>
-            )}
-          </AnimatePresence>
-
           <PodsumowanieFixed />
 
-          {/* CTA — spójne z Hero */}
-          <m.div
-            initial={reduceMotion ? false : "hidden"}
-            animate="visible"
-            variants={fadeUp}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.5 }}
-            className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:mt-14"
-          >
-            <m.a
-              href="tel:+48883334124"
-              whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-              whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-              className="flex w-full items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white sm:w-auto sm:min-w-60"
-            >
-              <span className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
-                  <Phone size={16} />
-                </span>
-                <span className="text-left">
-                  <span className="block text-sm font-bold leading-tight">
-                    ZADZWOŃ
-                  </span>
-                  <span className="block text-xs text-white/85">
-                    +48 883 334 124
-                  </span>
-                </span>
-              </span>
-              <ChevronRight size={18} className="text-white/70" />
-            </m.a>
-
-            <m.a
-              href="sms:+48883334124?body=INTERNET"
-              whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-              whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-              className="flex w-full items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white sm:w-auto sm:min-w-60"
-            >
-              <span className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
-                  <MessageCircle size={16} />
-                </span>
-                <span className="text-left">
-                  <span className="block text-sm font-bold leading-tight">
-                    WYŚLIJ SMS
-                  </span>
-                  <span className="block text-xs text-white/70">
-                    Oddzwonimy w kilka minut
-                  </span>
-                </span>
-              </span>
-              <ChevronRight size={18} className="text-white/50" />
-            </m.a>
-          </m.div>
 
           {/* Nota prawna — pod wszystkimi kafelkami */}
           <NotaPrawna />

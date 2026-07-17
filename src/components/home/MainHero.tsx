@@ -1,22 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 import {
   Phone,
   MessageCircle,
   ChevronRight,
-  Users,
-  Wifi,
-  ShieldCheck,
   Zap,
+  ShieldCheck,
+  Star,
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
-const TvMockup = dynamic(() => import("./Tvmockup"), {
-  ssr: false,
-  loading: () => null,
-});
+import ConnectionCompare from "@/components/home/Connectioncompare";
 
 function useIsDesktop() {
   const [isDesktop, setIsDesktop] = useState(false);
@@ -48,9 +43,9 @@ export default function Hero() {
         style={{ backgroundColor: "#0B2A3D" }}
         className="relative overflow-hidden font-sans pt-26"
       >
-  <DottedBackground variant="dots-fade" focusY="25%" size={24} />
+        <DottedBackground variant="dots-fade" focusY="25%" size={24} />
 
-        <div className="relative z-10 mx-auto grid max-w-320 grid-cols-1 items-center gap-10 px-5 py-16 sm:px-6 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8 lg:px-8 lg:py-28">
+        <div className="relative z-10 mx-auto grid max-w-320 grid-cols-1 items-center gap-10 px-5 py-16 sm:px-6 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-stretch lg:gap-8 lg:px-8 lg:py-28">
           {/* Kolumna tekstowa */}
           <div className="relative z-10 text-center lg:text-left">
             {/* Badge */}
@@ -68,45 +63,56 @@ export default function Hero() {
             </m.div>
 
             {/* LCP element: bez opacity w animacji, tylko h1 statyczny */}
-<m.h1
-  initial={reduceMotion ? false : "hidden"}
-  animate="visible"
-  variants={fadeUp}
-  transition={{ duration: 0.6, ease: "easeOut", delay: 0 }}
-  className="text-2xl font-extrabold ..."
->
-  Internet i telewizja, które po prostu działają.
-</m.h1>
+            <m.h1
+              initial={reduceMotion ? false : "hidden"}
+              animate="visible"
+              variants={fadeUp}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0 }}
+              className="text-2xl font-extrabold leading-tight text-white sm:text-3xl lg:text-4xl"
+            >
+              Koniec z internetem, który pada w najgorszym momencie.
+            </m.h1>
+
             <m.h2
               initial={reduceMotion ? false : "hidden"}
               animate="visible"
               variants={fadeUp}
               transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
-              className="mt-2.5 text-base font-normal leading-snug text-white/75 sm:text-lg"
+              className="mx-auto mt-4 max-w-xl text-base font-normal leading-snug text-white/75 sm:text-lg lg:mx-0"
             >
-              Bez awarii —{" "}
+              Instalacja w 3 dni. Stała cena przez całą umowę —{" "}
               <span className="font-semibold text-teal-300">
-                już w kilka dni od instalacji
-              </span>
-              .
+                bez podwyżek co pół roku
+              </span>{" "}
+              i bez czekania na infolinii.
             </m.h2>
 
-            <m.h3
+            {/* Social proof */}
+            <m.div
               initial={reduceMotion ? false : "hidden"}
               animate="visible"
               variants={fadeUp}
               transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-              className="mx-auto mt-5 max-w-xl text-sm font-normal text-white/65 sm:text-base lg:mx-0"
+              className="mx-auto mt-5 flex max-w-xl items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 lg:mx-0 lg:justify-start"
             >
-              Światłowód Netii oparty o sieć Orange oraz telewizja dla całej
-              rodziny —{" "}
-              <span className="font-semibold text-white">
-                jedna stała opłata
-              </span>{" "}
-              przez cały okres umowy.
-            </m.h3>
+              <span className="flex shrink-0 items-center gap-0.5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    size={12}
+                    className="fill-amber-400 text-amber-400"
+                  />
+                ))}
+              </span>
+              <p className="text-left text-xs text-white/70 sm:text-sm">
+                <span className="italic text-white/85">
+                  „Nareszcie nie myślę o internecie”
+                </span>{" "}
+                — 2,4 mln klientów w Polsce
+              </p>
+            </m.div>
 
-            {/* Trust badges */}
+            {/* Trust badges — tylko fakty, których jeszcze nie było w subheadline/cytacie */}
             <m.div
               initial={reduceMotion ? false : "hidden"}
               animate="visible"
@@ -115,16 +121,14 @@ export default function Hero() {
               className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 lg:justify-start"
             >
               <span className="flex items-center gap-1.5 text-xs font-medium text-white/70 sm:text-sm">
-                <Users size={14} className="text-teal-300" />
-                <span className="font-bold text-teal-300">2,4 mln</span> klientów w Polsce
+                <ShieldCheck size={14} className="text-teal-300" />
+                {/* TODO: podmień na realny fakt, np. okres na wypowiedzenie / gwarancję */}
+                Umowa online w 5 minut
               </span>
               <span className="flex items-center gap-1.5 text-xs font-medium text-white/70 sm:text-sm">
                 <Zap size={14} className="text-teal-300" />
-                Instalacja w kilka dni
-              </span>
-              <span className="flex items-center gap-1.5 text-xs font-medium text-white/70 sm:text-sm">
-                <ShieldCheck size={14} className="text-teal-300" />
-                Bez zobowiązań na start
+                {/* TODO: podmień na realny fakt, np. czas reakcji serwisu */}
+                Serwisant w 24h
               </span>
             </m.div>
 
@@ -140,15 +144,19 @@ export default function Hero() {
                 href="tel:+48883334124"
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                className="flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white sm:min-w-60"
+                className="flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white sm:min-w-64"
               >
                 <span className="flex items-center gap-3">
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
                     <Phone size={16} />
                   </span>
                   <span className="text-left">
-                    <span className="block text-sm font-bold leading-tight">ZADZWOŃ</span>
-                    <span className="block text-xs text-white/85">+48 883 334 124</span>
+                    <span className="block text-sm font-bold leading-tight">
+                      ODBIERZ STABILNY INTERNET
+                    </span>
+                    <span className="block text-xs text-white/85">
+                      Doradca oddzwoni w 3 minuty • 883 334 124
+                    </span>
                   </span>
                 </span>
                 <ChevronRight size={18} className="text-white/70" />
@@ -165,16 +173,43 @@ export default function Hero() {
                     <MessageCircle size={16} />
                   </span>
                   <span className="text-left">
-                    <span className="block text-sm font-bold leading-tight">WYŚLIJ SMS</span>
-                    <span className="block text-xs text-white/70">Oddzwonimy w kilka minut</span>
+                    <span className="block text-sm font-bold leading-tight">
+                      WYŚLIJ SMS
+                    </span>
+                    <span className="block text-xs text-white/70">
+                      Oddzwonimy w kilka minut
+                    </span>
                   </span>
                 </span>
                 <ChevronRight size={18} className="text-white/50" />
               </m.a>
             </m.div>
+
+            {/* Split-screen "przed/po" na mobile — na desktopie żyje w prawej kolumnie */}
+            {!isDesktop && (
+              <m.div
+                initial={reduceMotion ? false : "hidden"}
+                animate="visible"
+                variants={fadeUp}
+                transition={{ duration: 0.6, ease: "easeOut", delay: 0.5 }}
+                className="mt-8"
+              >
+                <ConnectionCompare />
+              </m.div>
+            )}
           </div>
 
-          {isDesktop && <TvMockup />}
+          {/* Kolumna wizualna — dowód: pain point kontra obietnica */}
+          {isDesktop && (
+            <m.div
+              initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.3 }}
+              className="h-full min-h-80"
+            >
+              <ConnectionCompare />
+            </m.div>
+          )}
         </div>
       </section>
     </LazyMotion>

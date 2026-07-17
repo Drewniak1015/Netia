@@ -24,6 +24,17 @@ const wiersz = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" as const } },
 };
 
+// Subtelne kropkowane tło całej strony — ten sam wzorzec co na stronach
+// Pomocy (Awaria/Internet/TV/Mobilne). Checkout to spokojny, liniowy widok
+// (jedna kolumna, brak siatek kart), więc zamiast dokładać dekorację pod
+// poszczególnymi elementami, cała strona dostaje jedną, subtelną teksturę —
+// żeby czuła się jako część tego samego "materiału" co reszta serwisu.
+const dottedPageStyle = {
+  backgroundColor: "#0B2A3D",
+  backgroundImage: "radial-gradient(rgba(255,255,255,.12) 1px, transparent 1px)",
+  backgroundSize: "26px 26px",
+} as const;
+
 export default function PodsumowaniePage() {
   const { pakiet, tv, uslugi5g, dodatki, suma, maWybor, setTv, setUslugi5g, toggleDodatek } =
     useKonfigurator();
@@ -32,7 +43,7 @@ export default function PodsumowaniePage() {
   if (!maWybor) {
     return (
       <section
-        style={{ backgroundColor: "#0B2A3D" }}
+        style={dottedPageStyle}
         className="min-h-[60vh] py-24 text-center font-sans"
       >
         <p className="text-white/70">Nie masz jeszcze skonfigurowanej oferty.</p>
@@ -75,7 +86,7 @@ export default function PodsumowaniePage() {
 
   return (
     <LazyMotion features={domAnimation} strict>
-      <section style={{ backgroundColor: "#0B2A3D" }} className="min-h-screen py-16 font-sans sm:py-20">
+      <section style={dottedPageStyle} className="min-h-screen py-16 font-sans sm:py-20">
         <m.div
           initial={reduceMotion ? false : "hidden"}
           animate="visible"

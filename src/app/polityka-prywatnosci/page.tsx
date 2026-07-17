@@ -25,6 +25,13 @@ import React, { useEffect, useRef, useState } from "react";
  *  - Śledzenie aktywnej sekcji liczone na scrollu (bez IntersectionObserver
  *    i bez sticky pozycjonowania).
  *
+ * WERSJA 4 — jedyna zmiana: subtelne kropkowane tło całej strony
+ * (ten sam wzorzec co na 4 stronach Pomocy i na checkoucie konfiguratora:
+ * radial-gradient rgba(255,255,255,.12) co 26px). Ta strona to spokojny,
+ * jednokolumnowy tekst prawny bez siatek kart — dlatego dostaje jedną,
+ * subtelną teksturę na całej stronie zamiast dekoracji pod poszczególnymi
+ * sekcjami (ten drugi zabieg jest zarezerwowany dla siatek ofertowych).
+ *
  * WAŻNE: `pt-40` na głównym wrapperze strony jest celowe — strona ma stały
  * (fixed) górny pasek nawigacji, który bez tego odstępu zachodziłby na
  * treść tej podstrony. Jeśli u Ciebie navbar ma inną wysokość, dopasuj tę
@@ -514,7 +521,14 @@ const PolitykaPrywatnosci: React.FC = () => {
   const progress = ((activeIndex + 1) / SECTIONS.length) * 100;
 
   return (
-    <div className="min-h-screen pt-26 font-sans text-white" style={{ backgroundColor: "#0B2A3D" }}>
+    <div
+      className="min-h-screen pt-26 font-sans text-white"
+      style={{
+        backgroundColor: "#0B2A3D",
+        backgroundImage: "radial-gradient(rgba(255,255,255,.12) 1px, transparent 1px)",
+        backgroundSize: "26px 26px",
+      }}
+    >
       {/* Pasek postępu */}
       <div
         className="fixed left-0 top-0 z-40 h-[3px] bg-teal-400 transition-[width] duration-300 ease-out"

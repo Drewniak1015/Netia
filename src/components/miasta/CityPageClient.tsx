@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   Phone,
   MessageCircle,
@@ -22,6 +23,26 @@ import CityFaq from "@/components/miasta/CityFaq";
 const PHONE = "+48 883 334 124";
 const PHONE_HREF = "tel:+48883334124";
 const SMS_HREF = "sms:+48883334124?body=INTERNET";
+
+/* ---------------------------------------------------------------------- */
+/*  Warianty animacji onScroll — jedno miejsce dla całej strony.           */
+/*  whileInView + viewport once:true = animacja odpala się tylko          */
+/*  przy wjechaniu w widok, nie przy załadowaniu strony (poza hero,        */
+/*  które i tak jest w viewport od startu).                                */
+/* ---------------------------------------------------------------------- */
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+} as const;
+
+const fadeUpContainer = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.08 },
+  },
+} as const;
+
+const viewportOnce = { once: true, amount: 0.25 } as const;
 
 /* ---------------------------------------------------------------------- */
 /*  Dane ofert — wspólne dla wszystkich miast (ta sama kampania krajowa).  */
@@ -91,7 +112,7 @@ function getTagline(description?: string): string {
 
 function Breadcrumb({ cityName }: { cityName: string }) {
   return (
-    <nav className="mx-auto flex max-w-6xl items-center gap-2 px-5 py-4 text-sm text-white/50 sm:px-6 lg:px-8">
+    <nav className="mx-auto flex max-w-310 items-center gap-2 px-5 py-4 text-sm text-white/50 sm:px-6 lg:px-8">
       <Link href="/" className="flex items-center gap-1.5 hover:text-teal-300">
         <Home size={14} />
         Strona główna
@@ -109,7 +130,7 @@ function Breadcrumb({ cityName }: { cityName: string }) {
 function Hero({ city }: { city: City }) {
   return (
     <div
-      className="relative mx-auto w-315 overflow-hidden rounded-3xl border border-white/10 px-4 py-6 text-center mt-24"
+      className="relative mx-auto w-full max-w-305 overflow-hidden rounded-3xl border border-white/10 px-4 py-12 text-center mt-24"
       style={{
         background:
           "radial-gradient(120% 160% at 15% 0%, rgba(45,212,191,.22), transparent 55%), " +
@@ -206,14 +227,21 @@ function Hero({ city }: { city: City }) {
       <h1 className="text-[clamp(28px,4.4vw,44px)] font-extrabold text-white">
         Internet Netia w <span className="text-teal-300">{city.locative}</span>
       </h1>
-      <p className="mx-auto mt-3 max-w-xl text-sm text-white/70 sm:text-base">
+      <p className="mx-auto mt-3 max-w-305 text-sm text-white/70 sm:text-base">
         {getTagline(city.description)}
       </p>
 
-      <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-3">
+      <motion.div
+        className="mx-auto mt-8 grid max-w-150 grid-cols-1 gap-3 sm:grid-cols-3"
+        variants={fadeUpContainer}
+        initial="hidden"
+        whileInView="show"
+        viewport={viewportOnce}
+      >
         {HERO_STATS.map((stat) => (
-          <div
+          <motion.div
             key={stat.label}
+            variants={fadeUp}
             className={`rounded-2xl border px-4 py-5 text-center ${
               stat.highlighted
                 ? "border-teal-300/50 bg-teal-400/10"
@@ -232,11 +260,11 @@ function Hero({ city }: { city: City }) {
             </p>
             <p className="mt-0.5 text-[11px] text-white/50">{stat.note}</p>
             <p className="mt-2 text-xs font-medium text-white/70">{stat.label}</p>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      <div className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row">
+      <div className="mx-auto mt-8 flex max-w-130 flex-col gap-3 sm:flex-row">
         <a
           href={PHONE_HREF}
           className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-500 px-5 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02]"
@@ -256,12 +284,21 @@ function Hero({ city }: { city: City }) {
   );
 }
 
+/* PromoBanner — wcześniej pomarańczowy (orange-400/500), teraz przekolorowany
+   na teal, żeby trzymać się jednej, spójnej palety akcentu w całym serwisie
+   (ten sam teal co CTA, badge'e i gradienty hero). */
 function PromoBanner() {
   return (
-    <div className="mx-auto mt-10 max-w-6xl rounded-2xl border border-orange-400/25 bg-orange-400/[0.06] px-5 py-4 sm:px-6">
+    <motion.div
+      className="mx-auto mt-10 max-w-305 rounded-2xl border border-teal-400/25 bg-teal-400/[0.06] px-5 py-4 sm:px-6"
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="show"
+      viewport={viewportOnce}
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-orange-300">
+          <p className="text-xs font-bold uppercase tracking-wide text-teal-300">
             Internet 1000 Mb/s — najczęściej wybierane
           </p>
           <p className="mt-1 text-sm font-semibold text-white/85 sm:text-base">
@@ -276,19 +313,22 @@ function PromoBanner() {
           </div>
           <Link
             href="/oferty/popularne"
-            className="whitespace-nowrap rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-orange-600"
+            className="whitespace-nowrap rounded-xl bg-teal-500 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-teal-600"
           >
             Sprawdź ofertę
           </Link>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function MiniOfferCard({ offer }: { offer: (typeof MINI_OFFERS)[number] }) {
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-white/10 bg-white/5 p-5">
+    <motion.div
+      variants={fadeUp}
+      className="flex h-full flex-col rounded-2xl border border-white/10 bg-white/5 p-5"
+    >
       <p className="text-xs font-bold uppercase tracking-wide text-teal-300">{offer.tag}</p>
       <h4 className="mt-1 text-base font-extrabold text-white">{offer.title}</h4>
       <p className="mt-2 flex-1 text-sm leading-relaxed text-white/60">{offer.desc}</p>
@@ -303,7 +343,7 @@ function MiniOfferCard({ offer }: { offer: (typeof MINI_OFFERS)[number] }) {
       >
         Zobacz szczegóły
       </Link>
-    </div>
+    </motion.div>
   );
 }
 
@@ -326,60 +366,99 @@ export default function CityPageClient({ city, districts, nearbyCities, faq }: C
       <div className="px-5 sm:px-6 lg:px-8">
         <Hero city={city} />
         <PromoBanner />
+      </div>
 
-        {/* Główne oferty pakietowe — komponent współdzielony z home/Oferty.tsx,
-            z tytułem spersonalizowanym pod aktualne miasto */}
-        <div className="mx-auto mt-8 max-w-6xl">
-          <Oferty cityLocative={city.locative} />
-        </div>
+      {/* Główne oferty pakietowe — komponent współdzielony z home/Oferty.tsx,
+          z tytułem spersonalizowanym pod aktualne miasto. Renderowany
+          CAŁKOWICIE POZA otoczką px-5/6/8 tej strony i BEZ dodatkowego
+          wrappera max-w — Oferty ma własny wewnętrzny padding (px-8) i
+          własny max-w-305, zaprojektowane do pełnowymiarowej sekcji (tak
+          jak na stronie głównej). Zagnieżdżenie jej wcześniej w kolejnym
+          px-5/6/8 + max-w-310 dawało podwójny padding boczny i węższy
+          efektywny max-width niż reszta sekcji na tej stronie. */}
+      <Oferty cityLocative={city.locative} />
 
+      <div className="px-5 sm:px-6 lg:px-8">
         {/* Najczęściej wybierane pakiety w mieście */}
-        <div className="mx-auto mt-14 max-w-6xl">
-          <h2 className="text-xl font-extrabold text-white sm:text-2xl">
+        <motion.div
+          className="mx-auto mt-14 max-w-300"
+          initial="hidden"
+          whileInView="show"
+          viewport={viewportOnce}
+          variants={fadeUpContainer}
+        >
+          <motion.h2 variants={fadeUp} className="text-xl font-extrabold text-white sm:text-2xl">
             Najczęściej wybierane pakiety w {city.locative}
-          </h2>
-          <p className="mt-1.5 text-sm text-white/60">
+          </motion.h2>
+          <motion.p variants={fadeUp} className="mt-1.5 text-sm text-white/60">
             Najpopularniejsze oferty Netii — sprawdź szczegóły i dostępność pod Twoim adresem.
-          </p>
-          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
-            {MINI_OFFERS.map((offer) => (
-              <MiniOfferCard key={offer.id} offer={offer} />
-            ))}
+          </motion.p>
+          <div className="relative mt-6">
+            <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
+            </div>
+            <motion.div
+              className="relative grid grid-cols-1 gap-5 sm:grid-cols-3"
+              variants={fadeUpContainer}
+            >
+              {MINI_OFFERS.map((offer) => (
+                <MiniOfferCard key={offer.id} offer={offer} />
+              ))}
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Dlaczego Netia w mieście — kółka z ikoną połączone przerywaną linią */}
-        <div className="mx-auto max-w-320 py-6">
-          <h2 className="text-center text-xl font-extrabold text-white sm:text-2xl">
+        <div className="mx-auto max-w-310 py-6">
+          <motion.h2
+            className="text-center text-xl font-extrabold text-white sm:text-2xl"
+            initial="hidden"
+            whileInView="show"
+            viewport={viewportOnce}
+            variants={fadeUp}
+          >
             Dlaczego Netia w {city.locative}?
-          </h2>
-          <div className="relative mt-10 grid grid-cols-1 gap-10 sm:grid-cols-3 sm:gap-6">
+          </motion.h2>
+          <motion.div
+            className="relative mt-10 grid grid-cols-1 gap-10 sm:grid-cols-3 sm:gap-6"
+            initial="hidden"
+            whileInView="show"
+            viewport={viewportOnce}
+            variants={fadeUpContainer}
+          >
+            <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
+            </div>
             <div className="pointer-events-none absolute left-0 right-0 top-6 hidden border-t border-dashed border-teal-400/30 sm:block" />
             {WHY_NETIA.map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.title} className="relative text-center">
+                <motion.div key={item.title} variants={fadeUp} className="relative text-center">
                   <div className="relative z-10 mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-teal-400 text-[#0a1a2b]">
                     <Icon size={22} />
                   </div>
                   <h3 className="mt-4 text-sm font-bold text-white">{item.title}</h3>
                   <p className="mt-1.5 text-sm text-white/60">{item.desc}</p>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </div>
 
         {/* Skonfiguruj samodzielnie */}
-        <div className="mx-auto max-w-320 py-6 text-center">
-          <h2 className="text-xl font-extrabold text-white sm:text-2xl">
+        <motion.div
+          className="mx-auto max-w-310 py-6 text-center"
+          initial="hidden"
+          whileInView="show"
+          viewport={viewportOnce}
+          variants={fadeUpContainer}
+        >
+          <motion.h2 variants={fadeUp} className="text-xl font-extrabold text-white sm:text-2xl">
             Nie znalazłeś oferty? Skonfiguruj samodzielnie
-          </h2>
-          <p className="mx-auto mt-2 max-w-lg text-sm text-white/65">
+          </motion.h2>
+          <motion.p variants={fadeUp} className="mx-auto mt-2 max-w-310 text-sm text-white/65">
             Zbuduj własny pakiet Internetu i TV — dobierz prędkość do 2 Gb/s, kanały i dodatki.
             Zamów online w kilka minut.
-          </p>
-          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+          </motion.p>
+          <motion.div variants={fadeUp} className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               href="/konfigurator"
               className="flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-teal-600"
@@ -394,60 +473,80 @@ export default function CityPageClient({ city, districts, nearbyCities, faq }: C
               <Tv size={15} />
               Lista kanałów TV
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Dzielnice obsługiwane — tylko jeśli mamy dane */}
         {districts && districts.length > 0 && (
-          <div className="mx-auto max-w-320 py-6">
-            <h2 className="text-center text-xl font-extrabold text-white sm:text-2xl">
+          <motion.div
+            className="mx-auto max-w-310 py-6"
+            initial="hidden"
+            whileInView="show"
+            viewport={viewportOnce}
+            variants={fadeUpContainer}
+          >
+            <motion.h2 variants={fadeUp} className="text-center text-xl font-extrabold text-white sm:text-2xl">
               Dzielnice obsługiwane w {city.locative}
-            </h2>
-            <p className="mt-2 text-center text-sm text-white/60">
+            </motion.h2>
+            <motion.p variants={fadeUp} className="mt-2 text-center text-sm text-white/60">
               Netia jest dostępna w następujących dzielnicach i osiedlach:
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-2.5">
+            </motion.p>
+            <motion.div variants={fadeUpContainer} className="mt-6 flex flex-wrap justify-center gap-2.5">
               {districts.map((district) => (
-                <span
+                <motion.span
                   key={district}
+                  variants={fadeUp}
                   className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white/75"
                 >
                   <MapPin size={13} className="text-teal-300" />
                   {district}
-                </span>
+                </motion.span>
               ))}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
 
         {/* FAQ — komponent w stylu NetiaFAQ.tsx, z ikonami i CTA telefon/SMS */}
-        <div className="mx-auto mt-10 max-w-6xl">
+        <motion.div
+          className="mx-auto mt-10 max-w-310"
+          initial="hidden"
+          whileInView="show"
+          viewport={viewportOnce}
+          variants={fadeUp}
+        >
           <CityFaq cityName={city.name} cityLocative={city.locative} faq={faq} />
-        </div>
+        </motion.div>
 
         {/* Pobliskie miasta */}
-        <div className="mx-auto mt-10 max-w-6xl pb-16">
-          <h2 className="text-center text-lg font-extrabold text-white">
+        <motion.div
+          className="mx-auto mt-10 max-w-310 pb-16"
+          initial="hidden"
+          whileInView="show"
+          viewport={viewportOnce}
+          variants={fadeUpContainer}
+        >
+          <motion.h2 variants={fadeUp} className="text-center text-lg font-extrabold text-white">
             Pobliskie miasta i popularne lokalizacje
-          </h2>
-          <p className="mt-1 text-center text-sm text-white/60">
+          </motion.h2>
+          <motion.p variants={fadeUp} className="mt-1 text-center text-sm text-white/60">
             Sprawdź ofertę Netii w innych miastach.
-          </p>
-          <div className="mt-5 flex flex-wrap justify-center gap-2.5">
+          </motion.p>
+          <motion.div variants={fadeUpContainer} className="mt-5 flex flex-wrap justify-center gap-2.5">
             {nearbyCities.map((nearby) => (
-              <Link
-                key={nearby.slug}
-                href={`/internet-miasta/${nearby.slug}`}
-                className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/75 transition-colors hover:border-teal-300/40 hover:text-teal-300"
-              >
-                {nearby.name}
-              </Link>
+              <motion.div key={nearby.slug} variants={fadeUp}>
+                <Link
+                  href={`/internet-miasta/${nearby.slug}`}
+                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/75 transition-colors hover:border-teal-300/40 hover:text-teal-300"
+                >
+                  {nearby.name}
+                </Link>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
           <p className="mt-8 text-center text-xs text-white/40">
             Ostatnia aktualizacja: {lastUpdated}
           </p>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

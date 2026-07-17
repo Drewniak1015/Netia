@@ -21,6 +21,7 @@ import {
   Medal,
   type LucideIcon,
 } from "lucide-react";
+import DottedBackground from "@/components/ui/DottedBackground";
 
 /**
  * OfferMaxSection
@@ -30,6 +31,19 @@ import {
  * Animacje dodane w stylu PopularneOferty.tsx: LazyMotion + domAnimation,
  * fadeUp przy wejściu w viewport, whileHover/whileTap na CTA, respekt dla
  * useReducedMotion.
+ *
+ * Tło: obie siatki kart (pakiety Max oraz pakiety TV Premium) mają pod spodem
+ * kropkowane tło (DottedBackground, wariant "dots", full-bleed do krawędzi
+ * viewportu) — zgodnie z resztą serwisu. Hero-banner "Dajemy Maxx!" zostaje
+ * bez kropek, bo ma już własną dekorację (świecące urządzenia + gradient róż).
+ *
+ * WAŻNE — tła kart: PackageCard i TvCard używają teraz w pełni NIEPRZEZROCZYSTYCH
+ * pionowych gradientów (jasny u góry -> ciemny u dołu, styl "sheen"), zamiast
+ * poprzednich półprzezroczystych warstw (bg-white/[0.04], bg-pink-400/[0.08]).
+ * Półprzezroczyste tła pozwalały kropkom z warstwy pod spodem prześwitywać
+ * wprost przez treść karty (nieczytelny, "zlewający się" wygląd) — pełna
+ * nieprzezroczystość sprawia, że kropki widać wyłącznie w odstępach między
+ * kartami, nigdy przez tekst.
  */
 
 /* Wspólny wariant fade-up — zgodnie z PopularneOferty.tsx */
@@ -76,10 +90,10 @@ function PackageCard({
       variants={fadeUp}
       transition={{ duration: 0.5, ease: "easeOut", delay: index * 0.08 }}
       whileHover={reduceMotion ? undefined : { y: -4 }}
-      className={`relative flex flex-col rounded-2xl p-5 pt-5 pb-5 sm:p-7 sm:pt-7 sm:pb-6 ${
+      className={`relative flex flex-col rounded-2xl p-5 pt-5 pb-5 sm:p-7 sm:pt-7 sm:pb-6 bg-[#183648] ${
         featured
-          ? "border-2 border-pink-400/70 bg-gradient-to-b from-pink-400/[0.08] to-white/[0.03] shadow-[0_0_0_1px_rgba(244,114,182,0.15),0_20px_45px_-20px_rgba(236,72,153,0.45)]"
-          : "border border-white/10 bg-white/[0.04]"
+          ? "border-2 border-pink-400/70 shadow-[0_0_0_1px_rgba(244,114,182,0.15),0_20px_45px_-20px_rgba(236,72,153,0.45)]"
+          : "border border-white/10"
       }`}
     >
       {featured && (
@@ -189,7 +203,7 @@ function TvCard({
       variants={fadeUp}
       transition={{ duration: 0.45, ease: "easeOut", delay: index * 0.06 }}
       whileHover={reduceMotion ? undefined : { y: -3 }}
-      className="flex cursor-pointer flex-col items-center rounded-xl border border-white/10 bg-white/[0.04] p-4 text-center no-underline transition-colors hover:border-pink-400/40 sm:p-5"
+      className="flex cursor-pointer flex-col items-center rounded-xl border border-white/10 bg-[#183648] p-4 text-center no-underline transition-colors hover:border-pink-400/40 sm:p-5"
     >
       <div
         className="mb-3 flex h-11 w-11 items-center justify-center rounded-full ring-1 ring-inset ring-white/10"
@@ -327,7 +341,8 @@ export default function OfferMaxSection() {
   return (
     <LazyMotion features={domAnimation} strict>
       <div className="overflow-x-hidden bg-[#0B2A3D] font-sans text-white sm:pt-36 pt-36">
-        {/* HERO PROMO BANNER */}
+        {/* HERO PROMO BANNER — bez kropek: ma własną dekorację (świecące
+            urządzenia + gradient różu), dodanie tekstury by ją zagłuszyło. */}
         <m.section
           initial={reduceMotion ? false : { opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -429,25 +444,31 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
             <span className="mx-auto mt-3 block h-1 w-14 rounded-full bg-gradient-to-r from-pink-500 to-pink-300" />
           </m.div>
 
-          {/* PACKAGE CARDS */}
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-6 pt-2">
-            <PackageCard
-              name="MAX 1000"
-              speed="1000 Mb/s"
-              price="140 zł/mies."
-              monthsPill="12 miesięcy za 0 zł!"
-              index={0}
-              reduceMotion={reduceMotion}
-            />
-            <PackageCard
-              name="MAX 2000"
-              speed="2000 Mb/s"
-              price="160 zł/mies."
-              monthsPill="12 miesięcy za 0 zł!"
-              featured
-              index={1}
-              reduceMotion={reduceMotion}
-            />
+          {/* PACKAGE CARDS — full-bleed kropkowane tło pod siatką */}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
+              <DottedBackground variant="dots" size={22} />
+            </div>
+
+            <div className="relative grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-6 pt-2">
+              <PackageCard
+                name="MAX 1000"
+                speed="1000 Mb/s"
+                price="140 zł/mies."
+                monthsPill="12 miesięcy za 0 zł!"
+                index={0}
+                reduceMotion={reduceMotion}
+              />
+              <PackageCard
+                name="MAX 2000"
+                speed="2000 Mb/s"
+                price="160 zł/mies."
+                monthsPill="12 miesięcy za 0 zł!"
+                featured
+                index={1}
+                reduceMotion={reduceMotion}
+              />
+            </div>
           </div>
 
           {/* INFO BAR */}
@@ -504,20 +525,27 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
             </m.span>
           </m.div>
 
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4 pb-10">
-            {tvPackages.map((pkg, index) => (
-              <TvCard
-                key={pkg.name}
-                name={pkg.name}
-                price={pkg.price}
-                icon={pkg.icon}
-                iconColor={pkg.iconColor}
-                iconBg={pkg.iconBg}
-                addonKey={pkg.addonKey}
-                index={index}
-                reduceMotion={reduceMotion}
-              />
-            ))}
+          {/* TV PACKAGES — full-bleed kropkowane tło pod siatką */}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
+              <DottedBackground variant="dots" size={22} />
+            </div>
+
+            <div className="relative grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4 pb-10">
+              {tvPackages.map((pkg, index) => (
+                <TvCard
+                  key={pkg.name}
+                  name={pkg.name}
+                  price={pkg.price}
+                  icon={pkg.icon}
+                  iconColor={pkg.iconColor}
+                  iconBg={pkg.iconBg}
+                  addonKey={pkg.addonKey}
+                  index={index}
+                  reduceMotion={reduceMotion}
+                />
+              ))}
+            </div>
           </div>
 
           {/* LEGAL DISCLAIMER */}

@@ -14,6 +14,7 @@ import {
   type Tier,
   type Channel,
 } from "@/lib/channels";
+import DottedBackground from "@/components/ui/DottedBackground";
 
 type Props = {
   tier: Tier;
@@ -239,42 +240,54 @@ const handleDownload = async () => {
           </p>
         </div>
 
-        <AnimatePresence mode="wait">
-          {viewMode === "kafelki" ? (
-            <motion.div key="grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {results.map((ch) => (
-                <motion.div
-                  key={channelId(ch)}
-                  layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  whileHover={{ y: -3 }}
-                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 flex items-center gap-3 transition-colors duration-200 hover:bg-white/[0.08]"
-                >
-                  <ChannelIcon ch={ch} size={40} />
-                  <div className="min-w-0">
-                    <p className="font-semibold text-white text-sm truncate">{ch.name}</p>
-                    <p className="text-xs text-white/40">Kanał {ch.number}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          ) : (
-            <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
-              {results.map((ch, i) => (
-                <motion.div key={channelId(ch)} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`flex items-center gap-4 px-5 py-3 ${i !== 0 ? "border-t border-white/5" : ""}`}>
-                  <span className="text-xs font-semibold text-white/40 w-8 shrink-0">{ch.number}</span>
-                  <ChannelIcon ch={ch} size={32} />
-                  <span className="font-medium text-white text-sm">{ch.name}</span>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Wyniki wyszukiwarki — full-bleed kropkowane tło pod spodem.
+            Niższe opacity i mniejszy rozstaw niż gdzie indziej, bo kafelki
+            kanałów są bardzo małe i gęsto upakowane — subtelniejszy wzór
+            lepiej się komponuje i nie tworzy szumu między logotypami. */}
+        <div className="relative">
+          <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
+            <DottedBackground variant="dots" size={20} opacity={0.08} />
+          </div>
 
-        {results.length === 0 && (
-          <div className="text-center py-16 text-white/40 text-sm">Brak kanałów pasujących do wybranych filtrów.</div>
-        )}
+          <div className="relative">
+            <AnimatePresence mode="wait">
+              {viewMode === "kafelki" ? (
+                <motion.div key="grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {results.map((ch) => (
+                    <motion.div
+                      key={channelId(ch)}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      whileHover={{ y: -3 }}
+                      className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 flex items-center gap-3 transition-colors duration-200 hover:bg-white/[0.08]"
+                    >
+                      <ChannelIcon ch={ch} size={40} />
+                      <div className="min-w-0">
+                        <p className="font-semibold text-white text-sm truncate">{ch.name}</p>
+                        <p className="text-xs text-white/40">Kanał {ch.number}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              ) : (
+                <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+                  {results.map((ch, i) => (
+                    <motion.div key={channelId(ch)} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`flex items-center gap-4 px-5 py-3 ${i !== 0 ? "border-t border-white/5" : ""}`}>
+                      <span className="text-xs font-semibold text-white/40 w-8 shrink-0">{ch.number}</span>
+                      <ChannelIcon ch={ch} size={32} />
+                      <span className="font-medium text-white text-sm">{ch.name}</span>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {results.length === 0 && (
+              <div className="text-center py-16 text-white/40 text-sm">Brak kanałów pasujących do wybranych filtrów.</div>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );

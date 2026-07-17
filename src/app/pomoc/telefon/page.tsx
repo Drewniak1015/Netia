@@ -429,7 +429,15 @@ export default function NetiaUslugiMobilnePomocPage() {
   ];
 
   return (
-    <div style={{ backgroundColor: c.bg, color: c.text }} className="font-sans leading-relaxed">
+    <div
+      style={{
+        backgroundColor: c.bg,
+        color: c.text,
+        backgroundImage: `radial-gradient(rgba(255,255,255,.12) 1px, transparent 1px)`,
+        backgroundSize: "26px 26px",
+      }}
+      className="font-sans leading-relaxed"
+    >
       <div className="max-w-[820px] mx-auto px-6 py-10 pt-36">
         {/* HERO CARD — reveals as a whole, pills cascade in slightly after */}
         <Reveal y={24}>

@@ -206,26 +206,6 @@ function Note({ children }: { children: ReactNode }) {
   );
 }
 
-/* ---------- live signal motif ----------
-   Small ambient signal-strength meter used once, in the hero. Ties
-   the visual language directly to the subject (a connection that
-   drops out and needs checking) instead of an arbitrary decoration. */
-
-function SignalPulse() {
-  const bars = [0.45, 0.7, 1];
-  return (
-    <div className="flex items-end gap-1 h-7" aria-hidden="true">
-      {bars.map((h, i) => (
-        <span
-          key={i}
-          className="w-[5px] rounded-full"
-          style={{ background: c.teal, height: `${h * 100}%` }}
-        />
-      ))}
-    </div>
-  );
-}
-
 /* ---------- copyable phone number ----------
    The number is the single most useful piece of data on this page —
    letting people grab it without a long-press-and-select on desktop
@@ -500,28 +480,23 @@ export default function NetiaZglaszanieAwariiPomocPage() {
             border: `1px solid ${c.borderStrong}`,
           }}
         >
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <div className="flex items-center gap-4">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.7 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.1, ease: EASE }}
-                className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: c.tealDim, border: `1px solid ${c.tealBorder}`, color: c.teal }}
-              >
-                <AlertTriangle size={22} />
-              </motion.div>
-              <div>
-                <h1 className="text-[24px] font-extrabold tracking-tight" style={{ color: c.text }}>
-                  Zgłaszanie Awarii
-                </h1>
-                <p className="text-[14px] mt-0.5" style={{ color: c.muted }}>
-                  Instrukcja postępowania i szybki kontakt z infolinią.
-                </p>
-              </div>
-            </div>
-            <div className="hidden sm:block flex-shrink-0 pt-1">
-              <SignalPulse />
+          <div className="flex items-center gap-4 mb-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.1, ease: EASE }}
+              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: c.tealDim, border: `1px solid ${c.tealBorder}`, color: c.teal }}
+            >
+              <AlertTriangle size={22} />
+            </motion.div>
+            <div>
+              <h1 className="text-[24px] font-extrabold tracking-tight" style={{ color: c.text }}>
+                Zgłaszanie Awarii
+              </h1>
+              <p className="text-[14px] mt-0.5" style={{ color: c.muted }}>
+                Instrukcja postępowania i szybki kontakt z infolinią.
+              </p>
             </div>
           </div>
           <motion.div

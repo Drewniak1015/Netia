@@ -23,6 +23,7 @@ import {
   channelsForAddon,
   type Tier,
 } from "@/lib/channels";
+import DottedBackground from "@/components/ui/DottedBackground";
 
 // Pakiety główne prezentowane na stronie (XS jest bazą wliczoną automatycznie
 // do każdego z poniższych, dlatego nie pokazujemy go jako osobnej opcji).
@@ -132,7 +133,8 @@ export default function Przewodnik({
       <div className="relative z-10 mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-8 mt-20">
 
         {/* ======================================================== */}
-        {/* BANER Z NOWOCZESNĄ GRAFIKĄ SVG                         */}
+        {/* BANER Z NOWOCZESNĄ GRAFIKĄ SVG — bez kropek: ma własną   */}
+        {/* dekorację (świecące koncentryczne okręgi + poświata)      */}
         {/* ======================================================== */}
         <motion.div
           initial="hidden"
@@ -264,120 +266,132 @@ href="#pelna-lista"
         {/* LISTA PAKIETÓW I ELEMENTY SIATKI                         */}
         {/* ======================================================== */}
 
-        <motion.p
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={fadeUp}
-          className="text-xs font-semibold uppercase tracking-wide text-white/40 mb-4"
-        >
-          Pakiety główne — wybierasz jeden
-        </motion.p>
+        {/* Cały blok "Pakiety główne" + "Dodatki tematyczne" dzieli JEDNĄ
+            ciągłą strefę kropek (zamiast dwóch osobnych prostokątów z
+            przerwą) — inaczej etykiety między siatkami wypadały poza
+            teksturą i tworzyły widoczne, twarde ucięcie krawędzi. */}
+        <div className="relative">
+          <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
+            <DottedBackground variant="dots" size={22} />
+          </div>
 
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={staggerContainer}
-          className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12 auto-rows-fr"
-        >
-          {SELECTABLE_TIERS.map((pkg) => {
-            const active = tier === pkg.tier;
-            return (
-              <motion.button
-                key={pkg.tier}
-                type="button"
-                onClick={() => onTierChange(pkg.tier)}
-                variants={cardItem}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                className={`h-full flex flex-col text-left rounded-2xl border px-6 py-6 transition-colors duration-200 ${
-                  active
-                    ? "border-teal-400/60 bg-teal-400/10"
-                    : "border-white/10 bg-white/5 hover:bg-white/[0.08]"
-                }`}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-bold text-white text-lg">{pkg.name}</h3>
-                  <span className="font-extrabold text-teal-300 text-xl leading-none">
-                    {TIER_CHANNEL_COUNTS[pkg.tier]}
-                  </span>
-                </div>
-                <p className="text-sm text-white/60 leading-relaxed mb-3 flex-1">
-                  {pkg.desc}
-                </p>
-                <span className="text-xs font-semibold text-teal-400">
-                  {TIER_CHANNEL_COUNTS[pkg.tier]} kanałów
-                </span>
-              </motion.button>
-            );
-          })}
-        </motion.div>
+          <div className="relative">
+            <motion.p
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-80px" }}
+              variants={fadeUp}
+              className="text-xs font-semibold uppercase tracking-wide text-white/40 mb-4"
+            >
+              Pakiety główne — wybierasz jeden
+            </motion.p>
 
-        <motion.p
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={fadeUp}
-          className="text-xs font-semibold uppercase tracking-wide text-white/40 mb-4"
-        >
-          Dodatki tematyczne i pakiety premium
-        </motion.p>
-
-        <motion.div
-          id="pelna-lista"
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={staggerContainer}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 scroll-mt-24 auto-rows-fr"
-        >
-          {THEME_GROUPS.map((group) => {
-            const Icon = group.icon;
-            return (
-              <motion.div
-                key={group.title}
-                variants={cardItem}
-                className="h-full flex flex-col rounded-2xl border border-white/10 bg-white/5 px-6 py-6"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="flex items-center justify-center h-9 w-9 rounded-xl bg-teal-400/15 text-teal-300 shrink-0">
-                    <Icon size={18} strokeWidth={2} />
-                  </span>
-                  <div>
-                    <h4 className="font-bold text-white text-base leading-tight">
-                      {group.title}
-                    </h4>
-                    <p className="text-xs text-white/50 leading-snug">
-                      {group.desc}
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-80px" }}
+              variants={staggerContainer}
+              className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12 auto-rows-fr"
+            >
+              {SELECTABLE_TIERS.map((pkg) => {
+                const active = tier === pkg.tier;
+                return (
+                  <motion.button
+                    key={pkg.tier}
+                    type="button"
+                    onClick={() => onTierChange(pkg.tier)}
+                    variants={cardItem}
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`h-full flex flex-col text-left rounded-2xl border px-6 py-6 transition-colors duration-200 ${
+                      active
+                        ? "border-teal-400/60 bg-teal-400/10"
+                        : "border-white/10 bg-white/5 hover:bg-white/[0.08]"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-bold text-white text-lg">{pkg.name}</h3>
+                      <span className="font-extrabold text-teal-300 text-xl leading-none">
+                        {TIER_CHANNEL_COUNTS[pkg.tier]}
+                      </span>
+                    </div>
+                    <p className="text-sm text-white/60 leading-relaxed mb-3 flex-1">
+                      {pkg.desc}
                     </p>
-                  </div>
-                </div>
+                    <span className="text-xs font-semibold text-teal-400">
+                      {TIER_CHANNEL_COUNTS[pkg.tier]} kanałów
+                    </span>
+                  </motion.button>
+                );
+              })}
+            </motion.div>
 
-                <div className="flex flex-col gap-2 flex-1">
-                  {group.addonKeys.map((key) => {
-                    const addon = ADDONS.find((a) => a.key === key);
-                    const count = channelsForAddon(key).length;
-                    if (!addon) return null;
-                    return (
-                      <div
-                        key={key}
-                        className="flex items-center justify-between border-t border-white/5 pt-2 first:border-t-0 first:pt-0"
-                      >
-                        <span className="text-sm text-teal-300/90 font-medium">
-                          {addon.label}
-                        </span>
-                        <span className="text-sm text-white/50">
-                          {count} kanałów
-                        </span>
+            <motion.p
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-80px" }}
+              variants={fadeUp}
+              className="text-xs font-semibold uppercase tracking-wide text-white/40 mb-4"
+            >
+              Dodatki tematyczne i pakiety premium
+            </motion.p>
+
+            <motion.div
+              id="pelna-lista"
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-80px" }}
+              variants={staggerContainer}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 scroll-mt-24 auto-rows-fr"
+            >
+              {THEME_GROUPS.map((group) => {
+                const Icon = group.icon;
+                return (
+                  <motion.div
+                    key={group.title}
+                    variants={cardItem}
+                    className="h-full flex flex-col rounded-2xl border border-white/10 bg-white/5 px-6 py-6"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="flex items-center justify-center h-9 w-9 rounded-xl bg-teal-400/15 text-teal-300 shrink-0">
+                        <Icon size={18} strokeWidth={2} />
+                      </span>
+                      <div>
+                        <h4 className="font-bold text-white text-base leading-tight">
+                          {group.title}
+                        </h4>
+                        <p className="text-xs text-white/50 leading-snug">
+                          {group.desc}
+                        </p>
                       </div>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+                    </div>
+
+                    <div className="flex flex-col gap-2 flex-1">
+                      {group.addonKeys.map((key) => {
+                        const addon = ADDONS.find((a) => a.key === key);
+                        const count = channelsForAddon(key).length;
+                        if (!addon) return null;
+                        return (
+                          <div
+                            key={key}
+                            className="flex items-center justify-between border-t border-white/5 pt-2 first:border-t-0 first:pt-0"
+                          >
+                            <span className="text-sm text-teal-300/90 font-medium">
+                              {addon.label}
+                            </span>
+                            <span className="text-sm text-white/50">
+                              {count} kanałów
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </div>
+        </div>
       </div>
     </section>
   );
