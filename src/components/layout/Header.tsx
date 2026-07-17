@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -50,6 +51,11 @@ interface NavItem {
 /* ------------------------------------------------------------------ */
 /* Dane — edytuj / podmieniaj swobodnie                                 */
 /* ------------------------------------------------------------------ */
+
+/* Stała wysokość headera — trzymana w jednym miejscu, żeby nie rozjeżdżała
+   się z paddingiem/marginem contentu strony (patrz: eksport HEADER_HEIGHT_PX
+   poniżej, użyj go np. w layout.tsx jako paddingTop dla <main>). */
+export const HEADER_HEIGHT_PX = 88;
 
 const DOT_COLORS: string[] = ["#EC4899", "#F59E0B", "#22C55E", "#0EA5E9", "#8B5CF6", "#14B8A6"];
 const underlineVariants = {
@@ -205,7 +211,16 @@ function DotCluster({ size = 22 }: { size?: number }) {
 function Logo() {
   return (
     <Link href="/" className="flex items-center shrink-0" aria-label="Netia — strona główna">
-      <img src="/images/Placeholder.svg" alt="Netia" className="h-16 w-auto" />
+      {/* width/height rezerwują miejsce w layoucie zanim SVG się załaduje,
+          eliminując przesunięcie (CLS) reszty nagłówka. */}
+      <Image
+        src="/images/Placeholder.svg"
+        alt="Netia"
+        width={160}
+        height={64}
+        priority
+        className="h-16 w-auto"
+      />
     </Link>
   );
 }
@@ -482,9 +497,12 @@ export default function NetiaHeader() {
         }`}
         style={{
           backgroundColor: scrolled ? "rgba(11, 42, 61, 0.72)" : "#0B2A3D",
+          // Stała wysokość headera — eliminuje CLS spowodowany zmienną
+          // wysokością zawartości (fonty, obrazy) po hydracji/scrollu.
+          height: HEADER_HEIGHT_PX,
         }}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-10 px-8 py-4">
+        <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-10 px-8">
           <Logo />
 
           <nav className="hidden lg:flex items-center gap-3">

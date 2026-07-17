@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import { Phone } from "lucide-react";
 
@@ -50,7 +51,16 @@ const underlineVariants: Variants = {
 function Logo() {
   return (
     <Link href="/" className="flex items-center shrink-0" aria-label="Netia — strona główna">
-      <img src="/images/Placeholder.svg" alt="Netia" className="h-12 w-auto sm:h-14 lg:h-16" />
+      {/* width/height rezerwują proporcjonalną przestrzeń w layoucie na
+          każdym breakpoincie (h-12/sm:h-14/lg:h-16), więc szerokość
+          wyliczana z aspect-ratio nie "skacze" po załadowaniu SVG. */}
+      <Image
+        src="/images/Placeholder.svg"
+        alt="Netia"
+        width={200}
+        height={64}
+        className="h-12 w-auto sm:h-14 lg:h-16"
+      />
     </Link>
   );
 }
