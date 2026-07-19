@@ -11,21 +11,22 @@ import MaxxBanner from "@/components/home/Banner";
 import NetiaFAQ from "@/components/home/Faq";
 import { pagesMetadata } from "@/lib/seo/pages-metadata";
 
-export const metadata = pagesMetadata.ofertyMax;
+export const metadata = pagesMetadata.home;
+
 export default function HomePage() {
   return (
     <>
       <MainHero />
       <MaxxBanner />
-      <Oferty/>
-      <OfertyInternet/>
-      <PoradnikTechnologie/>
-      <Instrukcja/>
-      <Benefity/>
-      <Opinie/>
-      <CTA/>
-      <NetiaFAQ/>
-      <Miasta/>
+      <Oferty />
+      <OfertyInternet />
+      <PoradnikTechnologie />
+      <Instrukcja />
+      <Benefity />
+      <Opinie />
+      <CTA />
+      <NetiaFAQ />
+      <Miasta />
     </>
   );
-} 
+}

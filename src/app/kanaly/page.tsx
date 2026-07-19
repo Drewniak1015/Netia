@@ -8,7 +8,7 @@ type Props = {
 };
 import { pagesMetadata } from "@/lib/seo/pages-metadata";
 
-export const metadata = pagesMetadata.ofertyMax;
+export const metadata = pagesMetadata.kanaly;
 export default async function Page({ searchParams }: Props) {
   const { tier: rawTier } = await searchParams;
   const initialTier: Tier = isValidTier(rawTier ?? "") ? (rawTier as Tier) : "s";
