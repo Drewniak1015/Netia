@@ -52,13 +52,71 @@ const fadeUp = {
 };
 
 /* ---------------------------------------------------------------------- */
-/*  Główny komponent (czyta ?umowa=24 lub ?umowa=bez z URL)                */
+/*  FIX (CLS — główna przyczyna): useSearchParams() zmuszał Next.js do      */
+/*  potraktowania CAŁEJ granicy Suspense jako dynamicznej po stronie        */
+/*  klienta. Efekt: serwer wysyłał fallback={null} w initial HTML — CAŁY    */
+/*  Konfigurator (baner + siatka pakietów) był PUSTY do czasu hydracji, a   */
+/*  potem nagle "wskakiwał", spychając FAQ/Footer w dół. To była           */
+/*  faktyczna przyczyna ogromnego, losowego CLS (zależnego od tego, czy    */
+/*  JS zdążył się zhydratować przed pierwszym pomiarem).                   */
+/*                                                                          */
+/*  Fix: useSearchParams() (i cała logika reagowania na ?umowa=...) żyje   */
+/*  teraz w OSOBNYM komponencie, który zawsze renderuje null — nie ma       */
+/*  żadnego widocznego DOM-u. To ON siedzi w Suspense, nie reszta UI.       */
+/*  fallback={null} vs. realny render (też null) = zero różnicy wizualnej, */
+/*  więc ta granica Suspense fizycznie nie może już powodować CLS.         */
+/*  Widoczna treść (baner, siatka pakietów) renderuje się od razu w        */
+/*  initial HTML, tak jak powinna.                                        */
+/* ---------------------------------------------------------------------- */
+function UmowaUrlSync({
+  umowa,
+  zmienUmowe,
+}: {
+  umowa: UmowaType;
+  zmienUmowe: (u: UmowaType) => void;
+}) {
+  const searchParams = useSearchParams();
+  const paramUmowa = searchParams.get("umowa");
+
+  // Czy już zdążyliśmy choć raz zareagować na parametr z URL w tej sesji
+  // komponentu — zapobiega to resetowi przy zwykłym ponownym wejściu na
+  // stronę, gdy paramUmowa się nie zmienił względem tego, co user miał
+  // wcześniej ustawione (i co jest już wczytane z sessionStorage).
+  const poprzedniParamUmowa = useRef<string | null>(null);
+  const pierwszyRender = useRef(true);
+
+  useEffect(() => {
+    if (paramUmowa !== "bez" && paramUmowa !== "24") {
+      pierwszyRender.current = false;
+      return;
+    }
+
+    if (pierwszyRender.current) {
+      pierwszyRender.current = false;
+      poprzedniParamUmowa.current = paramUmowa;
+      if (paramUmowa !== umowa) {
+        zmienUmowe(paramUmowa);
+      }
+      return;
+    }
+
+    if (paramUmowa !== poprzedniParamUmowa.current) {
+      poprzedniParamUmowa.current = paramUmowa;
+      if (paramUmowa !== umowa) {
+        zmienUmowe(paramUmowa);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paramUmowa]);
+
+  return null;
+}
+
+/* ---------------------------------------------------------------------- */
+/*  Główny komponent                                                       */
 /* ---------------------------------------------------------------------- */
 function KonfiguratorZawartosc() {
-  const searchParams = useSearchParams();
   const reduceMotion = useReducedMotion();
-
-  const paramUmowa = searchParams.get("umowa");
 
   // Wybory (umowa + pakiet + oferty) żyją we wspólnym kontekście, a nie w
   // lokalnym useState — dzięki temu widget PodsumowanieFixed (osadzony np.
@@ -142,39 +200,15 @@ function KonfiguratorZawartosc() {
     [setUmowa]
   );
 
-  // Czy już zdążyliśmy choć raz zareagować na parametr z URL w tej sesji
-  // komponentu — zapobiega to resetowi przy zwykłym ponownym wejściu na
-  // stronę, gdy paramUmowa się nie zmienił względem tego, co user miał
-  // wcześniej ustawione (i co jest już wczytane z sessionStorage).
-  const poprzedniParamUmowa = useRef<string | null>(null);
-  const pierwszyRender = useRef(true);
-
-  useEffect(() => {
-    if (paramUmowa !== "bez" && paramUmowa !== "24") {
-      pierwszyRender.current = false;
-      return;
-    }
-
-    if (pierwszyRender.current) {
-      pierwszyRender.current = false;
-      poprzedniParamUmowa.current = paramUmowa;
-      if (paramUmowa !== umowa) {
-        zmienUmowe(paramUmowa);
-      }
-      return;
-    }
-
-    if (paramUmowa !== poprzedniParamUmowa.current) {
-      poprzedniParamUmowa.current = paramUmowa;
-      if (paramUmowa !== umowa) {
-        zmienUmowe(paramUmowa);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paramUmowa]);
-
   return (
     <LazyMotion features={domAnimation} strict>
+      {/* Niewidoczny — renderuje zawsze null. Jedyny fragment, który
+          zależy od useSearchParams(), więc jedyny, który musi siedzieć w
+          Suspense. Ponieważ fallback też jest null, ta granica nigdy nie
+          powoduje żadnego widocznego skoku layoutu. */}
+      <Suspense fallback={null}>
+        <UmowaUrlSync umowa={umowa} zmienUmowe={zmienUmowe} />
+      </Suspense>
       <section
         style={{ backgroundColor: "#0B2A3D" }}
         className="relative overflow-hidden font-sans py-16 sm:py-20 lg:py-24"
@@ -386,15 +420,16 @@ function KonfiguratorZawartosc() {
   );
 }
 
-/* useSearchParams wymaga granicy Suspense w Next.js App Router.
+/* Uwaga: KonfiguratorZawartosc już NIE wywołuje useSearchParams()
+   bezpośrednio (robi to tylko wewnętrzny <UmowaUrlSync>, w swoim własnym,
+   niewidocznym Suspense) — więc nie potrzebuje już zewnętrznej granicy
+   Suspense. Cała widoczna treść renderuje się w pełni statycznie/SSR,
+   bez czekania na hydrację.
+
    UWAGA: <KonfiguratorProvider> NIE jest owinięty tutaj — musi siedzieć
    wyżej, w app/layout.tsx (patrz KonfiguratorContext.tsx), żeby
    <PodsumowanieFixed /> na innych stronach widział ten sam, współdzielony
    stan wyboru. Owijanie go lokalnie tutaj zerwałoby tę współdzieloność. */
 export default function Konfigurator() {
-  return (
-    <Suspense fallback={null}>
-      <KonfiguratorZawartosc />
-    </Suspense>
-  );
+  return <KonfiguratorZawartosc />;
 }
