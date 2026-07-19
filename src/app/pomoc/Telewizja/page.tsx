@@ -15,7 +15,7 @@ import {
   MonitorSmartphone,
   Sparkles,
 } from "lucide-react";
-import { useState, useRef, useEffect, type ReactNode } from "react";
+import { useState, useRef, useEffect, type ReactNode, type ElementType } from "react";
 import {
   ADDONS,
   TIER_LABELS,
@@ -55,7 +55,9 @@ const prefersReducedMotion =
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function useRevealOnScroll(threshold = 0.12) {
-  const ref = useRef<HTMLDivElement | null>(null);
+  // FIX (a11y): typ zawężony do HTMLElement (nie tylko HTMLDivElement),
+  // bo Reveal może się teraz renderować jako <li> zamiast <div>.
+  const ref = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -93,13 +95,22 @@ type RevealProps = {
   y?: number;
   className?: string;
   style?: React.CSSProperties;
-  as?: "div";
+  /**
+   * FIX (a11y — "Elementy list (<li>) nie znajdują się wewnątrz [...]"):
+   * Reveal domyślnie renderuje <div>. Gdy owija element listy, musi
+   * renderować się jako <li> SAM W SOBIE (zamiast owijać <li> divem),
+   * inaczej <li> przestaje być bezpośrednim dzieckiem <ul>/<ol> i
+   * czytniki ekranu nie rozpoznają struktury listy. Animacja (opacity/
+   * transform) jest identyczna niezależnie od tagu.
+   */
+  as?: "div" | "li";
 };
 
-function Reveal({ children, delay = 0, y = 18, className, style }: RevealProps) {
+function Reveal({ children, delay = 0, y = 18, className, style, as = "div" }: RevealProps) {
   const { ref, visible } = useRevealOnScroll();
+  const Tag = as as ElementType;
   return (
-    <div
+    <Tag
       ref={ref}
       className={className}
       style={{
@@ -111,7 +122,7 @@ function Reveal({ children, delay = 0, y = 18, className, style }: RevealProps) 
       }}
     >
       {children}
-    </div>
+    </Tag>
   );
 }
 
@@ -265,13 +276,19 @@ function AdvantagesBox({ items }: { items: string[] }) {
         <div className="text-[13px] font-bold mb-2" style={{ color: c.text }}>
           Zalety:
         </div>
+        {/* FIX (a11y): Reveal renderuje się jako <li> zamiast owijać osobny <li> w <div>. */}
         <ul>
           {items.map((a, i) => (
-            <Reveal key={i} y={8} delay={i * 0.05}>
-              <li className="flex items-start gap-2.5 py-1 text-[14px]" style={{ color: c.muted }}>
-                <CheckCircle2 size={15} style={{ color: c.teal, flexShrink: 0, marginTop: 3 }} />
-                {a}
-              </li>
+            <Reveal
+              key={i}
+              as="li"
+              y={8}
+              delay={i * 0.05}
+              className="flex items-start gap-2.5 py-1 text-[14px]"
+              style={{ color: c.muted }}
+            >
+              <CheckCircle2 size={15} style={{ color: c.teal, flexShrink: 0, marginTop: 3 }} />
+              {a}
             </Reveal>
           ))}
         </ul>
@@ -294,29 +311,32 @@ function BulletBox({ items }: { items: { icon: ReactNode; label: string; text: s
   return (
     <Reveal y={16}>
       <div className="rounded-xl px-5 py-2 my-4" style={{ background: c.card, border: `1px solid ${c.border}` }}>
+        {/* FIX (a11y): Reveal jako <li> zamiast owijania go w <div>. */}
         <ul>
           {items.map((item, i) => (
-            <Reveal key={i} y={10} delay={i * 0.06}>
-              <li
-                className="flex items-start gap-3 py-3 text-[14px]"
-                style={{
-                  color: c.muted,
-                  borderBottom: i === items.length - 1 ? "none" : `1px solid ${c.border}`,
-                }}
+            <Reveal
+              key={i}
+              as="li"
+              y={10}
+              delay={i * 0.06}
+              className="flex items-start gap-3 py-3 text-[14px]"
+              style={{
+                color: c.muted,
+                borderBottom: i === items.length - 1 ? "none" : `1px solid ${c.border}`,
+              }}
+            >
+              <span
+                className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                style={{ background: c.tealDim, color: c.teal }}
               >
-                <span
-                  className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={{ background: c.tealDim, color: c.teal }}
-                >
-                  {item.icon}
-                </span>
-                <span>
-                  <span className="font-bold" style={{ color: c.text }}>
-                    {item.label}
-                  </span>{" "}
-                  – {item.text}
-                </span>
-              </li>
+                {item.icon}
+              </span>
+              <span>
+                <span className="font-bold" style={{ color: c.text }}>
+                  {item.label}
+                </span>{" "}
+                – {item.text}
+              </span>
             </Reveal>
           ))}
         </ul>
@@ -329,13 +349,19 @@ function PlainList({ items }: { items: string[] }) {
   return (
     <Reveal y={16}>
       <div className="rounded-xl px-5 py-2 my-4" style={{ background: c.card, border: `1px solid ${c.border}` }}>
+        {/* FIX (a11y): Reveal jako <li> zamiast owijania go w <div>. */}
         <ul>
           {items.map((item, i) => (
-            <Reveal key={i} y={8} delay={i * 0.05}>
-              <li className="flex items-start gap-2.5 py-2.5 text-[14px]" style={{ color: c.muted }}>
-                <CheckCircle2 size={15} style={{ color: c.teal, flexShrink: 0, marginTop: 3 }} />
-                {item}
-              </li>
+            <Reveal
+              key={i}
+              as="li"
+              y={8}
+              delay={i * 0.05}
+              className="flex items-start gap-2.5 py-2.5 text-[14px]"
+              style={{ color: c.muted }}
+            >
+              <CheckCircle2 size={15} style={{ color: c.teal, flexShrink: 0, marginTop: 3 }} />
+              {item}
             </Reveal>
           ))}
         </ul>

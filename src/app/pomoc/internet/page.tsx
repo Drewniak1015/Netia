@@ -9,7 +9,7 @@ import {
   Wallet,
   FileText,
 } from "lucide-react";
-import { useState, useRef, useEffect, type ReactNode } from "react";
+import { useState, useRef, useEffect, type ReactNode, type ElementType } from "react";
 
 /* ---------- design tokens ----------
    bg matches the earlier request: rgb(11, 42, 61).
@@ -42,7 +42,9 @@ const prefersReducedMotion =
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function useRevealOnScroll(threshold = 0.12) {
-  const ref = useRef<HTMLDivElement | null>(null);
+  // FIX (a11y): typ zawężony do HTMLElement (nie tylko HTMLDivElement),
+  // bo Reveal może się teraz renderować jako <li> zamiast <div>.
+  const ref = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -80,12 +82,22 @@ type RevealProps = {
   y?: number;
   className?: string;
   style?: React.CSSProperties;
+  /**
+   * FIX (a11y — "Elementy list (<li>) nie znajdują się wewnątrz [...]"):
+   * Reveal domyślnie renderuje <div>. Gdy owija element listy, musi
+   * renderować się jako <li> SAM W SOBIE (zamiast owijać <li> divem),
+   * inaczej <li> przestaje być bezpośrednim dzieckiem <ul>/<ol> i
+   * czytniki ekranu nie rozpoznają struktury listy. Animacja (opacity/
+   * transform) jest identyczna niezależnie od tagu.
+   */
+  as?: "div" | "li";
 };
 
-function Reveal({ children, delay = 0, y = 18, className, style }: RevealProps) {
+function Reveal({ children, delay = 0, y = 18, className, style, as = "div" }: RevealProps) {
   const { ref, visible } = useRevealOnScroll();
+  const Tag = as as ElementType;
   return (
-    <div
+    <Tag
       ref={ref}
       className={className}
       style={{
@@ -97,7 +109,7 @@ function Reveal({ children, delay = 0, y = 18, className, style }: RevealProps) 
       }}
     >
       {children}
-    </div>
+    </Tag>
   );
 }
 
@@ -213,13 +225,23 @@ function AdvantagesBox({ items }: { items: string[] }) {
         <div className="text-[13px] font-bold mb-2" style={{ color: c.text }}>
           Zalety:
         </div>
+        {/*
+          FIX (a11y): Reveal renderuje się teraz JAKO <li> (as="li"),
+          zamiast owijać osobny <li> w <div>. <li> zostaje bezpośrednim
+          dzieckiem <ul>, tak jak wymaga tego poprawna struktura listy.
+        */}
         <ul>
           {items.map((a, i) => (
-            <Reveal key={i} y={8} delay={i * 0.05}>
-              <li className="flex items-start gap-2.5 py-1 text-[14px]" style={{ color: c.muted }}>
-                <CheckCircle2 size={15} style={{ color: c.teal, flexShrink: 0, marginTop: 3 }} />
-                {a}
-              </li>
+            <Reveal
+              key={i}
+              as="li"
+              y={8}
+              delay={i * 0.05}
+              className="flex items-start gap-2.5 py-1 text-[14px]"
+              style={{ color: c.muted }}
+            >
+              <CheckCircle2 size={15} style={{ color: c.teal, flexShrink: 0, marginTop: 3 }} />
+              {a}
             </Reveal>
           ))}
         </ul>
@@ -425,16 +447,18 @@ function DeviceDetailCard({
                 <div className="font-bold text-[14px] mb-2" style={{ color: c.text }}>
                   {techTitle}
                 </div>
+                {/* FIX (a11y): jak w AdvantagesBox — Reveal jako <li> zamiast owijania go w <div>. */}
                 <ul>
                   {techPoints.map((t, i) => (
-                    <li
+                    <Reveal
                       key={i}
+                      as="li"
                       className="flex items-start gap-2.5 py-1 text-[14px]"
                       style={{ color: c.muted }}
                     >
                       <CheckCircle2 size={15} style={{ color: c.teal, flexShrink: 0, marginTop: 3 }} />
                       {t}
-                    </li>
+                    </Reveal>
                   ))}
                 </ul>
               </div>

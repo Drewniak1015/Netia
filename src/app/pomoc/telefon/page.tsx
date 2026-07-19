@@ -49,28 +49,41 @@ function scrollToId(id: string) {
 
 /* Reveal: fades + slides content up into view once, on scroll.
    Kept subtle and consistent so it reads as one motion language
-   across the page rather than scattered effects. */
+   across the page rather than scattered effects.
+
+   FIX (a11y — "Elementy list (<li>) nie znajdują się wewnątrz [...]"):
+   dodany prop `as` ("div" | "li") i `style`. Kiedy Reveal owija element
+   listy, musi renderować się JAKO <li> (motion.li), nie owijać osobny
+   <li> w <motion.div> — inaczej <li> przestaje być bezpośrednim
+   dzieckiem <ul>/<ol> i czytniki ekranu nie rozpoznają struktury listy.
+   Animacja jest identyczna niezależnie od tagu. */
 function Reveal({
   children,
   delay = 0,
   y = 20,
   className,
+  style,
+  as = "div",
 }: {
   children: ReactNode;
   delay?: number;
   y?: number;
   className?: string;
+  style?: React.CSSProperties;
+  as?: "div" | "li";
 }) {
+  const MotionTag = as === "li" ? motion.li : motion.div;
   return (
-    <motion.div
+    <MotionTag
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.6, ease: EASE, delay }}
       className={className}
+      style={style}
     >
       {children}
-    </motion.div>
+    </MotionTag>
   );
 }
 
@@ -153,15 +166,25 @@ function AdvantagesBox({ items }: { items: string[] }) {
         <div className="text-[13px] font-bold mb-2" style={{ color: c.text }}>
           Zalety:
         </div>
+        {/*
+          FIX (a11y): każdy Reveal renderuje się teraz JAKO <li>
+          (as="li") zamiast owijać osobny <li> w <motion.div> przez
+          RevealGroup. <li> zostaje bezpośrednim dzieckiem <ul>.
+        */}
         <ul>
-          <RevealGroup step={0.05} y={8}>
-            {items.map((a, i) => (
-              <li key={i} className="flex items-start gap-2.5 py-1 text-[14px]" style={{ color: c.muted }}>
-                <CheckCircle2 size={15} style={{ color: c.teal, flexShrink: 0, marginTop: 3 }} />
-                {a}
-              </li>
-            ))}
-          </RevealGroup>
+          {items.map((a, i) => (
+            <Reveal
+              key={i}
+              as="li"
+              y={8}
+              delay={i * 0.05}
+              className="flex items-start gap-2.5 py-1 text-[14px]"
+              style={{ color: c.muted }}
+            >
+              <CheckCircle2 size={15} style={{ color: c.teal, flexShrink: 0, marginTop: 3 }} />
+              {a}
+            </Reveal>
+          ))}
         </ul>
       </div>
     </Reveal>

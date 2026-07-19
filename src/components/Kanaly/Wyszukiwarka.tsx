@@ -32,7 +32,7 @@ const SELECTABLE_TIERS: Tier[] = ["s", "m", "l"];
 // na żądanie przyciskiem "Pokaż więcej" — klasyczny, prosty i pewny
 // sposób na cięcie initial render cost bez wchodzenia w pełną
 // wirtualizację (skomplikowaną przy responsywnej siatce 2/3/4 kolumn).
-const BATCH_SIZE = 60;
+const BATCH_SIZE = 36;
 
 // Ikona kanału: pokazuje prawdziwe logo (ch.logoUrl), a jeśli go nie ma —
 // lub obrazek nie chce się załadować — spada do kolorowego kwadratu z literą.
@@ -327,20 +327,37 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
                     transition={{ duration: 0.2 }}
                     className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"
                   >
+                    {/*
+                      FIX (TBT — dalsze cięcie): kafelki NIE są już
+                      m.div/framer-motion. Cały kontener siatki i tak
+                      fejduje się jako jedna całość (patrz initial/animate
+                      wyżej), więc każdy pojedynczy kafelek nie musi
+                      dodatkowo sam zarządzać swoją animacją wejścia —
+                      to był zbędny narzut frameworka (MotionValues,
+                      subskrypcje) na 36+ elementach naraz. Hover to teraz
+                      czysty CSS (transition-transform), zero JS.
+
+                      `content-visibility: auto` + `contain-intrinsic-size`
+                      to natywna optymalizacja przeglądarki: kafelki poza
+                      viewportem w ogóle NIE są liczone do Style & Layout,
+                      dopóki się nie zbliżą do ekranu przy scrollu — działa
+                      jak "wirtualizacja" bez pisania własnej logiki
+                      wirtualizacji. `contain-intrinsic-size` to przybliżona
+                      wysokość kafelka, żeby przeglądarka zarezerwowała
+                      miejsce i scrollbar się nie "trząsł".
+                    */}
                     {widoczneWyniki.map((ch) => (
-                      <m.div
+                      <div
                         key={channelId(ch)}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        whileHover={{ y: -3 }}
-                        className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 flex items-center gap-3 transition-colors duration-200 hover:bg-white/[0.08]"
+                        style={{ contentVisibility: "auto", containIntrinsicSize: "0 72px" }}
+                        className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 flex items-center gap-3 transition-[background-color,transform] duration-200 hover:-translate-y-[3px] hover:bg-white/[0.08]"
                       >
                         <ChannelIcon ch={ch} size={40} />
                         <div className="min-w-0">
                           <p className="font-semibold text-white text-sm truncate">{ch.name}</p>
                           <p className="text-xs text-white/40">Kanał {ch.number}</p>
                         </div>
-                      </m.div>
+                      </div>
                     ))}
                   </m.div>
                 ) : (
@@ -355,6 +372,7 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
                     {widoczneWyniki.map((ch, i) => (
                       <div
                         key={channelId(ch)}
+                        style={{ contentVisibility: "auto", containIntrinsicSize: "0 52px" }}
                         className={`flex items-center gap-4 px-5 py-3 ${i !== 0 ? "border-t border-white/5" : ""}`}
                       >
                         <span className="text-xs font-semibold text-white/40 w-8 shrink-0">{ch.number}</span>
