@@ -50,7 +50,23 @@ const underlineVariants: Variants = {
 function Logo() {
   return (
     <Link href="/" className="flex items-center shrink-0" aria-label="Netia — strona główna">
-      <img src="/images/Placeholder.svg" alt="Netia" className="h-12 w-auto sm:h-14 lg:h-16" />
+      {/*
+        FIX (CLS): tak samo jak w Header.tsx — brakowało width/height,
+        więc przeglądarka nie rezerwowała miejsca na obrazek przed jego
+        załadowaniem. width/height poniżej odpowiadają bazowej wysokości
+        h-12 (48px) przy proporcji SVG 666:256 (≈2.54:1) → ~122×48.
+        Nowoczesne przeglądarki same przeliczają aspect-ratio z tych
+        atrybutów, więc responsywne klasy (sm:h-14 lg:h-16) nadal działają
+        poprawnie — width się przelicza automatycznie na każdym breakpoincie,
+        nie trzeba osobnych wartości na każdy rozmiar.
+      */}
+      <img
+        src="/images/Placeholder.svg"
+        alt="Netia"
+        width={122}
+        height={48}
+        className="h-12 w-auto sm:h-14 lg:h-16"
+      />
     </Link>
   );
 }
