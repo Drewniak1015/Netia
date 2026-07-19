@@ -94,14 +94,6 @@ export default function KonfiguratorFAQ() {
             transform: translateY(0);
           }
         }
-        @keyframes faq-pulse {
-          0%, 100% {
-            box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.45);
-          }
-          50% {
-            box-shadow: 0 0 0 8px rgba(45, 212, 191, 0);
-          }
-        }
         .faq-animate {
           opacity: 0;
           transform: translateY(14px);
@@ -109,17 +101,58 @@ export default function KonfiguratorFAQ() {
         .faq-in-view .faq-animate {
           animation: faq-fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
+
+        /*
+         * FIX (non-composited animation / CLS):
+         * Poprzednio .faq-cta-pulse animował box-shadow bezpośrednio na
+         * przycisku. box-shadow nie jest własnością kompozytowalną, więc
+         * przy infinite animation Chrome musiał przemalowywać (paint) ten
+         * element w każdej klatce na głównym wątku — stąd ostrzeżenie
+         * Lighthouse "Nieskomponowane animacje".
+         *
+         * Teraz "pierścień" pulsu jest osobnym pseudo-elementem (::before),
+         * który animuje WYŁĄCZNIE transform (scale) i opacity — obie
+         * własności są kompozytowane przez GPU i nie wymagają Style &
+         * Layout ani Paint w locie. Efekt wizualny (rozchodzący się
+         * teal'owy pierścień) jest identyczny jak wcześniej.
+         */
         .faq-cta-pulse {
-          animation: faq-pulse 2.4s ease-out infinite;
+          position: relative;
+          isolation: isolate;
         }
+        .faq-cta-pulse::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          background-color: rgba(45, 212, 191, 0.45);
+          opacity: 0.45;
+          transform: scale(1);
+          animation: faq-pulse-ring 2.4s ease-out infinite;
+          pointer-events: none;
+          z-index: -1;
+          will-change: transform, opacity;
+        }
+        @keyframes faq-pulse-ring {
+          0% {
+            opacity: 0.45;
+            transform: scale(1);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(1.12);
+          }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .faq-animate {
             animation: none;
             opacity: 1;
             transform: none;
           }
-          .faq-cta-pulse {
+          .faq-cta-pulse::before {
             animation: none;
+            opacity: 0;
           }
         }
       `}</style>
