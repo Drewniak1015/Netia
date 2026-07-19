@@ -7,13 +7,21 @@ import './globals.css';
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-  display: "swap",
+  // FIX (CLS, mobile-only): "swap" podmienia font zastępczy na Geist gdy
+  // tylko się doładuje — na wolnym łączu (Lighthouse Mobile throttling)
+  // to okno jest długo widoczne, a na wąskim viewporcie mobilnym nawet
+  // drobna różnica w szerokości znaków potrafi przełamać tekst na inną
+  // liczbę linii (na desktopie zwykle nie, bo jest więcej "luzu" w wierszu).
+  // "optional" mówi przeglądarce: jeśli font nie zdąży w ~100ms, zostań
+  // przy foncie zastępczym na cały ten load — zero ryzyka shiftu z fonta.
+  // Font i tak trafia do cache, więc kolejne wizyty i tak go użyją od razu.
+  display: "optional",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-  display: "swap",
+  display: "optional",
 });
 
 export const metadata = {
