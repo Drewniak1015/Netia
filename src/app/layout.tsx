@@ -25,6 +25,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
+  // FIX (SEO — "URL nie jest bezwzględny"): bez metadataBase Next.js nie
+  // wie jak zamienić względne ścieżki (np. w alternates.canonical na
+  // poszczególnych stronach) na pełne, bezwzględne URL-e — więc albo
+  // canonical w ogóle się nie generuje, albo generuje się jako ścieżka
+  // względna, dokładnie to co zgłosił Lighthouse. metadataBase ustawia
+  // domenę-bazę dla WSZYSTKICH stron w apce naraz (canonical, Open Graph
+  // images, itd.) — nie trzeba tego powtarzać na każdej podstronie.
+  //
+  // PODMIEŃ na docelową domenę produkcyjną, jeśli inna niż netia.vercel.app
+  // (np. po podpięciu własnej domeny netia.pl) — inaczej canonical i tak
+  // będzie wskazywał na adres Vercela zamiast na finalną domenę.
+  metadataBase: new URL("https://netia.vercel.app"),
   title: 'Netia - Internet Światłowodowy',
   description: '...',
 };
