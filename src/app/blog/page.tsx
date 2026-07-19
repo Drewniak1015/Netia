@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useState, useRef } from "react";
+import { Suspense, useEffect, useMemo, useState,useRef } from "react";
 import { LazyMotion, domAnimation, m, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ChevronRight, ChevronLeft, Calendar, Clock, Tag, ImageOff, Home, Search, X } from "lucide-react";
 import { CATEGORY_LIST, CATEGORIES, isValidCategory, type CategorySlug } from "@/lib/blog/categories";
@@ -196,13 +196,12 @@ function FiltrTagow({
     ? dostepneTagi.filter((tag) => normalizujTekst(tag).includes(fraza))
     : dostepneTagi;
 
-  function przelaczTag(tag: string) {
-    const noweTagi = activeTags.includes(tag)
-      ? activeTags.filter((t) => t !== tag)
-      : [...activeTags, tag];
-    router.push(urlStrony(activeCategory, szukaj, noweTagi, 1), { scroll: false });
-  }
-
+function przelaczTag(tag: string) {
+  const noweTagi = activeTags.includes(tag)
+    ? activeTags.filter((t) => t !== tag)
+    : [...activeTags, tag];
+  router.push(urlStrony(activeCategory, szukaj, noweTagi, 1), { scroll: false });
+}
   return (
     <div className="grid grid-cols-[auto_14rem_1fr] items-start gap-4">
       {/* Kolumna 1: etykieta */}
@@ -418,22 +417,8 @@ function SzukajkaPostow({
 
 /* ---------------------------------------------------------------------- */
 /*  Karta pojedynczego posta                                               */
-/*  `priority` = true tylko dla pierwszej karty na bieżącej stronie listy  */
-/*  (to ona jest kandydatem na LCP). Dostaje wtedy fetchPriority="high"    */
-/*  i loading="eager", żeby przeglądarka wykryła i pobrała obraz od razu,  */
-/*  zamiast czekać/leniwie ładować. Pozostałe karty ładują obraz leniwie.  */
 /* ---------------------------------------------------------------------- */
-function KartaPosta({
-  post,
-  index,
-  reduceMotion,
-  priority = false,
-}: {
-  post: BlogPostMeta;
-  index: number;
-  reduceMotion: boolean | null;
-  priority?: boolean;
-}) {
+function KartaPosta({ post, index, reduceMotion }: { post: BlogPostMeta; index: number; reduceMotion: boolean | null }) {
   const kategoria = CATEGORIES[post.category];
   const Ikona = kategoria.icon;
 
@@ -454,16 +439,7 @@ function KartaPosta({
         <div className="flex h-40 w-full items-center justify-center border-b border-white/10 bg-white/[0.03]">
           {post.coverImage ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={post.coverImage}
-              alt={post.title}
-              className="h-full w-full object-cover"
-              width={640}
-              height={160}
-              loading={priority ? "eager" : "lazy"}
-              fetchPriority={priority ? "high" : "auto"}
-              decoding={priority ? "sync" : "async"}
-            />
+            <img src={post.coverImage} alt={post.title} className="h-full w-full object-cover" />
           ) : (
             <ImageOff size={28} className="text-white/20" />
           )}
@@ -721,13 +697,7 @@ function BlogContent() {
           {postyNaStronie.length > 0 ? (
             <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {postyNaStronie.map((post, i) => (
-                <KartaPosta
-                  key={post.meta.id}
-                  post={post.meta}
-                  index={i}
-                  reduceMotion={reduceMotion}
-                  priority={i === 0}
-                />
+                <KartaPosta key={post.meta.id} post={post.meta} index={i} reduceMotion={reduceMotion} />
               ))}
             </div>
           ) : (
