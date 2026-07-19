@@ -10,9 +10,7 @@ import {
 } from "framer-motion";
 import { Phone, MessageCircle, Pencil, Wifi, Tv, Smartphone, Gift, ArrowLeft, Check, X, Sparkles } from "lucide-react";
 import { useKonfigurator } from "@/components/Konfigurator/konfigurator";
-import { pagesMetadata } from "@/lib/seo/pages-metadata";
 
-export const metadata = pagesMetadata.ofertyMax;
 const kontener = {
   hidden: { opacity: 0 },
   visible: {
