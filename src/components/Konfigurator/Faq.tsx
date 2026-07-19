@@ -84,22 +84,31 @@ export default function KonfiguratorFAQ() {
       }`}
     >
       <style>{`
+        /*
+         * FIX (CLS): wcześniej ta animacja poruszała elementami przez
+         * transform: translateY(14px) -> translateY(0). CLS (Layout
+         * Instability API) liczy KAŻDE widoczne przesunięcie elementu
+         * między klatkami — również to zrobione przez transform, nie
+         * tylko przez top/margin/reflow — o ile nie nastąpiło w oknie
+         * ~500ms po interakcji użytkownika. Wejście sekcji przez scroll
+         * (IntersectionObserver) nie liczy się jako "interakcja", więc
+         * cały staggered fade-up (eyebrow, nagłówek, karty, CTA) był
+         * wliczany do CLS. Zostaje czyste opacity — element się pojawia,
+         * ale się nie przesuwa wizualnie, więc CLS = 0 dla tej sekcji.
+         */
         @keyframes faq-fade-up {
           from {
             opacity: 0;
-            transform: translateY(14px);
           }
           to {
             opacity: 1;
-            transform: translateY(0);
           }
         }
         .faq-animate {
           opacity: 0;
-          transform: translateY(14px);
         }
         .faq-in-view .faq-animate {
-          animation: faq-fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+          animation: faq-fade-up 0.5s ease-out both;
         }
 
         /*
