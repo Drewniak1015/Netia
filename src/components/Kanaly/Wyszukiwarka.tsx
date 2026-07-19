@@ -1,7 +1,7 @@
 // components/Kanaly/Wyszukiwarka.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { LazyMotion, domAnimation, m, AnimatePresence } from "framer-motion";
 import { Search, X, FileDown } from "lucide-react";
@@ -23,6 +23,16 @@ type Props = {
 };
 
 const SELECTABLE_TIERS: Tier[] = ["s", "m", "l"];
+
+// FIX (TBT/Style & Layout): przy pełnej liście (np. ~200 kanałów w
+// pakiecie S) montowanie WSZYSTKICH kafelków naraz przy pierwszym
+// renderze to spory koszt głównego wątku (każdy kafelek to osobny
+// komponent React z własnym stanem, event handlerem, obrazkiem).
+// Renderujemy tylko pierwsze BATCH_SIZE wyników, resztę doładowujemy
+// na żądanie przyciskiem "Pokaż więcej" — klasyczny, prosty i pewny
+// sposób na cięcie initial render cost bez wchodzenia w pełną
+// wirtualizację (skomplikowaną przy responsywnej siatce 2/3/4 kolumn).
+const BATCH_SIZE = 60;
 
 // Ikona kanału: pokazuje prawdziwe logo (ch.logoUrl), a jeśli go nie ma —
 // lub obrazek nie chce się załadować — spada do kolorowego kwadratu z literą.
@@ -98,6 +108,17 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
       .filter((ch) => q.length < 3 || ch.name.toLowerCase().includes(q))
       .sort((a, b) => a.number - b.number);
   }, [query, tier, selectedAddon]);
+
+  // Ile wyników aktualnie renderujemy — resetuje się do BATCH_SIZE za
+  // każdym razem, gdy zmienia się filtr (nowe wyszukiwanie/pakiet/dodatek),
+  // żeby nie zostać z np. 180 wyrenderowanymi kaflami po zawężeniu wyników.
+  const [showCount, setShowCount] = useState(BATCH_SIZE);
+  useEffect(() => {
+    setShowCount(BATCH_SIZE);
+  }, [query, tier, selectedAddon]);
+
+  const widoczneWyniki = useMemo(() => results.slice(0, showCount), [results, showCount]);
+  const maWiecejWynikow = showCount < results.length;
 
   const handleDownload = async () => {
     const response = await fetch("/pdf/NETIA_Lista_Kanałów.pdf");
@@ -306,7 +327,7 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
                     transition={{ duration: 0.2 }}
                     className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"
                   >
-                    {results.map((ch) => (
+                    {widoczneWyniki.map((ch) => (
                       <m.div
                         key={channelId(ch)}
                         initial={{ opacity: 0, scale: 0.95 }}
@@ -331,7 +352,7 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
                     transition={{ duration: 0.2 }}
                     className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden"
                   >
-                    {results.map((ch, i) => (
+                    {widoczneWyniki.map((ch, i) => (
                       <div
                         key={channelId(ch)}
                         className={`flex items-center gap-4 px-5 py-3 ${i !== 0 ? "border-t border-white/5" : ""}`}
@@ -344,6 +365,18 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
                   </m.div>
                 )}
               </AnimatePresence>
+
+              {maWiecejWynikow && (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowCount((c) => c + BATCH_SIZE)}
+                    className="rounded-full border border-white/15 bg-white/5 px-6 py-2.5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                  >
+                    Pokaż więcej ({results.length - showCount} pozostało)
+                  </button>
+                </div>
+              )}
 
               {results.length === 0 && (
                 <div className="text-center py-16 text-white/40 text-sm">
