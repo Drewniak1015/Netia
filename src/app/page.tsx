@@ -9,7 +9,9 @@ import Instrukcja from "@/components/home/Instrukcja";
 import Miasta from "@/components/miasta/Miasta";
 import MaxxBanner from "@/components/home/Banner";
 import NetiaFAQ from "@/components/home/Faq";
+import { pagesMetadata } from "@/lib/seo/pages-metadata";
 
+export const metadata = pagesMetadata.ofertyMax;
 export default function HomePage() {
   return (
     <>

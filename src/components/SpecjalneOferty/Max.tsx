@@ -23,7 +23,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
+import { pagesMetadata } from "@/lib/seo/pages-metadata";
 
+export const metadata = pagesMetadata.ofertyMax;
 /**
  * OfferMaxSection
  * Sekcja promocyjna "Oferta Max": baner promo, karty pakietów (MAX 1000 / MAX 2000)
