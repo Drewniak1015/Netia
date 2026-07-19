@@ -102,7 +102,7 @@ export default function OfertyInternet() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-5 py-2.5 text-sm font-semibold text-teal-300 transition-colors hover:bg-white/10"
+            className="flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-5 py-2.5 text-sm font-semibold text-teal-300 transition-colors hover:bg-black/20"
           >
             <Wifi className="h-4 w-4" />
             {open ? "Ukryj oferty samego internetu" : "Zobacz oferty samego internetu"}
@@ -160,7 +160,7 @@ export default function OfertyInternet() {
                     whileHover={reduceMotion ? undefined : { scale: 1.01 }}
                     whileTap={reduceMotion ? undefined : { scale: 0.99 }}
                     transition={{ duration: 0.15 }}
-                    className="flex items-center justify-center rounded-xl bg-teal-400 px-8 py-2.5 text-sm font-bold text-white transition-colors hover:bg-teal-300"
+                    className="flex items-center justify-center rounded-xl bg-teal-500 px-8 py-2.5 text-sm font-bold text-white transition-colors hover:bg-teal-600"
                   >
                     Sprawdź ofertę Internet Netia
                   </m.a>

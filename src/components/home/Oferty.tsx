@@ -792,7 +792,7 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
                         download
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-6 flex items-center justify-between gap-2 rounded-xl border border-teal-300/30 bg-teal-300/10 px-4 py-3 text-sm font-semibold text-teal-200 transition-colors hover:bg-teal-300/20"
+                        className="mt-6 flex items-center justify-between gap-2 rounded-xl border border-teal-300/30 bg-teal-300/10 px-4 py-3 text-sm font-semibold text-teal-200 transition-colors hover:bg-teal-900/40 hover:border-teal-300/50"
                       >
                         Instrukcja użytkownika {item.model}
                         <ChevronRight size={16} />
@@ -808,7 +808,7 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
               <button
                 type="button"
                 onClick={onClose}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-bold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-bold text-white/80 transition-colors hover:bg-black/20 hover:text-white"
               >
                 <X size={16} />
                 Zamknij
@@ -901,7 +901,7 @@ const OfferCard = memo(function OfferCard({
         whileHover={reduceMotion ? undefined : { scale: 1.02 }}
         whileTap={reduceMotion ? undefined : { scale: 0.98 }}
         transition={{ duration: 0.15 }}
-        className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-teal-400 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-teal-300"
+        className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-teal-600"
       >
          <Phone className="h-4 w-4" />
          ZADZWOŃ {PHONE}
@@ -912,7 +912,7 @@ const OfferCard = memo(function OfferCard({
         whileHover={reduceMotion ? undefined : { scale: 1.02 }}
         whileTap={reduceMotion ? undefined : { scale: 0.98 }}
         transition={{ duration: 0.15 }}
-        className="mt-2.5 flex items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-white/5"
+        className="mt-2.5 flex items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-black/20"
       >
         <MessageCircle className="h-4 w-4" />
         WYŚLIJ SMS

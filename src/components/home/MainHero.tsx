@@ -9,6 +9,7 @@ import {
   Zap,
   ShieldCheck,
   Star,
+  Asterisk,
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
 import ConnectionCompare from "@/components/home/Connectioncompare";
@@ -43,59 +44,62 @@ export default function Hero() {
       animate="visible"
       variants={fadeUp}
       transition={{ duration: 0.6, ease: "easeOut", delay: 0.42 }}
-      className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start"
+      className="mt-10 flex flex-col items-stretch gap-7 sm:mt-12 sm:flex-row sm:justify-center sm:gap-9 md:mt-14 md:gap-10 lg:mt-6 lg:gap-7 lg:justify-start"
     >
+      {/*
+        Styl z podesłanego wzoru: ikona w kółku po lewej, tekst wyrównany
+        do lewej (tytuł + numer/podtytuł), chevron po prawej. Oba przyciski
+        mają wspólną min-h i sm:w-64, więc zostają identycznego rozmiaru
+        mimo że lewy ma dwie linie tekstu, a prawy jedną (items-stretch na
+        kontenerze wyrównuje wysokość automatycznie).
+      */}
       <m.a
         href="tel:+48883334124"
         whileHover={reduceMotion ? undefined : { scale: 1.02 }}
         whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-        className="flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white shadow-lg shadow-teal-500/20 outline-none transition-shadow hover:shadow-teal-400/30 focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:min-w-64"
+        className="flex min-h-[56px] items-center justify-between gap-4 rounded-2xl bg-teal-500 px-5 py-3 mt-6 sm:mt-0 text-white shadow-lg shadow-teal-500/20 outline-none transition-shadow hover:shadow-teal-400/30 focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
       >
         <span className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
             <Phone size={16} />
           </span>
           <span className="text-left">
-            <span className="block text-sm font-bold leading-tight">
-              ODBIERZ STABILNY INTERNET
-            </span>
-            <span className="block text-xs text-white/85">
-              Doradca oddzwoni w 3 minuty • 883 334 124
-            </span>
+            <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
+            <span className="block text-xs text-white/85">+48 883 334 124</span>
           </span>
         </span>
-        <ChevronRight size={18} className="text-white/70" />
+        <ChevronRight size={18} className="shrink-0 text-white/70" />
       </m.a>
 
       <m.a
         href="sms:+48883334124?body=INTERNET"
         whileHover={reduceMotion ? undefined : { scale: 1.02 }}
         whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-        className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white outline-none transition-colors hover:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:min-w-60"
+        className="flex min-h-[56px] items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-white outline-none transition-colors hover:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
       >
         <span className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">
             <MessageCircle size={16} />
           </span>
-          <span className="text-left">
-            <span className="block text-sm font-bold leading-tight">
-              WYŚLIJ SMS
-            </span>
-            <span className="block text-xs text-white/70">
-              Oddzwonimy w kilka minut
-            </span>
-          </span>
+          <span className="text-sm font-bold">Wyślij SMS</span>
         </span>
-        <ChevronRight size={18} className="text-white/50" />
+        <ChevronRight size={18} className="shrink-0 text-white/50" />
       </m.a>
     </m.div>
+  );
+
+  const ctaFooterNote = (
+    <p className="mt-7 flex items-center justify-center gap-1 text-center text-xs text-white/50 lg:justify-start lg:text-left">
+      <Asterisk size={13} className="shrink-0" />
+      Oddzwonimy w 3 minuty
+    </p>
   );
 
   return (
     <LazyMotion features={domAnimation} strict>
       <section
         style={{ backgroundColor: "#0B2A3D" }}
-        className="relative overflow-hidden font-sans pt-14 lg:pt-22"
+        className="relative mt-22 overflow-hidden font-sans"
       >
         <DottedBackground variant="dots-fade" focusY="25%" size={24} />
 
@@ -219,11 +223,12 @@ export default function Hero() {
                   animate="visible"
                   variants={fadeUp}
                   transition={{ duration: 0.6, ease: "easeOut", delay: 0.38 }}
-                  className="mt-8 max-h-80"
+                  className="mt-8 max-h-80 px-2"
                 >
                   <ConnectionCompare />
                 </m.div>
                 {ctaButtons}
+                {ctaFooterNote}
               </>
             )}
           </div>
@@ -240,6 +245,7 @@ export default function Hero() {
                 <ConnectionCompare />
               </m.div>
               {ctaButtons}
+              {ctaFooterNote}
             </div>
           )}
         </div>

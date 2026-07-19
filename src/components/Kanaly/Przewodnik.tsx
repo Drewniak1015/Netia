@@ -255,7 +255,7 @@ export default function Przewodnik({
                   e.preventDefault();
                   scrollToLocalSection("pelna-lista");
                 }}
-                className="inline-flex items-center gap-2 rounded-xl bg-teal-400 px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-lg shadow-teal-500/10 cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                className="inline-flex items-center gap-2 rounded-xl bg-teal-500 px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-lg shadow-teal-500/10 cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 Sprawdź pełną listę kanałów
                 <ChevronDown size={15} />

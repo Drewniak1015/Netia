@@ -5,6 +5,7 @@ import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 import {
   Phone,
   MessageCircle,
+  ChevronRight,
   Check,
   Star,
   Package,
@@ -44,6 +45,14 @@ import DottedBackground from "@/components/ui/DottedBackground";
  * wprost przez treść karty (nieczytelny, "zlewający się" wygląd) — pełna
  * nieprzezroczystość sprawia, że kropki widać wyłącznie w odstępach między
  * kartami, nigdy przez tekst.
+ *
+ * FIX (spójność przycisków telefon/SMS): zarówno baner promo, jak i
+ * PackageCard, miały przyciski w innym stylu niż reszta serwisu (WERSALIKI,
+ * numer w jednej linii z "ZADZWOŃ", rounded-[10px]). Ujednolicone do wzorca
+ * z Hero.tsx głównej strony: sentence case ("Zadzwoń", nie "ZADZWOŃ"), numer
+ * telefonu na osobnej linii przez <br />, rounded-2xl, ten sam rozkład
+ * ikona+tekst. Kolorystyka (róż zamiast turkusu) zostaje, bo to sekcja
+ * promocyjna z własną paletą — reszta stylu ujednolicona.
  */
 
 /* Wspólny wariant fade-up — zgodnie z PopularneOferty.tsx */
@@ -147,24 +156,39 @@ function PackageCard({
         </li>
       </ul>
 
+      {/* FIX (spójność): rounded-2xl (nie rounded-[10px]), sentence case,
+          numer telefonu na osobnej linii — jak w Hero.tsx. */}
       <div className="flex flex-wrap gap-3">
         <m.a
           href="tel:+48883334124"
           whileHover={reduceMotion ? undefined : { scale: 1.02 }}
           whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-          className="inline-flex min-w-[140px] flex-1 items-center justify-center gap-2 rounded-[10px] border border-transparent bg-pink-500 px-4 py-3 text-sm font-bold text-white shadow-[0_8px_20px_-8px_rgba(236,72,153,0.6)]"
+          className="inline-flex min-w-[140px] flex-1 items-center justify-between gap-3 rounded-2xl border border-transparent bg-pink-500 px-4 py-3 text-white shadow-[0_8px_20px_-8px_rgba(236,72,153,0.6)]"
         >
-          <Phone size={16} />
-          Zadzwoń +48 883 334 124
+          <span className="flex items-center gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
+              <Phone size={16} />
+            </span>
+            <span className="text-left">
+              <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
+              <span className="block text-xs font-normal text-white/85">+48 883 334 124</span>
+            </span>
+          </span>
+          <ChevronRight size={16} className="shrink-0 text-white/70" />
         </m.a>
         <m.a
           href="sms:+48883334124"
           whileHover={reduceMotion ? undefined : { scale: 1.02 }}
           whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-          className="inline-flex min-w-[140px] flex-1 items-center justify-center gap-2 rounded-[10px] border border-white/20 bg-white/5 px-4 py-3 text-sm font-bold text-white"
+          className="inline-flex min-w-[140px] flex-1 items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-white"
         >
-          <MessageCircle size={16} />
-          Wyślij SMS
+          <span className="flex items-center gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">
+              <MessageCircle size={16} />
+            </span>
+            <span className="text-sm font-bold">Wyślij SMS</span>
+          </span>
+          <ChevronRight size={16} className="shrink-0 text-white/50" />
         </m.a>
       </div>
     </m.div>
@@ -395,30 +419,47 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
               Internet Max z Telewizją L 4K + Bezpieczny Internet Ultra
             </m.p>
 
+            {/* FIX (spójność): sentence case zamiast WERSALIKÓW, numer
+                telefonu na osobnej linii przez <br /> — jak w Hero.tsx
+                głównej strony i w PackageCard powyżej. rounded-2xl zamiast
+                rounded-[10px], żeby zaokrąglenie było spójne wszędzie. */}
             <m.div
               initial={reduceMotion ? false : { opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.45 }}
-              className="mt-6 flex flex-col gap-3 sm:flex-row lg:justify-start"
+              className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row lg:justify-start"
             >
               <m.a
                 href="tel:+48883334124"
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-pink-500 px-5 py-3 text-sm font-bold text-white shadow-[0_8px_20px_-8px_rgba(236,72,153,0.6)]"
+                className="flex items-center justify-between gap-3 rounded-2xl bg-pink-500 px-5 py-3 text-white shadow-[0_8px_20px_-8px_rgba(236,72,153,0.6)] sm:w-64"
               >
-                <Phone size={16} />
-                ZADZWOŃ +48 883 334 124
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
+                    <Phone size={16} />
+                  </span>
+                  <span className="text-left">
+                    <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
+                    <span className="block text-xs font-normal text-white/85">+48 883 334 124</span>
+                  </span>
+                </span>
+                <ChevronRight size={16} className="shrink-0 text-white/70" />
               </m.a>
               <m.a
                 href="sms:+48883334124?body=MAX"
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-white/20 bg-white/5 px-5 py-3 text-sm font-bold text-white"
+                className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-white sm:w-64"
               >
-                <MessageCircle size={16} />
-                WYŚLIJ SMS
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">
+                    <MessageCircle size={16} />
+                  </span>
+                  <span className="text-sm font-bold">Wyślij SMS</span>
+                </span>
+                <ChevronRight size={16} className="shrink-0 text-white/50" />
               </m.a>
             </m.div>
           </div>

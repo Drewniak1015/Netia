@@ -9,39 +9,45 @@ import React, { useEffect, useRef, useState } from "react";
  * kolory zdefiniowane inline jako klasy arbitralne Tailwind (bg-[#...]),
  * więc nie wymaga rozszerzania tailwind.config.
  *
- * WERSJA 3 — zmiany względem poprzednich:
- *  - Spis treści przeniesiony na samą górę strony (poziomy pasek chipów,
- *    zawijający się w wiersze), zamiast sticky sidebara w layoucie
- *    dwukolumnowym. Sticky + grid bywa źródłem bugów, jeśli strona
- *    nadrzędna ma swój overflow / transform / position na przodkach
- *    (sticky wtedy "nie łapie") albo gdy istnieje własny scroll-container.
- *  - Usunięty baner/nagłówek (tytuł, ikonka, gradient) — strona zaczyna się
- *    od razu od spisu treści.
- *  - Spis treści, treść i stopka mają teraz tę samą szerokość (max-w-3xl)
- *    i to samo poziome wyśrodkowanie — wszystko wyrównane w jednej,
- *    spójnej kolumnie.
- *  - Układ jest jednokolumnowy (prostszy, mniej zależny od zachowania
- *    rodzica).
- *  - Śledzenie aktywnej sekcji liczone na scrollu (bez IntersectionObserver
- *    i bez sticky pozycjonowania).
+ * WERSJA 5 — przegląd designu pod kątem spójności z resztą serwisu
+ * (strony Pomoc → Internet/Telewizja/Usługi Mobilne):
+ *  - Hero zamieniony z gołego tekstu na kartę z gradientową obwódką +
+ *    ikoną w kółku (ten sam wzorzec co hero na stronach Pomoc).
+ *  - Dodany link powrotny ("← Wróć do strony głównej") nad hero —
+ *    reszta serwisu ma tę nawigację wszędzie, tu jej brakowało.
+ *  - Spis treści przeniesiony do własnej karty (border + tło), zamiast
+ *    "pływać" bezpośrednio na kropkowanym tle.
+ *  - Każda sekcja treści to teraz osobna karta (bg c.card, rounded-2xl,
+ *    border) zamiast płaskiego tekstu oddzielonego cienką linią —
+ *    znacznie łatwiej skanować wzrokiem długi tekst prawny.
+ *  - Przycisk „do góry”: bg-teal-500 -> bg-teal-600, bo biały tekst na
+ *    teal-500 to ok. 2.5:1 kontrastu (poniżej WCAG AA); teal-600 daje
+ *    ~3.7:1, zgodne dla elementu UI/dużego tekstu.
+ *  - Usunięty przypadkowy nadmiarowy spacja w className headera.
  *
- * WERSJA 4 — jedyna zmiana: subtelne kropkowane tło całej strony
- * (ten sam wzorzec co na 4 stronach Pomocy i na checkoucie konfiguratora:
- * radial-gradient rgba(255,255,255,.12) co 26px). Ta strona to spokojny,
- * jednokolumnowy tekst prawny bez siatek kart — dlatego dostaje jedną,
- * subtelną teksturę na całej stronie zamiast dekoracji pod poszczególnymi
- * sekcjami (ten drugi zabieg jest zarezerwowany dla siatek ofertowych).
- *
- * WAŻNE: `pt-40` na głównym wrapperze strony jest celowe — strona ma stały
+ * WAŻNE: `pt-26` na głównym wrapperze strony jest celowe — strona ma stały
  * (fixed) górny pasek nawigacji, który bez tego odstępu zachodziłby na
  * treść tej podstrony. Jeśli u Ciebie navbar ma inną wysokość, dopasuj tę
- * wartość (np. pt-32 / pt-48) zamiast usuwać.
+ * wartość zamiast usuwać.
  *
  * Użycie:
  *   app/polityka-prywatnosci/page.tsx
  *   -> import PolitykaPrywatnosci from "@/components/PolitykaPrywatnosci";
  *   -> export default function Page() { return <PolitykaPrywatnosci />; }
  */
+
+// ---------------------------------------------------------------------------
+// Design tokens — te same co na stronach Pomoc, dla spójności palety
+// ---------------------------------------------------------------------------
+
+const c = {
+  card: "rgb(19, 55, 78)",
+  cardAlt: "rgb(24, 66, 92)",
+  border: "rgba(255,255,255,.08)",
+  borderStrong: "rgba(255,255,255,.16)",
+  tealDim: "rgba(45,217,196,.14)",
+  tealBorder: "rgba(45,217,196,.3)",
+};
 
 // ---------------------------------------------------------------------------
 // Dane treści
@@ -473,6 +479,36 @@ const ArrowUpIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 );
 
+const ArrowLeftIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+    <path
+      d="M19 12H5M5 12l6 6M5 12l6-6"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const ShieldIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+    <path
+      d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3Z"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M9 12l2 2 4-4"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 // ---------------------------------------------------------------------------
 // Komponent główny
 // ---------------------------------------------------------------------------
@@ -535,71 +571,99 @@ const PolitykaPrywatnosci: React.FC = () => {
         style={{ width: `${progress}%` }}
       />
 
-      <header className=" px-6 pb-8 pt-10">
-        <div className="mx-auto max-w-[45rem]">
-          <p className="mb-2 inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-teal-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
-            Netia S.A. · Ochrona danych
-          </p>
-          <h1 className="mb-2 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            Polityka Prywatności
-          </h1>
-          <p className="max-w-[46ch] text-[15px] text-white/60">
+      <div className="mx-auto max-w-[45rem] px-6">
+        {/* Link powrotny — reszta serwisu ma tę nawigację wszędzie, tu jej brakowało */}
+        <a
+          href="/"
+          className="inline-flex items-center gap-1.5 pt-6 text-[13px] font-medium text-white/50 no-underline transition-colors hover:text-white/80"
+        >
+          <ArrowLeftIcon className="h-3.5 w-3.5" />
+          Wróć do strony głównej
+        </a>
+
+        {/* HERO CARD — ten sam wzorzec co na stronach Pomoc: gradientowa
+            obwódka, ikona w kółku, eyebrow badge. Wcześniej to był goły
+            tekst bez żadnej ramki/tła. */}
+        <div
+          className="mt-5 rounded-[22px] px-6 py-8 sm:px-8 sm:py-9"
+          style={{
+            background: `radial-gradient(120% 160% at 0% 0%, ${c.cardAlt} 0%, #0B2A3D 55%, #071c29 100%)`,
+            border: `1px solid ${c.borderStrong}`,
+          }}
+        >
+          <div className="flex items-center gap-4">
+            <div
+              className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl"
+              style={{ background: c.tealDim, border: `1px solid ${c.tealBorder}` }}
+            >
+              <ShieldIcon className="h-[22px] w-[22px] text-teal-300" />
+            </div>
+            <div>
+              <p className="mb-1.5 inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-teal-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
+                Netia S.A. · Ochrona danych
+              </p>
+              <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
+                Polityka Prywatności
+              </h1>
+            </div>
+          </div>
+          <p className="mt-4 max-w-[50ch] text-[14.5px] leading-relaxed text-white/60">
             Zasady przetwarzania danych osobowych w serwisie
             www.uslugi-netia.pl. Obowiązuje od 05.02.2021 r.
           </p>
         </div>
-      </header>
 
-      {/* Spis treści — poziomy pasek chipów na samej górze, NAD treścią.
-          max-w-3xl — ta sama szerokość co treść i stopka poniżej, dla
-          spójnego, "równego" wyrównania w pionie. */}
-      <nav
-        aria-label="Spis treści"
-        className="px-6 py-5"
-      >
-        <div className="mx-auto max-w-[45rem]">
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/40">
-            Spis treści
-          </p>
-          <ul className="flex flex-wrap gap-2">
-            {SECTIONS.map((s) => (
-              <li key={s.id}>
-                <button
-                  type="button"
-                  onClick={() => scrollTo(s.id)}
-                  className={[
-                    "flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-[13px] transition-colors",
-                    activeId === s.id
-                      ? "border-teal-400/50 bg-teal-400/15 font-semibold text-teal-200"
-                      : "border-white/10 bg-transparent text-white/60 hover:border-white/25 hover:text-white/85",
-                  ].join(" ")}
-                >
-                  <span className="tabular-nums text-teal-300/80">
-                    {s.number}
-                  </span>
-                  <span>{s.title}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </nav>
+        {/* SPIS TREŚCI — teraz we własnej karcie zamiast pływać bezpośrednio
+            na kropkowanym tle. */}
+        <nav aria-label="Spis treści" className="mt-5">
+          <div
+            className="rounded-2xl px-5 py-5 sm:px-6"
+            style={{ background: c.card, border: `1px solid ${c.border}` }}
+          >
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/40">
+              Spis treści
+            </p>
+            <ul className="flex flex-wrap gap-2">
+              {SECTIONS.map((s) => (
+                <li key={s.id}>
+                  <button
+                    type="button"
+                    onClick={() => scrollTo(s.id)}
+                    className={[
+                      "flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-[13px] transition-colors",
+                      activeId === s.id
+                        ? "border-teal-400/50 bg-teal-400/15 font-semibold text-teal-200"
+                        : "border-white/10 bg-transparent text-white/60 hover:border-white/25 hover:text-white/85",
+                    ].join(" ")}
+                  >
+                    <span className="tabular-nums text-teal-300/80">
+                      {s.number}
+                    </span>
+                    <span>{s.title}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </nav>
+      </div>
 
-      {/* Treść — jednokolumnowa, bez sticky/grid, ta sama szerokość co spis treści i stopka */}
-      <div className="mx-auto max-w-3xl px-6 pb-24 pt-10">
-        <main className="min-w-0">
-          {SECTIONS.map((s, i) => (
+      {/* TREŚĆ — każda sekcja to teraz osobna karta (bg c.card, rounded-2xl,
+          border), zamiast płaskiego tekstu oddzielonego cienką linią.
+          Znacznie łatwiej skanować wzrokiem długi tekst prawny, gdy każdy
+          punkt ma wyraźną, oddzielną "kartę" jako punkt odniesienia. */}
+      <div className="mx-auto max-w-3xl px-6 pb-24 pt-8">
+        <main className="flex min-w-0 flex-col gap-4">
+          {SECTIONS.map((s) => (
             <section
               key={s.id}
               id={s.id}
               ref={(el) => {
                 sectionRefs.current[s.id] = el;
               }}
-              className={[
-                "scroll-mt-32 py-9",
-                i < SECTIONS.length - 1 ? "border-b border-white/10" : "",
-              ].join(" ")}
+              className="scroll-mt-32 rounded-2xl px-5 py-6 sm:px-7 sm:py-7"
+              style={{ background: c.card, border: `1px solid ${c.border}` }}
             >
               <div className="mb-4 flex items-baseline gap-3">
                 <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-teal-400/40 bg-teal-400/10 text-[15px] font-bold text-teal-300">
@@ -621,12 +685,14 @@ const PolitykaPrywatnosci: React.FC = () => {
         Warszawa. Inspektor ochrony danych: iod@netia.pl.
       </footer>
 
-      {/* Przycisk „do góry” */}
+      {/* Przycisk „do góry” — bg-teal-600 (nie teal-500): biały tekst na
+          teal-500 daje ok. 2.5:1 kontrastu (poniżej WCAG AA), teal-600
+          daje ~3.7:1, zgodne dla elementu UI. */}
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         aria-label="Wróć do początku"
         className={[
-          "fixed bottom-7 right-7 z-30 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-teal-500 text-white shadow-lg shadow-teal-500/30 transition-all duration-200 hover:bg-teal-400",
+          "fixed bottom-7 right-7 z-30 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-teal-600 text-white shadow-lg shadow-teal-500/30 transition-all duration-200 hover:bg-teal-500",
           showTop
             ? "pointer-events-auto translate-y-0 opacity-100"
             : "pointer-events-none translate-y-2 opacity-0",

@@ -634,39 +634,31 @@ export default function NetiaUslugiMobilnePomocPage() {
               ]}
             />
             <Reveal y={16}>
-              <motion.a
-                href="/konfigurator"
-                whileHover={{ scale: 1.015, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="group rounded-xl px-6 py-5 my-4 flex items-center justify-between gap-4 cursor-pointer no-underline"
-                style={{
-                  background: `linear-gradient(120deg, ${c.teal} 0%, #22b8a5 100%)`,
-                  boxShadow: "0 8px 24px rgba(45,217,196,.25)",
-                }}
-              >
-                <div className="flex items-center gap-3.5">
-                  <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: "rgba(7,28,41,.16)" }}
-                  >
-                    <Layers size={20} style={{ color: "white"}} />
-                  </div>
-                  <div>
-                    <div className="text-[15px] font-extrabold" style={{ color: "white" }}>
-                      Sprawdź konfigurator oferty
-                    </div>
-                    <div className="text-[12.5px] font-medium" style={{ color: "white" }}>
-                      Dobierz usługi do swoich potrzeb
-                    </div>
-                  </div>
-                </div>
-                <ArrowRight
-                  size={20}
-                  style={{ color: "white", flexShrink: 0 }}
-                  className="transition-transform duration-200 group-hover:translate-x-1"
-                />
-              </motion.a>
+            <motion.a
+  href="/konfigurator"
+  whileHover={{ scale: 1.015, y: -2 }}
+  whileTap={{ scale: 0.98 }}
+  transition={{ duration: 0.2, ease: "easeOut" }}
+  className="group rounded-xl bg-teal-500 px-6 py-5 my-4 flex items-center justify-between gap-4 cursor-pointer no-underline shadow-[0_8px_24px_-8px_rgba(20,184,166,0.5)]"
+>
+  <div className="flex items-center gap-3.5">
+    <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-white/15">
+      <Layers size={20} className="text-white" />
+    </div>
+    <div>
+      <div className="text-[15px] font-extrabold text-white">
+        Sprawdź konfigurator oferty
+      </div>
+      <div className="text-[12.5px] font-medium text-white/85">
+        Dobierz usługi do swoich potrzeb
+      </div>
+    </div>
+  </div>
+  <ArrowRight
+    size={20}
+    className="shrink-0 text-white/70 transition-transform duration-200 group-hover:translate-x-1"
+  />
+</motion.a>
             </Reveal>
           </div>
 
