@@ -205,7 +205,31 @@ function DotCluster({ size = 22 }: { size?: number }) {
 function Logo() {
   return (
     <Link href="/" className="flex items-center shrink-0" aria-label="Netia — strona główna">
-      <img src="/images/Placeholder.svg" alt="Netia" className="h-16 w-auto" />
+      {/*
+        FIX (CLS): brakowało width/height na <img>. Height było ustawione
+        tylko przez klasę Tailwind (h-16), a szerokość była "auto" — więc
+        przeglądarka nie wiedziała ile miejsca zarezerwować, dopóki SVG się
+        nie załadował. Efekt: logo "doskakiwało" do właściwej szerokości,
+        co przesuwało nav/przycisk "Zadzwoń" obok w headerze — i to właśnie
+        łapał Layout Shift, mimo że header jest position:fixed (liczy się
+        ruch elementów w viewporcie, nie czy header pcha resztę strony).
+
+        width/height poniżej dają przeglądarce znać jaki jest naturalny
+        aspect-ratio obrazka (nowoczesne przeglądarki same liczą
+        aspect-ratio z tych atrybutów), więc miejsce jest zarezerwowane od
+        razu przy pierwszym renderze — zero przeskoku.
+
+        Wartości 165×65 poniżej to realne proporcje Placeholder.svg
+        (viewBox 666×256 ≈ 2.6:1, przy wysokości h-16/64px daje ~165px
+        szerokości).
+      */}
+      <img
+        src="/images/Placeholder.svg"
+        alt="Netia"
+        width={165}
+        height={65}
+        className="h-16 w-auto"
+      />
     </Link>
   );
 }
