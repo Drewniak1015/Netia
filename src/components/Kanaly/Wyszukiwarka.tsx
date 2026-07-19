@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Image from "next/image";
 import { LazyMotion, domAnimation, m, AnimatePresence } from "framer-motion";
 import { Search, X, FileDown } from "lucide-react";
 import {
@@ -25,6 +26,22 @@ const SELECTABLE_TIERS: Tier[] = ["s", "m", "l"];
 
 // Ikona kanału: pokazuje prawdziwe logo (ch.logoUrl), a jeśli go nie ma —
 // lub obrazek nie chce się załadować — spada do kolorowego kwadratu z literą.
+//
+// FIX (waga strony przy ~200 logotypach naraz): next/image zamiast
+// surowego <img>. Next.js/Vercel automatycznie:
+//  - przycina każdy obrazek do realnie wyświetlanego rozmiaru (40px/32px),
+//    zamiast serwować oryginalny plik logotypu w pełnej rozdzielczości,
+//  - konwertuje do WebP/AVIF (mniejsze pliki niż PNG/JPG przy tej samej
+//    jakości wizualnej),
+//  - domyślnie leniwie ładuje obrazki poza viewportem (jak wcześniej
+//    loading="lazy", ale lepiej zintegrowane z resztą optymalizacji).
+// `quality={60}` — przy tak małych ikonach (32-40px) różnica względem
+// domyślnych 75 jest niezauważalna gołym okiem, a dodatkowo tnie wagę.
+//
+// UWAGA: jeśli ch.logoUrl wskazuje na zewnętrzną domenę (CDN spoza
+// Twojej), next/image wymaga dopisania jej do `images.remotePatterns`
+// w next.config.js — inaczej dostaniesz błąd w runtime. Jeśli logotypy
+// leżą lokalnie w /public, nic dodatkowego nie trzeba konfigurować.
 function ChannelIcon({ ch, size }: { ch: Channel; size: number }) {
   const [failed, setFailed] = useState(false);
   const showImage = Boolean(ch.logoUrl) && !failed;
@@ -39,14 +56,14 @@ function ChannelIcon({ ch, size }: { ch: Channel; size: number }) {
       }}
     >
       {showImage ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           key={ch.logoUrl}
-          src={ch.logoUrl}
+          src={ch.logoUrl!}
           alt={ch.alt ?? ch.name}
+          width={size}
+          height={size}
+          quality={60}
           onError={() => setFailed(true)}
-          loading="lazy"
-          decoding="async"
           className="max-h-full max-w-full w-auto h-auto object-contain"
         />
       ) : (
