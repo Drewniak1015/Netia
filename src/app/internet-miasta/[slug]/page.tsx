@@ -40,7 +40,46 @@ export default async function InternetMiastoPage({ params }: PageProps) {
   const nearbyCities = getNearbyCities(city.slug, 6);
   const faq = generateCityFaq(city);
 
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    serviceType: "Internet światłowodowy i telewizja",
+    provider: { "@type": "Organization", name: "Netia" },
+    areaServed: { "@type": "City", name: city.name },
+    offers: {
+      "@type": "Offer",
+      price: "40",
+      priceCurrency: "PLN",
+      url: `https://netia.vercel.app/internet-miasta/${city.slug}`,
+    },
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Strona główna", item: "https://netia.vercel.app/" },
+      { "@type": "ListItem", position: 2, name: "Miasta", item: "https://netia.vercel.app/internet-miasta" },
+      { "@type": "ListItem", position: 3, name: city.name, item: `https://netia.vercel.app/internet-miasta/${city.slug}` },
+    ],
+  };
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })),
+  };
+
   return (
-    <CityPageClient city={city} districts={districts} nearbyCities={nearbyCities} faq={faq} />
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <CityPageClient city={city} districts={districts} nearbyCities={nearbyCities} faq={faq} />
+    </>
   );
 }

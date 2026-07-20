@@ -21,6 +21,7 @@ import {
   Lock,
   Baby,
 } from "lucide-react";
+import { FAQ_ITEMS } from "./homeFaqData";
 import type { ElementType } from "react";
 
 type FaqItem = {
@@ -118,7 +119,6 @@ const TIER_3: FaqItem[] = [
   },
 ];
 
-const FAQ_ITEMS: FaqItem[] = [...TIER_1, ...TIER_2, ...TIER_3];
 
 export default function NetiaFAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);

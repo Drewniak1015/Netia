@@ -1,30 +1,9 @@
+import type { Metadata } from "next";
 import { POSTS } from "@/app/content/blog/posts";
-import { isValidCategory, type CategorySlug } from "@/lib/blog/categories";
+import { isValidCategory, CATEGORIES, type CategorySlug } from "@/lib/blog/categories";
 import { normalizujTekst, parsujTagiZUrl, POSTS_PER_PAGE } from "@/app/blog/Bloghelpers";
+import { budujIdSegment } from "@/app/blog/url";
 import BlogContent from "@/app/blog/Blogcontent";
-
-/* ---------------------------------------------------------------------- */
-/*  FIX (CLS — ten sam winowajca co w Konfiguratorze): poprzednio cała     */
-/*  strona bloga była jednym "use client" komponentem czytającym           */
-/*  useSearchParams() wewnątrz <Suspense fallback={null}>. Next.js         */
-/*  wysyłał wtedy PUSTE initial HTML (fallback=null) i CAŁA treść —        */
-/*  breadcrumb, nagłówek, wyszukiwarka, filtry, siatka postów — pojawiała  */
-/*  się dopiero po hydracji, losowo w zależności od tego, czy JS zdążył    */
-/*  się załadować przed pierwszym pomiarem (Header/Footer wtedy "skakały"  */
-/*  w dół, gdy treść nagle wskakiwała).                                    */
-/*                                                                          */
-/*  Fix: ta strona to teraz Server Component (bez "use client"), a         */
-/*  searchParams dostajemy jako zwykły prop od Next.js — zero hooków,      */
-/*  zero Suspense, zero CSR-bail. Filtrowanie/sortowanie/paginacja liczą   */
-/*  się na serwerze, więc od pierwszego bajtu HTML strona jest w 100%      */
-/*  kompletna, zawsze, przy każdym odświeżeniu — nie ma czego "wskoczyć"   */
-/*  później.                                                               */
-/*                                                                          */
-/*  <BlogContent> (osobny plik, "use client") dostaje już gotowe, policzone*/
-/*  dane jako propsy i odpowiada tylko za interaktywność (input           */
-/*  wyszukiwarki z debounce, combobox tagów, animacje wejścia) — te        */
-/*  fragmenty NIE czytają searchParams, więc nie potrzebują Suspense.      */
-/* ---------------------------------------------------------------------- */
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -39,6 +18,56 @@ function jedenParam(
   return wartosc ?? null;
 }
 
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const sp = await searchParams;
+  const kategoriaParam = jedenParam(sp, "kategoria");
+  const activeCategory: CategorySlug | null =
+    kategoriaParam && isValidCategory(kategoriaParam) ? kategoriaParam : null;
+
+  if (activeCategory) {
+    const kategoria = CATEGORIES[activeCategory];
+    return {
+      title: `${kategoria.label} – Blog Netia`,
+      description: `Artykuły z kategorii „${kategoria.label}” na blogu Netii. Praktyczne poradniki i wskazówki o internecie, TV i technologii.`,
+      alternates: { canonical: `/blog?kategoria=${activeCategory}` },
+    };
+  }
+
+  return {
+    title: "Blog Netia – Poradniki o Internecie, TV i Technologii",
+    description:
+      "Praktyczne poradniki: jak wybrać prędkość internetu, internet dla graczy, konfiguracja Wi-Fi i więcej. Sprawdź najnowsze artykuły Netii.",
+    alternates: { canonical: "/blog" },
+  };
+}
+
+function buildBlogSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    name: "Blog Netia",
+    url: "https://netia.vercel.app/blog",
+    blogPost: POSTS.map(({ meta }) => ({
+      "@type": "BlogPosting",
+      headline: meta.title,
+      description: meta.excerpt,
+      image: meta.coverImage,
+      datePublished: meta.date,
+      author: meta.author ? { "@type": "Person", name: meta.author } : undefined,
+      url: `https://netia.vercel.app/blog/${budujIdSegment(meta.id, meta.slug)}`,
+    })),
+  };
+}
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Moja Netia", item: "https://netia.vercel.app/" },
+    { "@type": "ListItem", position: 2, name: "Blog", item: "https://netia.vercel.app/blog" },
+  ],
+};
+
 export default async function BlogPage({ searchParams }: PageProps) {
   const sp = await searchParams;
 
@@ -52,19 +81,15 @@ export default async function BlogPage({ searchParams }: PageProps) {
     ? POSTS.filter((p) => p.meta.category === activeCategory)
     : POSTS;
 
-  // Dostępne tagi do wyboru — tylko te występujące w aktualnie widocznej
-  // (po kategorii) puli postów, posortowane alfabetycznie.
   const dostepneTagiSet = new Set<string>();
   postyKategoria.forEach((p) => p.meta.tags.forEach((t) => dostepneTagiSet.add(t)));
   const dostepneTagi = Array.from(dostepneTagiSet).sort((a, b) => a.localeCompare(b, "pl"));
 
-  // Filtr tagów — post pasuje, jeśli ma CHOCIAŻ JEDEN z zaznaczonych tagów.
   const postyPoTagach =
     activeTags.length > 0
       ? postyKategoria.filter((p) => p.meta.tags.some((t) => activeTags.includes(t)))
       : postyKategoria;
 
-  // Filtr wyszukiwarki — dopasowanie po tytule, zajawce i tagach.
   const fraza = normalizujTekst(szukaj.trim());
   const postyPrzefiltrowane = fraza
     ? postyPoTagach.filter(({ meta }) =>
@@ -76,7 +101,6 @@ export default async function BlogPage({ searchParams }: PageProps) {
     (a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime()
   );
 
-  // Numer strony z URL, przycięty do sensownego zakresu [1, liczbaStron].
   const liczbaStron = Math.max(1, Math.ceil(postySortowane.length / POSTS_PER_PAGE));
   const stronaParam = Number(jedenParam(sp, "strona"));
   const strona =
@@ -87,16 +111,22 @@ export default async function BlogPage({ searchParams }: PageProps) {
   const start = (strona - 1) * POSTS_PER_PAGE;
   const postyNaStronie = postySortowane.slice(start, start + POSTS_PER_PAGE).map((p) => p.meta);
 
+  const blogSchema = buildBlogSchema();
+
   return (
-    <BlogContent
-      activeCategory={activeCategory}
-      szukaj={szukaj}
-      activeTags={activeTags}
-      dostepneTagi={dostepneTagi}
-      postyPoTagachMeta={postyPoTagach.map((p) => p.meta)}
-      postyNaStronie={postyNaStronie}
-      strona={strona}
-      liczbaStron={liczbaStron}
-    />
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <BlogContent
+        activeCategory={activeCategory}
+        szukaj={szukaj}
+        activeTags={activeTags}
+        dostepneTagi={dostepneTagi}
+        postyPoTagachMeta={postyPoTagach.map((p) => p.meta)}
+        postyNaStronie={postyNaStronie}
+        strona={strona}
+        liczbaStron={liczbaStron}
+      />
+    </>
   );
 }
