@@ -37,9 +37,6 @@ export const metadata = {
   // (np. po podpięciu własnej domeny netia.pl) — inaczej canonical i tak
   // będzie wskazywał na adres Vercela zamiast na finalną domenę.
   metadataBase: new URL("https://netia.vercel.app"),
- verification: {
-    google: "googlee2cc1e80d321f988", // sam kod z content, bez reszty
-  },
   title: 'Netia - Internet Światłowodowy',
   description: '...',
 };

@@ -8,12 +8,8 @@ import {
   ChevronRight,
   Plus,
   Check,
-  Router,
-  Tv,
-  ShieldCheck,
   Gauge,
   CreditCard,
-  CalendarClock,
   Users,
   Flame,
   Info,
@@ -29,6 +25,9 @@ import {
   Wifi,
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
+import { offers, faqs } from "./popularneData";
+import { a } from "framer-motion/client";
+
 /* Wspólny wariant fade-up — zgodnie z Hero.tsx */
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -58,11 +57,8 @@ interface InfoItem {
   id: string;
   model: string;
   podtytul?: string;
-  // TODO: jeśli plik leży w innym miejscu niż /public, popraw ścieżkę.
   zdjecie?: string;
-  /** Duży, wyróżniony napis-baner — używany zwłaszcza tam, gdzie brak zdjęcia */
   banner?: string;
-  /** Kolorystyka poświaty/ramki banera i akcentu ikon — domyślnie teal */
   bannerAkcent?: "red" | "lime";
   sections: InfoSection[];
   uwaga?: string;
@@ -249,8 +245,7 @@ const INFO_ITEMS: Record<string, InfoItem> = {
         },
       },
     ],
-    instrukcjaUrl:
-      "/pdf/Instrukcja_Router_ONTCombo_HuaweiHG8145B7N-_2-5G_WiFi7.pdf",
+    instrukcjaUrl: "/pdf/Instrukcja_Router_ONTCombo_HuaweiHG8145B7N-_2-5G_WiFi7.pdf",
   },
 
   "dekoder-evobox": {
@@ -283,8 +278,7 @@ const INFO_ITEMS: Record<string, InfoItem> = {
             { label: "Funkcje TV", value: "Nagrywanie, Time-shift, Netia GO, Multiroom" },
             {
               label: "USB",
-              value:
-                "USB 2.0 (typ A), DLNA / LAN. Obsługiwane formaty: Wideo (AVI, MKV, MP4, TS, M2TS), Audio (MP3), Zdjęcia (JPG, JPEG, PNG, GIF statyczny, BMP), Napisy (SRT UTF-8)",
+              value: "USB 2.0 (typ A), DLNA / LAN. Obsługiwane formaty: Wideo (AVI, MKV, MP4, TS, M2TS), Audio (MP3), Zdjęcia (JPG, JPEG, PNG, GIF statyczny, BMP), Napisy (SRT UTF-8)",
             },
             { label: "Aplikacje", value: "Netia GO, Disney+, Netflix (dostępność zależna od wersji oprogramowania)" },
             { label: "Wymiary", value: "165 × 134,9 × 35,6 mm" },
@@ -298,9 +292,8 @@ const INFO_ITEMS: Record<string, InfoItem> = {
         },
       },
     ],
-    instrukcjaUrl:
-    "/pdf/Instrukcja_uzytkownika_netia_dekodera_evobox_4K.pdf"
-    },
+    instrukcjaUrl: "/pdf/Instrukcja_uzytkownika_netia_dekodera_evobox_4K.pdf",
+  },
 
   "netia-go": {
     id: "netia-go",
@@ -418,26 +411,10 @@ const INFO_ITEMS: Record<string, InfoItem> = {
           rows: [
             { funkcja: "Ilość godzin do nagrania", basic: "100 godzin", maxi: "1500 godzin" },
             { funkcja: "Czas przechowywania", basic: "30 dni", maxi: "120 dni" },
-            {
-              funkcja: "Time Shift (przewijanie do tyłu)",
-              basic: "Przewijanie do 2 godzin wstecz",
-              maxi: "Przewijanie do 2 godzin wstecz",
-            },
-            {
-              funkcja: "Catch-up (oglądanie po emisji)",
-              basic: "Do 7 dni wstecz (na wybranych kanałach)",
-              maxi: "Do 7 dni wstecz (na wybranych kanałach)",
-            },
-            {
-              funkcja: "Równoległe nagrywanie",
-              basic: "Nagrywaj wiele programów jednocześnie",
-              maxi: "Nagrywaj wiele programów jednocześnie",
-            },
-            {
-              funkcja: "Nagrywanie przy wyłączonym dekoderze",
-              basic: "Działa także przy wyłączonym dekoderze",
-              maxi: "Działa także przy wyłączonym dekoderze",
-            },
+            { funkcja: "Time Shift (przewijanie do tyłu)", basic: "Przewijanie do 2 godzin wstecz", maxi: "Przewijanie do 2 godzin wstecz" },
+            { funkcja: "Catch-up (oglądanie po emisji)", basic: "Do 7 dni wstecz (na wybranych kanałach)", maxi: "Do 7 dni wstecz (na wybranych kanałach)" },
+            { funkcja: "Równoległe nagrywanie", basic: "Nagrywaj wiele programów jednocześnie", maxi: "Nagrywaj wiele programów jednocześnie" },
+            { funkcja: "Nagrywanie przy wyłączonym dekoderze", basic: "Działa także przy wyłączonym dekoderze", maxi: "Działa także przy wyłączonym dekoderze" },
           ],
         },
       },
@@ -473,31 +450,22 @@ const INFO_ITEMS: Record<string, InfoItem> = {
   },
 };
 
-/* ---------------------------------------------------------------------- */
-/*  Kolorystyka banera-hasła i ikon (Netia GO / Giganagrywarka) — starszy, */
-/*  mocniejszy wariant gradientu (radialna poświata + ciemne tło).         */
-/* ---------------------------------------------------------------------- */
 const BANNER_AKCENTY: Record<
   "teal" | "red" | "lime",
   { border: string; background: string; text: string; soft: string }
 > = {
   teal: {
     border: "border-teal-300/25",
-    background:
-      "radial-gradient(130% 160% at 15% 0%, rgba(45,212,191,.45), transparent 60%), linear-gradient(135deg, #0f3550 0%, #0B2A3D 100%)",
+    background: "radial-gradient(130% 160% at 15% 0%, rgba(45,212,191,.45), transparent 60%), linear-gradient(135deg, #0f3550 0%, #0B2A3D 100%)",
     text: "text-teal-300",
     soft: "bg-teal-300/15",
   },
-  // Różowy/magenta — jak karta "VIP 5G" na zrzucie: jasny pink w lewym
-  // górnym rogu, przechodzący w ciemny bordowy/plum w prawym dolnym.
   red: {
     border: "border-[#e0399e]/40",
     background: "linear-gradient(135deg, #d6409f 0%, #8a2570 55%, #4a1240 100%)",
     text: "text-[#f472b6]",
     soft: "bg-[#e0399e]/15",
   },
-  // Limonkowy — jak karta "GIGA 5G" na zrzucie: jasna limonka w lewym
-  // górnym rogu, przechodząca w ciemniejszą oliwkową zieleń w prawym dolnym.
   lime: {
     border: "border-[#a3d146]/40",
     background: "linear-gradient(135deg, #8bc34a 0%, #5c9c2e 55%, #33540f 100%)",
@@ -506,11 +474,6 @@ const BANNER_AKCENTY: Record<
   },
 };
 
-/* ---------------------------------------------------------------------- */
-/*  Kolor cechy na karcie ofertowej — adekwatny kolor pojawia się dopiero  */
-/*  gdy powiązany popup jest aktualnie otwarty (kliknięcie), a nie na      */
-/*  hover — hover zawsze zostaje zwykłym, domyślnym teal.                  */
-/* ---------------------------------------------------------------------- */
 function klasaCechy(infoId: string | undefined, aktywnyInfoId: string | null): string {
   const jestAktywna = !!infoId && infoId === aktywnyInfoId;
 
@@ -524,10 +487,6 @@ function klasaCechy(infoId: string | undefined, aktywnyInfoId: string | null): s
   return "hover:text-teal-300 hover:decoration-teal-300";
 }
 
-/* ---------------------------------------------------------------------- */
-/*  Zdjęcie produktu na białym tle (routery/dekoder) — pomijane, gdy brak  */
-/*  `zdjecie`.                                                             */
-/* ---------------------------------------------------------------------- */
 function IkonaProduktu({ zdjecie, model }: { zdjecie: string; model: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
@@ -539,9 +498,6 @@ function IkonaProduktu({ zdjecie, model }: { zdjecie: string; model: string }) {
   );
 }
 
-/* ---------------------------------------------------------------------- */
-/*  Renderer treści sekcji — jedna funkcja obsługująca wszystkie typy      */
-/* ---------------------------------------------------------------------- */
 function TrescSekcji({
   content,
   akcent,
@@ -638,11 +594,6 @@ function TrescSekcji({
   }
 }
 
-/* ---------------------------------------------------------------------- */
-/*  Modal — "Szczegóły" (router / dekoder / Netia GO / Giganagrywarka)     */
-/*  Nagłówek zawsze na górze, środek jako jedyny scrollowalny fragment,    */
-/*  przycisk zamknięcia zawsze na dole.                                    */
-/* ---------------------------------------------------------------------- */
 function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => void }) {
   const reduceMotion = useReducedMotion();
   const item = infoId ? INFO_ITEMS[infoId] : null;
@@ -694,7 +645,6 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
 
               return (
                 <>
-                  {/* Nagłówek — zawsze widoczny, kolor zależny od typu popupu */}
                   <div className="shrink-0 border-b border-white/10 px-6 pb-4 pt-6 sm:px-8 sm:pt-8">
                     <div className={`flex items-center gap-2 ${akcent.text}`}>
                       <Info size={18} />
@@ -704,7 +654,6 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
                     {item.podtytul && <p className="mt-1 text-sm text-white/60">{item.podtytul}</p>}
                   </div>
 
-                  {/* Środkowa część — jedyny scrollowalny fragment okna */}
                   <div className="flex-1 overflow-y-auto px-6 py-5 sm:px-8">
                     {item.zdjecie && <IkonaProduktu zdjecie={item.zdjecie} model={item.model} />}
 
@@ -762,7 +711,7 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
                     )}
 
                     {item.instrukcjaUrl && (
-                      <a
+                    <a
                         href={item.instrukcjaUrl}
                         download
                         target="_blank"
@@ -778,7 +727,6 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
               );
             })()}
 
-            {/* Stopka — zawsze na dole, jedyny przycisk zamknięcia */}
             <div className="shrink-0 border-t border-white/10 px-6 py-4 sm:px-8">
               <button
                 type="button"
@@ -796,168 +744,9 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
   );
 }
 
-type Offer = {
-  id: string;
-  eyebrow: string;
-  speedBold: string;
-  speedSuffix?: string;
-  promoEyebrow?: string;
-  promoHeadline?: string;
-  promoNote?: string;
-  badgeLabel: string;
-  features: { icon: React.ReactNode; label: string; infoId?: string }[];
-  price: string;
-  priceUnit: string;
-  priceNote: string;
-  highlighted?: boolean;
-};
-
-const offers: Offer[] = [
-  {
-    id: "net-300-tv-s",
-    eyebrow: "Internet do",
-    speedBold: "300 Mb/s",
-    speedSuffix: "+ TV S",
-    promoEyebrow: "UMOWA",
-    promoHeadline: "24 miesiące",
-    promoNote: "*po rabatach",
-    badgeLabel: "Umowa na 24 miesiące *po rabatach",
-    features: [
-      { icon: <Router size={14} />, label: "Router z Wi-Fi w cenie", infoId: "router-wifi" },
-      { icon: <ShieldCheck size={14} />, label: "Netia GO w cenie", infoId: "netia-go" },
-    ],
-    price: "40",
-    priceUnit: "zł z VAT",
-    priceNote: "Przez 24 miesiące z rabatami",
-  },
-  {
-    id: "net-300-tv-s-4k",
-    eyebrow: "Internet do",
-    speedBold: "300 Mb/s",
-    speedSuffix: "+ TV S 4K",
-    promoEyebrow: "UMOWA",
-    promoHeadline: "24 miesiące",
-    promoNote: "*po rabatach",
-    badgeLabel: "Umowa na 24 miesiące *po rabatach",
-    features: [
-      { icon: <Router size={14} />, label: "Router z Wi-Fi w cenie", infoId: "router-wifi" },
-      { icon: <Tv size={14} />, label: "Dekoder 4K w cenie", infoId: "dekoder-evobox" },
-      { icon: <ShieldCheck size={14} />, label: "Netia GO w cenie", infoId: "netia-go" },
-    ],
-    price: "45",
-    priceUnit: "zł z VAT",
-    priceNote: "Przez 24 miesiące z rabatami",
-  },
-  {
-    id: "net-1000",
-    eyebrow: "Internet do",
-    speedBold: "1000 Mb/s",
-    promoEyebrow: "ABONAMENT",
-    promoHeadline: "6 miesięcy za 0 zł",
-    promoNote: "*po rabatach",
-    badgeLabel: "Abonament 6 miesięcy za 0 zł *po rabatach",
-    features: [
-      { icon: <Router size={14} />, label: "Router Combo z ONT Wi-Fi 6", infoId: "router-wifi6" },
-    ],
-    price: "65",
-    priceUnit: "zł z VAT",
-    priceNote: "Przez 24 miesiące z rabatami",
-  },
-  {
-    id: "net-1000-tv-s",
-    eyebrow: "Internet do",
-    speedBold: "1000 Mb/s",
-    speedSuffix: "+ TV S",
-    promoEyebrow: "ABONAMENT",
-    promoHeadline: "6 miesięcy za 0 zł",
-    promoNote: "*po rabatach",
-    badgeLabel: "Abonament 6 miesięcy za 0 zł *po rabatach",
-    features: [
-      { icon: <Router size={14} />, label: "Router z Wi-Fi 6 w cenie", infoId: "router-wifi6" },
-      { icon: <Tv size={14} />, label: "Dekoder 4K w cenie", infoId: "dekoder-evobox" },
-      { icon: <ShieldCheck size={14} />, label: "Netia GO w cenie", infoId: "netia-go" },
-    ],
-    price: "70",
-    priceUnit: "zł z VAT",
-    priceNote: "Przez 24 miesiące z rabatami",
-  },
-  {
-    id: "net-2000-tv-s",
-    eyebrow: "Internet do",
-    speedBold: "2000 Mb/s",
-    speedSuffix: "+ TV S",
-    promoEyebrow: "ABONAMENT",
-    promoHeadline: "6 miesięcy za 0 zł",
-    promoNote: "*po rabatach",
-    badgeLabel: "Abonament 6 miesięcy za 0 zł *po rabatach",
-    highlighted: true,
-    features: [
-      { icon: <Router size={14} />, label: "Router Combo z ONT z Wi-Fi 7", infoId: "router-wifi7" },
-      { icon: <Tv size={14} />, label: "Dekoder 4K w cenie", infoId: "dekoder-evobox" },
-      { icon: <ShieldCheck size={14} />, label: "Netia GO w cenie", infoId: "netia-go" },
-    ],
-    price: "85",
-    priceUnit: "zł z VAT",
-    priceNote: "Przez 24 miesiące z rabatami",
-  },
-  {
-    id: "net-2000-tv-l",
-    eyebrow: "Internet do",
-    speedBold: "2000 Mb/s",
-    speedSuffix: "+ TV L",
-    promoEyebrow: "ABONAMENT",
-    promoHeadline: "6 miesięcy za 0 zł",
-    promoNote: "*po rabatach",
-    badgeLabel: "Abonament 6 miesięcy za 0 zł *po rabatach",
-    features: [
-      { icon: <Router size={14} />, label: "Router Combo z ONT Wi-Fi 7", infoId: "router-wifi7" },
-      { icon: <Tv size={14} />, label: "Dekoder 4K w cenie", infoId: "dekoder-evobox" },
-      { icon: <ShieldCheck size={14} />, label: "Netia GO w cenie", infoId: "netia-go" },
-      { icon: <Gauge size={14} />, label: "Giganagrywarka Basic", infoId: "giganagrywarka" },
-    ],
-    price: "125",
-    priceUnit: "zł z VAT",
-    priceNote: "Przez 24 miesiące z rabatami",
-  },
-];
-
-const faqs: { icon: React.ReactNode; q: string; a: string }[] = [
-  {
-    icon: <Router size={19} strokeWidth={2} />,
-    q: "Co dokładnie dostaję w wybranym pakiecie?",
-    a: "Każdy pakiet zawiera internet światłowodowy Netii oparty o sieć Orange, telewizję z dekoderem oraz router w cenie abonamentu. Szczegółowa lista sprzętu i usług znajduje się przy każdej ofercie powyżej.",
-  },
-  {
-    icon: <CreditCard size={19} strokeWidth={2} />,
-    q: "Ile naprawdę zapłacę przez pierwsze miesiące?",
-    a: "W pakietach oznaczonych jako „Abonament 6 miesięcy za 0 zł” przez pierwsze 6 miesięcy nie płacisz nic — opłata w wysokości podanej przy ofercie nalicza się od kolejnego okresu rozliczeniowego, zgodnie z regulaminem promocji.",
-  },
-  {
-    icon: <CalendarClock size={19} strokeWidth={2} />,
-    q: "Na jak długo zawierana jest umowa?",
-    a: "W zależności od wybranej oferty umowa obowiązuje przez 24 pełne okresy rozliczeniowe. Dokładny czas trwania i warunki znajdziesz w regulaminie danej promocji.",
-  },
-  {
-    icon: <Gauge size={19} strokeWidth={2} />,
-    q: "Czy prędkość internetu jest gwarantowana?",
-    a: "Prędkości podane w ofertach to prędkości maksymalne dostępne w danej technologii i lokalizacji. Realna prędkość może zależeć od parametrów łącza dostępnych pod konkretnym adresem.",
-  },
-  {
-    icon: <Tv size={19} strokeWidth={2} />,
-    q: "Czy mogę dokupić dodatkowe pakiety telewizyjne?",
-    a: "Tak, do każdej oferty możesz dokupić pakiety premium, takie jak kanały sportowe czy filmowe, a także dodatkowy dekoder do kolejnego telewizora.",
-  },
-  {
-    icon: <ShieldCheck size={19} strokeWidth={2} />,
-    q: "Jak szybko mogę zamówić wybraną ofertę?",
-    a: "Wystarczy zadzwonić lub wysłać SMS z tego miejsca — nasz doradca oddzwoni w kilka minut i przeprowadzi Cię przez cały proces zamówienia.",
-  },
-];
-
 export default function PopularneOferty() {
   const reduceMotion = useReducedMotion();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-
   const [aktywnyInfoId, setAktywnyInfoId] = useState<string | null>(null);
 
   return (
@@ -1004,67 +793,12 @@ export default function PopularneOferty() {
               xmlns="http://www.w3.org/2000/svg"
               aria-hidden="true"
             >
-              <rect
-                x="120"
-                y="25"
-                width="70"
-                height="70"
-                rx="10"
-                stroke="#2DD4BF"
-                strokeOpacity="0.5"
-                strokeWidth="2"
-                transform="rotate(15 155 60)"
-              />
-              <rect
-                x="140"
-                y="75"
-                width="42"
-                height="42"
-                rx="8"
-                stroke="#99F6E4"
-                strokeOpacity="0.32"
-                strokeWidth="2"
-                transform="rotate(-10 161 96)"
-              />
-              <rect
-                x="60"
-                y="120"
-                width="16"
-                height="16"
-                rx="3"
-                fill="#2DD4BF"
-                opacity="0.7"
-                transform="rotate(20 68 128)"
-              />
-              <rect
-                x="95"
-                y="145"
-                width="10"
-                height="10"
-                rx="2"
-                fill="#99F6E4"
-                opacity="0.55"
-                transform="rotate(35 100 150)"
-              />
-              <rect
-                x="30"
-                y="70"
-                width="9"
-                height="9"
-                rx="2"
-                fill="#99F6E4"
-                opacity="0.5"
-                transform="rotate(-15 34 74)"
-              />
-              <rect
-                x="165"
-                y="150"
-                width="7"
-                height="7"
-                rx="2"
-                fill="#2DD4BF"
-                opacity="0.55"
-              />
+              <rect x="120" y="25" width="70" height="70" rx="10" stroke="#2DD4BF" strokeOpacity="0.5" strokeWidth="2" transform="rotate(15 155 60)" />
+              <rect x="140" y="75" width="42" height="42" rx="8" stroke="#99F6E4" strokeOpacity="0.32" strokeWidth="2" transform="rotate(-10 161 96)" />
+              <rect x="60" y="120" width="16" height="16" rx="3" fill="#2DD4BF" opacity="0.7" transform="rotate(20 68 128)" />
+              <rect x="95" y="145" width="10" height="10" rx="2" fill="#99F6E4" opacity="0.55" transform="rotate(35 100 150)" />
+              <rect x="30" y="70" width="9" height="9" rx="2" fill="#99F6E4" opacity="0.5" transform="rotate(-15 34 74)" />
+              <rect x="165" y="150" width="7" height="7" rx="2" fill="#2DD4BF" opacity="0.55" />
             </svg>
 
             <svg
@@ -1075,54 +809,14 @@ export default function PopularneOferty() {
               aria-hidden="true"
             >
               <circle cx="40" cy="150" r="4" fill="#2DD4BF" />
-              <circle
-                cx="40"
-                cy="150"
-                r="22"
-                stroke="#2DD4BF"
-                strokeOpacity="0.5"
-                strokeWidth="2"
-              />
-              <circle
-                cx="40"
-                cy="150"
-                r="42"
-                stroke="#99F6E4"
-                strokeOpacity="0.28"
-                strokeWidth="2"
-              />
-
+              <circle cx="40" cy="150" r="22" stroke="#2DD4BF" strokeOpacity="0.5" strokeWidth="2" />
+              <circle cx="40" cy="150" r="42" stroke="#99F6E4" strokeOpacity="0.28" strokeWidth="2" />
               <circle cx="120" cy="40" r="3" fill="#99F6E4" />
-              <circle
-                cx="120"
-                cy="40"
-                r="16"
-                stroke="#99F6E4"
-                strokeOpacity="0.35"
-                strokeWidth="1.5"
-              />
-
-              <path
-                d="M75 90 L79 100 L89 104 L79 108 L75 118 L71 108 L61 104 L71 100 Z"
-                fill="#2DD4BF"
-                opacity="0.7"
-              />
-              <path
-                d="M150 120 L152.5 126 L158.5 128.5 L152.5 131 L150 137 L147.5 131 L141.5 128.5 L147.5 126 Z"
-                fill="#99F6E4"
-                opacity="0.6"
-              />
-              <path
-                d="M25 55 L27 60 L32 62 L27 64 L25 69 L23 64 L18 62 L23 60 Z"
-                fill="#99F6E4"
-                opacity="0.5"
-              />
-              <path
-                d="M105 165 L107 170 L112 172 L107 174 L105 179 L103 174 L98 172 L103 170 Z"
-                fill="#2DD4BF"
-                opacity="0.5"
-              />
-
+              <circle cx="120" cy="40" r="16" stroke="#99F6E4" strokeOpacity="0.35" strokeWidth="1.5" />
+              <path d="M75 90 L79 100 L89 104 L79 108 L75 118 L71 108 L61 104 L71 100 Z" fill="#2DD4BF" opacity="0.7" />
+              <path d="M150 120 L152.5 126 L158.5 128.5 L152.5 131 L150 137 L147.5 131 L141.5 128.5 L147.5 126 Z" fill="#99F6E4" opacity="0.6" />
+              <path d="M25 55 L27 60 L32 62 L27 64 L25 69 L23 64 L18 62 L23 60 Z" fill="#99F6E4" opacity="0.5" />
+              <path d="M105 165 L107 170 L112 172 L107 174 L105 179 L103 174 L98 172 L103 170 Z" fill="#2DD4BF" opacity="0.5" />
               <circle cx="60" cy="30" r="2.5" fill="#2DD4BF" opacity="0.6" />
               <circle cx="170" cy="70" r="2" fill="#99F6E4" opacity="0.5" />
               <circle cx="15" cy="110" r="2" fill="#2DD4BF" opacity="0.5" />
@@ -1194,8 +888,6 @@ export default function PopularneOferty() {
           </m.div>
 
           <div className="relative mt-14">
-            {/* full-bleed tło — wychodzi poza max-w-320, sięga krawędzi viewportu,
-                ale wysokość dopasowuje się do siatki kart poniżej (inset-y-0) */}
             <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
               <DottedBackground variant="dots" size={22} />
             </div>
