@@ -16,9 +16,13 @@
 //   Channel HD, Disney Junior, Disney XD, MiniMini+ HD, Nick Jr.*, Nickelodeon
 //   Polska*, Nicktoons HD*, TeenNick HD, Teletoon+ HD) - to te same fizyczne
 //   kanały co w pakiecie bazowym L, dodatek pozwala je dokupić przy niższym pakiecie.
-// - UWAGA: ta ulotka w ogóle nie wymienia pakietu XS (mowa wyłącznie o S/M/L: 93/118/186
-//   kanałów). Dane dla tier "xs" pochodzą z innego źródła i NIE zostały zweryfikowane
-//   względem tego dokumentu - do potwierdzenia osobnym źródłem.
+// - DODANO (zweryfikowane na oficjalnej, ponumerowanej liście kanałów Netia GO):
+//   kanał 0 - ZERO w pakiecie XS. Brakowało go mimo że TIER_CHANNEL_COUNTS.xs = 35
+//   już go zakładało (18 pozostałych kanałów jawnych + 16 regionalnych TVP = 34,
+//   czyli brakowało dokładnie jednego kanału do zadeklarowanej sumy 35).
+// - POTWIERDZONO tą samą listą: pakiet XS NIE zawiera TVN / TV Puls / Puls 2 /
+//   TVP3 - te kanały poprawnie należą do pakietu S (TVP3 w ogóle nie występuje
+//   na oficjalnej liście Netia GO pod żadnym pakietem).
 
 export type Tier = "xs" | "s" | "m" | "l";
 export type Channel = {
@@ -76,6 +80,10 @@ export const REGIONAL_TVP_CHANNELS_COUNT = 16;
 // Kanały dostępne tylko w ramach płatnych dodatków znajdują się wyłącznie w ADDON_CHANNELS,
 // aby uniknąć "przeciekania" kanałów dodatkowych do channelsForTier().
 export const CHANNELS: Channel[] = [
+  // Dodano wg oficjalnej, ponumerowanej listy kanałów Netia GO (Pakiet XS) -
+  // brakowało go mimo że TIER_CHANNEL_COUNTS.xs = 35 już go zakładało
+  // (18 pozostałych kanałów jawnych + 16 regionalnych TVP = 34, brakowało jednego).
+  { number: 0, name: "ZERO", tier: "xs", color: "#111827" },
   { number: 1, name: "POLSAT HD", tier: "xs", guaranteed: true, color: "#be123c", logoUrl: "/Kanaly/Polsat_HD_logo.webp" },
   { number: 7, name: "TVP 1 HD", tier: "xs", guaranteed: true, color: "#16a34a", logoUrl: "/Kanaly/TVP_1_HD_logo.webp" },
   { number: 8, name: "TVP 2 HD", tier: "xs", guaranteed: true, color: "#7c3aed", logoUrl: "/Kanaly/TVP_2_HD_logo.webp" },
@@ -144,7 +152,7 @@ export const CHANNELS: Channel[] = [
   { number: 220, name: "4FUN.TV", tier: "s", color: "#f59e0b", logoUrl: "/Kanaly/4fun_TV_logo.webp" },
   { number: 221, name: "4FUN DANCE", tier: "s", color: "#be123c", logoUrl: "/Kanaly/4fun_Dance_logo.webp" },
   { number: 224, name: "POLSAT MUSIC HD", tier: "s", guaranteed: true, color: "#db2777", logoUrl: "/Kanaly/Polsat_Music_HD_logo.webp" },
-  { number: 225, name: "POLO TV", tier: "s", guaranteed: true, color: "#1e293b",logoUrl:'Kanaly/Polo_TV_logo.webp' },
+  { number: 225, name: "POLO TV", tier: "s", guaranteed: true, color: "#1e293b",logoUrl:'/Kanaly/Polo_TV_logo.webp' },
   { number: 226, name: "ESKA TV HD", tier: "s", guaranteed: true, color: "#1e293b", logoUrl: "/Kanaly/Eska_TV_HD_logo.webp" },
   { number: 227, name: "ESKA EXTRA TV HD", tier: "s", color: "#4c1d95", logoUrl: "/Kanaly/Eska_Extra_TV_HD_logo.webp" },
   { number: 229, name: "DISCO POLO MUSIC", tier: "s", guaranteed: true, color: "#059669", logoUrl: "/Kanaly/Disco_Polo_Music_logo.webp" },

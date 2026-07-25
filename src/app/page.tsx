@@ -12,6 +12,7 @@ import NetiaFAQ from "@/components/home/Faq";
 import { pagesMetadata } from "@/lib/seo/pages-metadata";
 import { FAQ_ITEMS } from "@/components/home/homeFaqData";
 import { REVIEWS } from "@/components/home/homeReviewsData";
+import EntryGate from "@/components/entrygate";
 
 const organizationSchema = {
   "@context": "https://schema.org",
@@ -50,15 +51,16 @@ export default function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewsSchema) }} />
+      <EntryGate/>
       <MainHero />
-      <MaxxBanner />
+      {/* <MaxxBanner /> */}
       <Oferty />
-      <OfertyInternet />
-      <PoradnikTechnologie />
       <Instrukcja />
+      {/* <OfertyInternet /> */}
       <Benefity />
       <Opinie />
-      <CTA />
+      <PoradnikTechnologie />
+      {/* <CTA /> */}
       <NetiaFAQ />
       <Miasta />
     </>

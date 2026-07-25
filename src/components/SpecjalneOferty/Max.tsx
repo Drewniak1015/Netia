@@ -1,11 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 import {
   Phone,
   MessageCircle,
   ChevronRight,
+  ChevronDown,
   Check,
   Star,
   Package,
@@ -20,6 +21,9 @@ import {
   Film,
   Lock,
   Medal,
+  Gauge,
+  RotateCcw,
+  Headset,
   type LucideIcon,
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
@@ -52,6 +56,21 @@ import DottedBackground from "@/components/ui/DottedBackground";
  * telefonu na osobnej linii przez <br />, rounded-2xl, ten sam rozkład
  * ikona+tekst. Kolorystyka (róż zamiast turkusu) zostaje, bo to sekcja
  * promocyjna z własną paletą — reszta stylu ujednolicona.
+ *
+ * FIX (czytelność kart pakietów): nazwa pakietu (MAX 1000 / MAX 2000)
+ * powiększona (text-xl -> text-3xl/4xl, font-black) i przeniesiona nad
+ * pigułkę promocyjną (układ pionowy zamiast poziomego, żeby duży tekst miał
+ * miejsce). Pigułka "12 miesięcy za 0 zł!" zmieniona z płaskiego,
+ * niskokontrastowego tła (bg-pink-400/10 + text-pink-300) na pełny gradient
+ * różu z ciemnym tekstem (ten sam wzór co odznaka "Promocja" w hero) + cień
+ * + ikona Sparkles + drobna animacja pop-in — dużo lepszy kontrast i większa
+ * "waga" wizualna promocji.
+ *
+ * FIX (spójność sekcji ufności i prawnej): dodano pasek zaufania (Gauge /
+ * RotateCcw / Headset) — ten sam wzorzec co w OfferQuizSection /
+ * PopularneOferty — oraz zwinięty domyślnie panel "Zobacz szczegóły oferty"
+ * z pełnym zapisem prawnym (wcześniej tekst prawny był zawsze widoczny na
+ * pełną szerokość na dole sekcji).
  */
 
 /* Wspólny wariant fade-up — zgodnie z PopularneOferty.tsx */
@@ -116,11 +135,20 @@ function PackageCard({
         </m.span>
       )}
 
-      <div className="mb-3.5 flex items-center justify-between">
-        <span className="text-xl font-extrabold text-pink-400">{name}</span>
-        <span className="rounded-full bg-pink-400/10 px-3 py-1 text-xs font-bold text-pink-300">
-          {monthsPill}
+      <div className="mb-3.5 flex items-center justify-between gap-3">
+        <span className="text-3xl font-black tracking-tight text-pink-400 sm:text-4xl">
+          {name}
         </span>
+        <m.span
+          initial={reduceMotion ? false : { opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-pink-500 to-pink-400 px-3.5 py-1.5 text-[13px] font-extrabold uppercase tracking-wide text-[#0B2A3D] shadow-[0_6px_16px_-6px_rgba(236,72,153,0.7)]"
+        >
+          <Sparkles size={13} fill="#0B2A3D" />
+          {monthsPill}
+        </m.span>
       </div>
 
       <div className="mb-5 flex items-baseline gap-2 border-b border-white/10 pb-5">
@@ -253,6 +281,108 @@ const tvPackages: Omit<TvCardProps, "index" | "reduceMotion">[] = [
   // pomocy, więc linkujemy do ogólnej sekcji "Pakiety" zamiast do konkretnego akordeonu.
   { name: "Polsat Sport Premium + Eleven Sports", price: "+20 zł", icon: Medal, iconColor: "#2dd4bf", iconBg: "rgba(45,212,191,0.14)" },
 ];
+
+/* ======================================================================
+   PASEK ZAUFANIA — ten sam wzorzec co w OfferQuizSection / PopularneOferty
+   (Gauge / RotateCcw / Headset).
+   ====================================================================== */
+
+interface TrustItem {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+}
+
+const TRUST_ITEMS: TrustItem[] = [
+  {
+    icon: Gauge,
+    title: "Prędkość zgodna z umową",
+    desc: "Minimum 50% deklarowanej prędkości, zgodnie z prawem.",
+  },
+  {
+    icon: RotateCcw,
+    title: "14 dni na zmianę zdania",
+    desc: "Odstąpienie od umowy bez podania przyczyny.",
+  },
+  {
+    icon: Headset,
+    title: "Wsparcie zawsze pod ręką",
+    desc: "Infolinia i serwis techniczny gotowe pomóc.",
+  },
+];
+
+function TrustBar({ reduceMotion }: { reduceMotion: boolean | null }) {
+  return (
+    <m.div
+      variants={fadeUp}
+      initial={reduceMotion ? false : "hidden"}
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.4 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="mx-auto mt-8 grid max-w-4xl grid-cols-1 gap-2.5 sm:grid-cols-3"
+    >
+      {TRUST_ITEMS.map((item) => {
+        const TrustIcon = item.icon;
+        return (
+          <div key={item.title} className="flex items-start gap-2.5 rounded-xl px-3.5 py-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-white/70">
+              <TrustIcon size={16} strokeWidth={2} />
+            </span>
+            <div>
+              <p className="text-xs font-semibold text-white/90">{item.title}</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-white/50">{item.desc}</p>
+            </div>
+          </div>
+        );
+      })}
+    </m.div>
+  );
+}
+
+/* ======================================================================
+   SZCZEGÓŁY OFERTY (PRAWNE) — domyślnie zwinięte, rozwijane przyciskiem
+   "Zobacz szczegóły oferty" (ta sama technika grid-template-rows co
+   akordeony w OfferQuizSection / PopularneOferty).
+   ====================================================================== */
+
+function LegalDisclosure({
+  paragraphs,
+  reduceMotion,
+}: {
+  paragraphs: string[];
+  reduceMotion: boolean | null;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="mx-auto mt-6 max-w-4xl text-center">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="mx-auto flex items-center gap-1.5 text-[12px] font-semibold text-white/40 underline decoration-dotted underline-offset-4 transition-colors hover:text-white/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-pink-400"
+      >
+        {open ? "Ukryj szczegóły oferty" : "Zobacz szczegóły oferty"}
+        <ChevronDown
+          size={14}
+          className="shrink-0 transition-transform duration-300"
+          style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+        />
+      </button>
+
+      <div
+        className="grid transition-all duration-300 ease-out"
+        style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
+      >
+        <div className="overflow-hidden">
+          <p className="pb-16 pt-4 text-left text-[11px] leading-relaxed text-white/35">
+            {paragraphs.join(" ")}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /** Dekoracyjna ilustracja hero: monitor + laptop z neonowym "MAX". */
 function HeroDevices({ reduceMotion }: { reduceMotion: boolean | null }) {
@@ -511,7 +641,19 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
             </div>
           </div>
 
-          {/* INFO BAR */}
+          {/* PASEK ZAUFANIA — w miejscu dawnego paska SoundBox 4K */}
+          <TrustBar reduceMotion={reduceMotion} />
+
+          {/* SZCZEGÓŁY OFERTY — bezpośrednio pod benefitami, zwinięte
+              domyślnie, rozwijane przyciskiem "Zobacz szczegóły oferty" */}
+          <LegalDisclosure
+            reduceMotion={reduceMotion}
+            paragraphs={[
+              'Prezentowana oferta Netii S.A.: „Wybierz rabat 12 miesięcy” (PON, HFC, ETTH) obowiązuje przy zawarciu Umowy na czas określony 24 pełnych Okresów Rozliczeniowych przy jednoczesnym korzystaniu z rabatów za e-fakturę (5 zł) i zgody marketingowe (5 zł). W przypadku rezygnacji lub niespełnienia warunków przyznania rabatów, cena wzrośnie o 10 zł. Wraz z pierwszą fakturą zostanie naliczona opłata aktywacyjna w wysokości 79 zł za Internet i 2 zł za Telewizję. Po 24 miesiącach cena abonamentu wzrasta o 10 zł. „Wybierz rabat 12 miesięcy” stanowi wyłącznie nazwę marketingową. Usługa Internetowa oparta jest na parametrach jakości wynikających z maksymalnych parametrów technicznych danej technologii, w jakiej świadczona jest Usługa Internetowa, lub wynikających z ofertowych ustawień technicznych łącza. Prędkość 2 Gb/s jest dostępna na technologii PON. Parametry świadczenia Usługi Internetowej, w szczególności parametry prędkości oraz wpływu innych Usług na Usługę Internetową, dostępne są na stronie netia.pl. Oferta jest ograniczona terytorialnie do zasięgu stacjonarnej sieci PON, HFC, ETTH Operatora.',
+            ]}
+          />
+
+          {/* INFO BAR — pasek SoundBox 4K, przeniesiony niżej, przed pakiety TV */}
           <m.div
             initial={reduceMotion ? false : "hidden"}
             whileInView="visible"
@@ -587,23 +729,6 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
               ))}
             </div>
           </div>
-
-          {/* LEGAL DISCLAIMER */}
-          <p className="pb-16 text-left text-[11px] leading-relaxed text-white/35">
-            Prezentowana oferta Netii S.A.: „Wybierz rabat 12 miesięcy” (PON, HFC, ETTH) obowiązuje
-            przy zawarciu Umowy na czas określony 24 pełnych Okresów Rozliczeniowych przy
-            jednoczesnym korzystaniu z rabatów za e-fakturę (5 zł) i zgody marketingowe (5 zł). W
-            przypadku rezygnacji lub niespełnienia warunków przyznania rabatów, cena wzrośnie o 10
-            zł. Wraz z pierwszą fakturą zostanie naliczona opłata aktywacyjna w wysokości 79 zł za
-            Internet i 2 zł za Telewizję. Po 24 miesiącach cena abonamentu wzrasta o 10 zł. „Wybierz
-            rabat 12 miesięcy” stanowi wyłącznie nazwę marketingową. Usługa Internetowa oparta jest
-            na parametrach jakości wynikających z maksymalnych parametrów technicznych danej
-            technologii, w jakiej świadczona jest Usługa Internetowa, lub wynikających z ofertowych
-            ustawień technicznych łącza. Prędkość 2 Gb/s jest dostępna na technologii PON. Parametry
-            świadczenia Usługi Internetowej, w szczególności parametry prędkości oraz wpływu innych
-            Usług na Usługę Internetową, dostępne są na stronie netia.pl. Oferta jest ograniczona
-            terytorialnie do zasięgu stacjonarnej sieci PON, HFC, ETTH Operatora.
-          </p>
         </div>
       </div>
     </LazyMotion>

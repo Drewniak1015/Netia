@@ -4,7 +4,7 @@ import { MapPin, ArrowRight, Wifi } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { CITIES } from "@/lib/cities";
 
-const VISIBLE_LIMIT = 15;
+const VISIBLE_LIMIT = 8;
 
 function formatPopulation(n: number): string {
   return n.toLocaleString("pl-PL").replace(/,/g, " ");

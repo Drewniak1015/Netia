@@ -1,24 +1,20 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { useSearchParams } from "next/navigation";
-import dynamic from "next/dynamic";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { LazyMotion, domAnimation, m, useReducedMotion, AnimatePresence } from "framer-motion";
-import { Wifi, Tv, Smartphone, Gift, Flame } from "lucide-react";
+import { Wifi, Tv, Smartphone, Gift, Flame, FileCheck2 } from "lucide-react";
 import type { Tier } from "@/lib/channels";
 import type { Oferta5G } from "@/components/Konfigurator/Oferta5G";
 import DottedBackground from "@/components/ui/DottedBackground";
 
 import { KonfiguratorProvider, useKonfigurator } from "./KonfiguratorContext";
-import type { UmowaType } from "./types";
-import { PAKIETY_24, PAKIETY_BEZ } from "./pakiety";
-import { OFERTY_TV, OFERTY_5G, OFERTY_DODATKOWE, OFERTY_5G_BEZ, OFERTY_DODATKOWE_BEZ } from "./oferty";
+import { PAKIETY_24 } from "./pakiety";
+import { OFERTY_TV, OFERTY_5G, OFERTY_DODATKOWE } from "./oferty";
 import type { Pakiet, Oferta, OfertaDodatek } from "./types";
 
 import KafelekPakietu from "./KafelekPakietu";
 import KafelekOferty from "./KafelekOferty";
 import KafelekTV from "./KafelekTV";
-import PrzelacznikUmowy from "./PrzelacznikUmowy";
 import NotaPrawna from "./NotaPrawna";
 
 export { KonfiguratorProvider, useKonfigurator } from "./KonfiguratorContext";
@@ -33,6 +29,7 @@ export type { UmowaType, WybranaPozycja, Oferta } from "./types";
 /*  potrafiło ważyć więcej niż reszta strony razem wzięta, a 95% userów    */
 /*  nigdy ich nie otwiera.                                                */
 /* ---------------------------------------------------------------------- */
+import dynamic from "next/dynamic";
 const PodsumowanieFixed = dynamic(
   () => import("@/components/Konfigurator/konfiguratorFixed"),
   { ssr: false }
@@ -46,81 +43,32 @@ const InfoModal = dynamic(() => import("./InfoModal"), { ssr: false });
 const KanalyModal = dynamic(() => import("./KanalyModal"), { ssr: false });
 const AddonKanalyModal = dynamic(() => import("./AddonKanalyModal"), { ssr: false });
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
+/* ---------------------------------------------------------------------- */
+/*  UWAGA (usunięto wybór umowy):                                          */
+/*  Dostępna jest wyłącznie umowa 24-miesięczna. Poprzedni przełącznik     */
+/*  <PrzelacznikUmowy /> (klikalny toggle 24 / bez zobowiązań) został      */
+/*  zastąpiony statycznym, nieklikalnym badge'em informacyjnym poniżej.    */
+/*  Razem z nim usunięto:                                                  */
+/*    - import PrzelacznikUmowy                                           */
+/*    - <UmowaUrlSync> + useSearchParams() + Suspense wokół niego          */
+/*      (nie ma już żadnej wartości umowy do synchronizacji z URL —        */
+/*      stary link ?umowa=bez nie ma dziś żadnego efektu, co jest OK)      */
+/*    - gałęzie warunkowe PAKIETY_BEZ / OFERTY_5G_BEZ / OFERTY_DODATKOWE_BEZ */
+/*  Wartość `umowa` w KonfiguratorContext jest wymuszana na "24" przy      */
+/*  montowaniu (patrz useEffect niżej) — dzięki temu <PodsumowanieFixed /> */
+/*  osadzony też na innych stronach nadal widzi spójny, współdzielony stan.*/
+/* ---------------------------------------------------------------------- */
 
 /* ---------------------------------------------------------------------- */
-/*  FIX (CLS — główna przyczyna): useSearchParams() zmuszał Next.js do      */
-/*  potraktowania CAŁEJ granicy Suspense jako dynamicznej po stronie        */
-/*  klienta. Efekt: serwer wysyłał fallback={null} w initial HTML — CAŁY    */
-/*  Konfigurator (baner + siatka pakietów) był PUSTY do czasu hydracji, a   */
-/*  potem nagle "wskakiwał", spychając FAQ/Footer w dół. To była           */
-/*  faktyczna przyczyna ogromnego, losowego CLS (zależnego od tego, czy    */
-/*  JS zdążył się zhydratować przed pierwszym pomiarem).                   */
-/*                                                                          */
-/*  Fix: useSearchParams() (i cała logika reagowania na ?umowa=...) żyje   */
-/*  teraz w OSOBNYM komponencie, który zawsze renderuje null — nie ma       */
-/*  żadnego widocznego DOM-u. To ON siedzi w Suspense, nie reszta UI.       */
-/*  fallback={null} vs. realny render (też null) = zero różnicy wizualnej, */
-/*  więc ta granica Suspense fizycznie nie może już powodować CLS.         */
-/*  Widoczna treść (baner, siatka pakietów) renderuje się od razu w        */
-/*  initial HTML, tak jak powinna.                                        */
+/*  FIX (CLS — główna przyczyna, zachowane z poprzedniej wersji):          */
+/*  cała widoczna treść (baner, siatka pakietów) renderuje się od razu w   */
+/*  initial HTML, statycznie/SSR, bez czekania na hydrację — nic tu nie    */
+/*  zależy już od useSearchParams(), więc nie ma ryzyka powrotu tego buga. */
 /* ---------------------------------------------------------------------- */
-function UmowaUrlSync({
-  umowa,
-  zmienUmowe,
-}: {
-  umowa: UmowaType;
-  zmienUmowe: (u: UmowaType) => void;
-}) {
-  const searchParams = useSearchParams();
-  const paramUmowa = searchParams.get("umowa");
 
-  // Czy już zdążyliśmy choć raz zareagować na parametr z URL w tej sesji
-  // komponentu — zapobiega to resetowi przy zwykłym ponownym wejściu na
-  // stronę, gdy paramUmowa się nie zmienił względem tego, co user miał
-  // wcześniej ustawione (i co jest już wczytane z sessionStorage).
-  const poprzedniParamUmowa = useRef<string | null>(null);
-  const pierwszyRender = useRef(true);
-
-  useEffect(() => {
-    if (paramUmowa !== "bez" && paramUmowa !== "24") {
-      pierwszyRender.current = false;
-      return;
-    }
-
-    if (pierwszyRender.current) {
-      pierwszyRender.current = false;
-      poprzedniParamUmowa.current = paramUmowa;
-      if (paramUmowa !== umowa) {
-        zmienUmowe(paramUmowa);
-      }
-      return;
-    }
-
-    if (paramUmowa !== poprzedniParamUmowa.current) {
-      poprzedniParamUmowa.current = paramUmowa;
-      if (paramUmowa !== umowa) {
-        zmienUmowe(paramUmowa);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paramUmowa]);
-
-  return null;
-}
-
-/* ---------------------------------------------------------------------- */
-/*  Główny komponent                                                       */
-/* ---------------------------------------------------------------------- */
 function KonfiguratorZawartosc() {
   const reduceMotion = useReducedMotion();
 
-  // Wybory (umowa + pakiet + oferty) żyją we wspólnym kontekście, a nie w
-  // lokalnym useState — dzięki temu widget PodsumowanieFixed (osadzony np.
-  // na innych stronach) widzi tę samą, wyłącznie sesyjną daną.
   const {
     umowa,
     pakiet: wybranyPakietObj,
@@ -140,9 +88,20 @@ function KonfiguratorZawartosc() {
   const [aktywnaOferta5G, setAktywnaOferta5G] = useState<Oferta5G | null>(null);
   const [aktywnyDodatekAddon, setAktywnyDodatekAddon] = useState<string | null>(null);
 
-  const pakiety = umowa === "24" ? PAKIETY_24 : PAKIETY_BEZ;
-  const oferty5g = umowa === "24" ? OFERTY_5G : OFERTY_5G_BEZ;
-  const ofertyDodatkowe = umowa === "24" ? OFERTY_DODATKOWE : OFERTY_DODATKOWE_BEZ;
+  // Wymuszenie umowy 24-miesięcznej w współdzielonym kontekście — na
+  // wypadek, gdyby domyślna wartość w KonfiguratorContext była inna
+  // (np. zostałaby po staru ustawiona na "bez") albo user wszedł z linku
+  // ze starym parametrem ?umowa=bez. Robimy to raz, przy montowaniu.
+  useEffect(() => {
+    if (umowa !== "24") {
+      setUmowa("24");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const pakiety = PAKIETY_24;
+  const oferty5g = OFERTY_5G;
+  const ofertyDodatkowe = OFERTY_DODATKOWE;
 
   // FIX (TBT): lista dodatków zależnych od TV filtrowana raz na zmianę
   // zależności, a nie tworzona od nowa w JSX przy każdym renderze.
@@ -193,22 +152,8 @@ function KonfiguratorZawartosc() {
     [toggleDodatek]
   );
 
-  const zmienUmowe = useCallback(
-    (nowaUmowa: UmowaType) => {
-      setUmowa(nowaUmowa);
-    },
-    [setUmowa]
-  );
-
   return (
     <LazyMotion features={domAnimation} strict>
-      {/* Niewidoczny — renderuje zawsze null. Jedyny fragment, który
-          zależy od useSearchParams(), więc jedyny, który musi siedzieć w
-          Suspense. Ponieważ fallback też jest null, ta granica nigdy nie
-          powoduje żadnego widocznego skoku layoutu. */}
-      <Suspense fallback={null}>
-        <UmowaUrlSync umowa={umowa} zmienUmowe={zmienUmowe} />
-      </Suspense>
       <section
         style={{ backgroundColor: "#0B2A3D" }}
         className="relative overflow-hidden font-sans py-16 sm:py-20 lg:py-24"
@@ -271,8 +216,7 @@ function KonfiguratorZawartosc() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="relative z-10 m-0 text-[clamp(28px,4.4vw,44px)] font-extrabold text-white"
             >
-              Wybierz długość umowy{" "}
-              <span className="text-teal-300">i pakiet dla siebie</span>
+              Wybierz <span className="text-teal-300">pakiet dla siebie</span>
             </m.h1>
 
             <m.p
@@ -281,18 +225,21 @@ function KonfiguratorZawartosc() {
               transition={{ duration: 0.5, delay: 0.35 }}
               className="relative z-10 mt-1 max-w-xl text-sm text-white/65 sm:text-base"
             >
-              {umowa === "24"
-                ? "Pakiety internetowe z telewizją i usługami dodatkowymi."
-                : "Elastyczna oferta bez zobowiązań: internet, usługi mobilne i dodatki."}
+              Pakiety internetowe z telewizją i usługami dodatkowymi.
             </m.p>
 
+            {/* Statyczny, nieklikalny badge zamiast przełącznika umowy —
+                dostępna jest wyłącznie umowa 24-miesięczna. */}
             <m.div
               initial={reduceMotion ? false : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.45 }}
               className="relative z-10 mt-5"
             >
-              <PrzelacznikUmowy umowa={umowa} setUmowa={zmienUmowe} />
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white/80">
+                <FileCheck2 size={16} className="text-teal-300" />
+                Umowa na 24 miesiące
+              </span>
             </m.div>
           </m.div>
 
@@ -333,27 +280,25 @@ function KonfiguratorZawartosc() {
                     exit={{ opacity: 0, y: -12 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
                   >
-                    {umowa === "24" && (
-                      <div className="mt-12 lg:mt-16">
-                        <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
-                          <Tv size={22} className="text-teal-300" />
-                          Telewizja
-                        </h2>
-                        <div className="mt-6 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
-                          {OFERTY_TV.map((oferta, i) => (
-                            <KafelekTV
-                              key={oferta.id}
-                              oferta={oferta}
-                              wybrana={wybranaTvObj?.id === oferta.id}
-                              onWybierz={() => toggleTv(oferta)}
-                              onPokazDekoder={() => setAktywnyInfoId("dekoder-evobox")}
-                              onPokazKanaly={setAktywnyKanalyTier}
-                              delay={0.08 * i}
-                            />
-                          ))}
-                        </div>
+                    <div className="mt-12 lg:mt-16">
+                      <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
+                        <Tv size={22} className="text-teal-300" />
+                        Telewizja
+                      </h2>
+                      <div className="mt-6 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
+                        {OFERTY_TV.map((oferta, i) => (
+                          <KafelekTV
+                            key={oferta.id}
+                            oferta={oferta}
+                            wybrana={wybranaTvObj?.id === oferta.id}
+                            onWybierz={() => toggleTv(oferta)}
+                            onPokazDekoder={() => setAktywnyInfoId("dekoder-evobox")}
+                            onPokazKanaly={setAktywnyKanalyTier}
+                            delay={0.08 * i}
+                          />
+                        ))}
                       </div>
-                    )}
+                    </div>
 
                     <div className="mt-12 lg:mt-16">
                       <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
@@ -420,11 +365,11 @@ function KonfiguratorZawartosc() {
   );
 }
 
-/* Uwaga: KonfiguratorZawartosc już NIE wywołuje useSearchParams()
-   bezpośrednio (robi to tylko wewnętrzny <UmowaUrlSync>, w swoim własnym,
-   niewidocznym Suspense) — więc nie potrzebuje już zewnętrznej granicy
-   Suspense. Cała widoczna treść renderuje się w pełni statycznie/SSR,
-   bez czekania na hydrację.
+/* Uwaga: komponent NIE używa już useSearchParams() ani Suspense — nie ma
+   już żadnej wartości umowy do synchronizowania z parametrem URL, więc
+   cała ta warstwa (UmowaUrlSync) została usunięta. Cała widoczna treść
+   renderuje się w pełni statycznie/SSR, bez czekania na hydrację, co
+   zachowuje wcześniejszy fix na CLS.
 
    UWAGA: <KonfiguratorProvider> NIE jest owinięty tutaj — musi siedzieć
    wyżej, w app/layout.tsx (patrz KonfiguratorContext.tsx), żeby

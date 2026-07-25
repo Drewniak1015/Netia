@@ -6,12 +6,12 @@ import {
   Router,
   Banknote,
   Tag,
-  Home,
   Tv,
-  Database,
-  Smartphone,
   Lock,
-  Baby,
+  Undo2,
+  Percent,
+  Truck,
+  ClipboardCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -31,6 +31,11 @@ const TIER_1: FaqItem[] = [
     icon: ShieldCheck,
     q: "Co jeśli internet nie będzie działał tak, jak obiecano?",
     a: "Zgłoś to naszemu wsparciu technicznemu dostępnemu 24/7 pod numerem +48 793 800 300. Gwarantujemy minimum 50% zadeklarowanej prędkości — jeśli usługa nie spełnia parametrów z oferty, doradca zaproponuje rozwiązanie od razu, telefonicznie.",
+  },
+  {
+    icon: Undo2,
+    q: "A co jeśli po zmianie okaże się gorzej niż u obecnego dostawcy?",
+    a: "Masz ustawowe 14 dni na odstąpienie od umowy bez podania przyczyny — otrzymasz zwrot całości wpłaty. Nie musisz się wiązać na próbę: sprawdzasz usługę bez ryzyka.",
   },
   {
     icon: Clock,
@@ -66,9 +71,19 @@ const TIER_2: FaqItem[] = [
     a: "Najtańsza oferta to 40 zł/mies. za Internet do 300 Mb/s + Telewizję S (umowa 24-miesięczna). Sam internet bez TV — najpopularniejszy wariant to 1000 Mb/s w promocji „6 miesięcy za 0 zł”, potem 65 zł/mies. Ostateczna cena zależy od technologii dostępnej pod Twoim adresem.",
   },
   {
-    icon: Home,
-    q: "Czy Netia działa w blokach i domach jednorodzinnych?",
-    a: "Tak — światłowód dostępny jest w obu typach budynków.",
+    icon: Percent,
+    q: "Mam teraz promocję u obecnego dostawcy — czy zmiana się opłaca?",
+    a: "Sprawdzimy Twoją obecną cenę telefonicznie i pokażemy realne porównanie — bez naciągania. W większości przypadków nasza oferta jest konkurencyjna już od pierwszego miesiąca, a stała cena obowiązuje przez całą umowę, bez podwyżek w trakcie jej trwania.",
+  },
+  {
+    icon: Truck,
+    q: "Planuję się niedługo przeprowadzić — czy to ma sens?",
+    a: "Tak — usługę przenosimy razem z Tobą na nowy adres bez dodatkowych kar. Jeśli światłowód nie dotrze jeszcze do nowej lokalizacji, doradca podpowie najlepsze rozwiązanie na czas przeprowadzki.",
+  },
+  {
+    icon: ClipboardCheck,
+    q: "Kto zajmuje się formalnościami przy przejściu, np. cesją numeru?",
+    a: "My. Wypełniamy i pilnujemy dokumentów przeniesienia numeru oraz kontaktu ze starym operatorem, żebyś nie musiał tego robić sam. Cały proces koordynuje jeden doradca, z którym możesz się kontaktować na bieżąco.",
   },
   {
     icon: Clock,
@@ -84,24 +99,9 @@ const TIER_2: FaqItem[] = [
 
 const TIER_3: FaqItem[] = [
   {
-    icon: Database,
-    q: "Czy Netia ma limit danych?",
-    a: "Nie — internet światłowodowy Netii jest nielimitowany.",
-  },
-  {
-    icon: Smartphone,
-    q: "Czy mogę połączyć Internet z TV i usługami mobilnymi?",
-    a: "Tak — w konfiguratorze dobierzesz Internet + TV + Mobile 5G (plany SUPER / VIP / GIGA, pierwsze 6 mies. za 0 zł) w jednej umowie i na jednej fakturze.",
-  },
-  {
     icon: Lock,
     q: "Co to jest Bezpieczny Internet Netii?",
     a: "To usługa chroniąca przed wirusami, phishingiem, złośliwym oprogramowaniem i wyciekiem danych.",
-  },
-  {
-    icon: Baby,
-    q: "Czy Bezpieczny Internet obejmuje kontrolę rodzicielską?",
-    a: "Uzupełnij odpowiedź przed publikacją.",
   },
 ];
 

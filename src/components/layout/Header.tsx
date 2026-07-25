@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   Sparkles,
+  Tag,
   Newspaper,
   type LucideIcon,
 } from "lucide-react";
@@ -66,21 +67,27 @@ const NAV: NavItem[] = [
       columns: [
         {
           heading: "Wyróżnione",
-          items: [
-            {
-              title: "Oferta Max",
-              desc: "Rok za 0 zł — Internet 1000/2000 + TV 4K.",
-              icon: Sparkles,
-              badge: "NOWOŚĆ",
-              accent: true,
-              href: "/oferty/max",
-            },
-            {
-              title: "Często Wybierane Oferty",
-              desc: "6 miesięcy za 0 zł, router i dekoder w cenie.",
-              icon: Wifi,
-              href: "/oferty/popularne",
-            },
+         items: [
+ {
+  title: "12 Miesięcy za 0 zł",
+  desc: "Internet do 1000/2000 Mb/s + TV 4K — cała rodzina online bez kompromisów.",
+  icon: Sparkles,
+  badge: "NOWOŚĆ",
+  accent: true,
+  href: "/oferty/max",
+},
+{
+  title: "6 Miesięcy za 0 zł",
+  desc: "Internet + router i dekoder w cenie — szybki start bez dopłat do sprzętu.",
+  icon: Wifi,
+  href: "/oferty/popularne",
+},
+{
+  title: "Najlepsza Cena",
+  desc: "Internet i TV bez zbędnych dodatków — płacisz tylko za to, czego potrzebujesz.",
+  icon: Tag,
+  href: "/oferty/NajlepszaCena",
+},
           ],
         },
       ],
@@ -95,8 +102,10 @@ const NAV: NavItem[] = [
         {
           heading: "Wybierz długość umowy",
           items: [
-            { title: "24 Miesiące", desc: "Najniższa cena miesięczna.", icon: Wifi, href: "/konfigurator?umowa=24" },
-            { title: "Bez Zobowiązań", desc: "Pełna elastyczność, rezygnacja kiedy chcesz.", icon: Wifi, href: "/konfigurator?umowa=bez" },
+{ title: "Szybki Internet", desc: "Streaming, praca, gaming – bez lagów. Od 29,99 zł/mies.", icon: Wifi, href: "/konfigurator/Internet" },
+{ title: "Internet + TV – Duet", desc: "Wszystko w jednej fakturze. Zaoszczędź nawet 240 zł rocznie.", icon: Tv, href: "/konfigurator/InternetOrazTelewizja" },
+            { title: "Stwórz Własną Oferte", desc: "Najniższa cena miesięczna.", icon: Wifi, href: "/konfigurator?umowa=24" },
+
           ],
         },
       ],

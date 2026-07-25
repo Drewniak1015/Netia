@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useState, type ReactNode } from "react";
 import {
   LazyMotion,
   domAnimation,
@@ -13,9 +13,7 @@ import {
   Check,
   MessageCircle,
   Phone,
-  Router,
   Wifi,
-  PlayCircle,
   Info,
   X,
   ChevronRight,
@@ -30,12 +28,16 @@ import {
   CreditCard,
   ThumbsUp,
   Table2,
+  Flame,
+  Shield,
 } from "lucide-react";
 
 /* ---------------------------------------------------------------------- */
 /*  Popupy "Szczegóły" — routery, dekoder, Netia GO, Giganagrywarka       */
-/*  Klikalna jest KAŻDA pozycja w liście cech karty ofertowej, która ma   */
-/*  przypisany `infoId` wskazujący na wpis w INFO_ITEMS poniżej.          */
+/*  Klikalna jest KAŻDA pozycja w liście cech karty ofertowej (Podstawa   */
+/*  i MAX), która ma przypisany `infoId` wskazujący na wpis w INFO_ITEMS. */
+/*  Bez zmian względem oryginału — ten sam system obsługuje teraz obie    */
+/*  siatki kart.                                                          */
 /* ---------------------------------------------------------------------- */
 type SectionContent =
   | { type: "paragraphs"; items: string[] }
@@ -55,11 +57,8 @@ interface InfoItem {
   id: string;
   model: string;
   podtytul?: string;
-  // TODO: jeśli plik leży w innym miejscu niż /public, popraw ścieżkę.
   zdjecie?: string;
-  /** Duży, wyróżniony napis-baner — używany zwłaszcza tam, gdzie brak zdjęcia */
   banner?: string;
-  /** Kolorystyka poświaty/ramki banera i akcentu ikon — domyślnie teal */
   bannerAkcent?: "red" | "lime";
   sections: InfoSection[];
   uwaga?: string;
@@ -194,8 +193,7 @@ const INFO_ITEMS: Record<string, InfoItem> = {
         },
       },
     ],
-    instrukcjaUrl:
-      "/pdf/Instrukcja_Router_ONTCombo_HuaweiHG8145B7N-_2-5G_WiFi7.pdf",
+    instrukcjaUrl: "/pdf/Instrukcja_Router_ONTCombo_HuaweiHG8145B7N-_2-5G_WiFi7.pdf",
   },
 
   "dekoder-evobox": {
@@ -243,8 +241,7 @@ const INFO_ITEMS: Record<string, InfoItem> = {
         },
       },
     ],
-    instrukcjaUrl:
-      "/pdf/Instrukcja_uzytkownika_netia_dekodera_evobox_4K.pdf",
+    instrukcjaUrl: "/pdf/Instrukcja_uzytkownika_netia_dekodera_evobox_4K.pdf",
   },
 
   "netia-go": {
@@ -418,6 +415,26 @@ const INFO_ITEMS: Record<string, InfoItem> = {
   },
 };
 
+/* ---------------------------------------------------------------------- */
+/*  Dane ofert — Podstawa i MAX.                                          */
+/*                                                                         */
+/*  UWAGA (poprawka spójności umowy — 20.07.2026):                       */
+/*  Obie zakładki (Podstawa i MAX) opierają się na TEJ SAMEJ umowie na    */
+/*  24 pełne okresy rozliczeniowe (patrz disclaimer w SzczegolyOferty).   */
+/*  Mechanika promocji dla obu musi więc być identyczna:                  */
+/*    12 miesięcy 0 zł  +  12 miesięcy płatne  =  24 miesiące łącznie.    */
+/*  Wcześniej karty Podstawa mówiły o "6 miesiącach za 0 zł", co stało    */
+/*  w sprzeczności z 24-miesięcznym disclaimerem i z kartami MAX (które   */
+/*  poprawnie liczyły to jako "rok 0 zł, potem płatne do 24. miesiąca").  */
+/*  Ujednolicono na 12 mies. we wszystkich kartach.                       */
+/*                                                                         */
+/*  UWAGA (poprawka copy — 22.07.2026):                                   */
+/*  `regularPriceNote` przebudowane z formy "Czyli: pierwszy rok 0 zł,    */
+/*  potem X/mies. (do 24. miesiąca)." na precyzyjny zakres miesięcy:      */
+/*  "Od 13. do 24. miesiąca: X/mies." — zgodne z wytycznymi (dokładny     */
+/*  zakres, nie sama końcowa granica) i bez "Czyli", które brzmiało jak   */
+/*  tłumaczenie się.                                                      */
+/* ---------------------------------------------------------------------- */
 type Feature = {
   label: string;
   /** Klucz w INFO_ITEMS — jeśli podany, pozycja jest klikalna i otwiera popup */
@@ -428,7 +445,6 @@ type Offer = {
   speed: string;
   pkg: string;
   price: string;
-  priceNote: string;
   features: Feature[];
   featured?: boolean;
 };
@@ -438,7 +454,6 @@ const offers: Offer[] = [
     speed: "1000 Mb/s",
     pkg: "TV S",
     price: "70 zł",
-    priceNote: "Przez 24 miesiące z rabatami",
     features: [
       { label: "Router z Wi-Fi 6 w cenie", infoId: "router-wifi6" },
       { label: "Dekoder 4K w cenie", infoId: "dekoder-evobox" },
@@ -449,7 +464,6 @@ const offers: Offer[] = [
     speed: "1000 Mb/s",
     pkg: "TV M",
     price: "80 zł",
-    priceNote: "Przez 24 miesiące z rabatami",
     featured: true,
     features: [
       { label: "Router z Wi-Fi 6 w cenie", infoId: "router-wifi6" },
@@ -462,7 +476,6 @@ const offers: Offer[] = [
     speed: "2000 Mb/s",
     pkg: "TV L",
     price: "125 zł",
-    priceNote: "Przez 24 miesiące z rabatami",
     features: [
       { label: "Router Combo z ONT Wi-Fi 7", infoId: "router-wifi7" },
       { label: "Dekoder 4K w cenie", infoId: "dekoder-evobox" },
@@ -472,51 +485,75 @@ const offers: Offer[] = [
   },
 ];
 
-const PHONE = "+48 883 334 124";
+type MaxOffer = {
+  name: string;
+  speed: string;
+  price: string;
+  monthsPill: string;
+  featured?: boolean;
+  features: Feature[];
+};
 
-// Mini-benefity prezentowane pod siatką ofert — krótkie, "miękkie" hasła
-// wspierające decyzję zakupową bez powtarzania szczegółów z kart ofertowych.
-const miniBenefits = [
-  { icon: Router, label: "Instalacja nawet następnego dnia" },
-  { icon: Wifi, label: "WiFi 7 – zasięg na cały dom" },
-  { icon: PlayCircle, label: "6 miesięcy platform VOD za 0 zł" },
+const maxOffers: MaxOffer[] = [
+  {
+    name: "MAX 1000",
+    speed: "1000 Mb/s",
+    price: "140 zł/mies.",
+    monthsPill: "Abonament 12 miesięcy za 0 zł po rabatach",
+    features: [
+      { label: "Telewizja L 4K z Dekoderem"},
+      { label: "Bezpieczny Internet Ultra" },
+    ],
+  },
+  {
+    name: "MAX 2000",
+    speed: "2000 Mb/s",
+    price: "160 zł/mies.",
+    monthsPill: "Abonament 12 miesięcy za 0 zł po rabatach",
+    featured: true,
+    features: [
+      { label: "Telewizja L 4K z Dekoderem"},
+      { label: "Bezpieczny Internet Ultra" },
+    ],
+  },
 ];
 
-// Variants defined once at module scope so they aren't re-created every render.
-// Only `opacity` and `transform` (y) are animated — both run on the GPU
-// compositor and never trigger layout/paint, keeping scroll-linked
-// animation cheap even on low-end devices.
+const PHONE = "+48 883 334 124";
+
+// Custom cubic-bezier (easeOutExpo-ish) zamiast wbudowanego "easeOut" —
+// wolniejszy, bardziej "ciężki" start i długie, miękkie wyhamowanie na
+// końcu. To ta różnica, która sprawia, że ruch czuje się płynnie zamiast
+// mechanicznie, nawet przy tym samym czasie trwania.
+const SMOOTH_EASE = [0.16, 1, 0.3, 1] as const;
+
 const gridVariants: Variants = {
   hidden: {},
   visible: {
-    transition: { staggerChildren: 0.12, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.09, delayChildren: 0.08 },
   },
 };
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 28 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: SMOOTH_EASE } },
 };
 
-const footerVariants: Variants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
-};
-
-// Basic fade+slide-up animation for the section header (badge, h2, subtext).
-// Uses staggerChildren so the three pieces animate in sequence rather than
-// all at once — a simple, common "basic" entrance pattern.
 const headerGroupVariants: Variants = {
   hidden: {},
   visible: {
-    transition: { staggerChildren: 0.1, delayChildren: 0.05 },
+    transition: { staggerChildren: 0.09, delayChildren: 0.05 },
   },
 };
 
 const headerItemVariants: Variants = {
   hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: SMOOTH_EASE } },
 };
+
+// Spring współdzielony przez hover kart i przyciski CTA — daje lekki,
+// "żywy" odbicie zamiast płaskiego duration-based tweena.
+const HOVER_SPRING = { type: "spring", stiffness: 350, damping: 22, mass: 0.6 } as const;
+const TAP_SPRING = { type: "spring", stiffness: 500, damping: 25, mass: 0.5 } as const;
 
 /* ---------------------------------------------------------------------- */
 /*  Zdjęcie produktu na białym tle (routery) — pomijane, gdy brak `zdjecie` */
@@ -532,11 +569,6 @@ function IkonaProduktu({ zdjecie, model }: { zdjecie: string; model: string }) {
   );
 }
 
-/* ---------------------------------------------------------------------- */
-/*  Kolorystyka banera-hasła (Netia GO / Giganagrywarka) — spójna z        */
-/*  PopularneOferty.tsx: przekątny linear-gradient jasny → ciemny, żeby    */
-/*  kolory były identyczne w całym serwisie.                               */
-/* ---------------------------------------------------------------------- */
 const BANNER_AKCENTY: Record<
   "teal" | "red" | "lime",
   { border: string; background: string; text: string; soft: string }
@@ -548,14 +580,12 @@ const BANNER_AKCENTY: Record<
     text: "text-teal-300",
     soft: "bg-teal-300/15",
   },
-  // Różowy/magenta — spójny z PopularneOferty.tsx.
   red: {
     border: "border-[#e0399e]/40",
     background: "linear-gradient(135deg, #d6409f 0%, #8a2570 55%, #4a1240 100%)",
     text: "text-[#f472b6]",
     soft: "bg-[#e0399e]/15",
   },
-  // Limonkowy — spójny z PopularneOferty.tsx.
   lime: {
     border: "border-[#a3d146]/40",
     background: "linear-gradient(135deg, #8bc34a 0%, #5c9c2e 55%, #33540f 100%)",
@@ -564,9 +594,6 @@ const BANNER_AKCENTY: Record<
   },
 };
 
-/* ---------------------------------------------------------------------- */
-/*  Renderer treści sekcji — jedna funkcja obsługująca wszystkie typy      */
-/* ---------------------------------------------------------------------- */
 function TrescSekcji({
   content,
   akcent,
@@ -663,11 +690,6 @@ function TrescSekcji({
   }
 }
 
-/* ---------------------------------------------------------------------- */
-/*  Modal — "Szczegóły" (router / dekoder / Netia GO / Giganagrywarka)     */
-/*  Ten sam układ co w konfiguratorze: nagłówek zawsze na górze, środek    */
-/*  jako jedyny scrollowalny fragment, przycisk zamknięcia zawsze na dole. */
-/* ---------------------------------------------------------------------- */
 function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => void }) {
   const reduceMotion = useReducedMotion();
   const item = infoId ? INFO_ITEMS[infoId] : null;
@@ -719,7 +741,6 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
 
               return (
                 <>
-                  {/* Nagłówek — zawsze widoczny, kolor zależny od typu popupu */}
                   <div className="shrink-0 border-b border-white/10 px-6 pb-4 pt-6 sm:px-8 sm:pt-8">
                     <div className={`flex items-center gap-2 ${akcent.text}`}>
                       <Info size={18} />
@@ -729,7 +750,6 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
                     {item.podtytul && <p className="mt-1 text-sm text-white/60">{item.podtytul}</p>}
                   </div>
 
-                  {/* Środkowa część — jedyny scrollowalny fragment okna */}
                   <div className="flex-1 overflow-y-auto px-6 py-5 sm:px-8">
                     {item.zdjecie && <IkonaProduktu zdjecie={item.zdjecie} model={item.model} />}
 
@@ -803,7 +823,6 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
               );
             })()}
 
-            {/* Stopka — zawsze na dole, jedyny przycisk zamknięcia */}
             <div className="shrink-0 border-t border-white/10 px-6 py-4 sm:px-8">
               <button
                 type="button"
@@ -821,11 +840,101 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
   );
 }
 
-// Memoized so a re-render of the parent (e.g. from unrelated state elsewhere
-// on the page) doesn't re-render every card — each only re-renders if its
-// own `offer` prop reference changes, and `offers` is a static module-level
-// array, so in practice these mount once. `onPokazInfo` is a useState setter
-// (stable reference across renders), so passing it doesn't break this either.
+/* ---------------------------------------------------------------------- */
+/*  PromoCena — wspólny blok ceny dla obu typów kart, ale z DWOMA trybami: */
+/*                                                                         */
+/*  leadWithZero=true  (MAX)      → duże "0 zł" + przekreślona cena       */
+/*                                   regularna. To jedyne miejsce, gdzie   */
+/*                                   "0 zł" jest headline'em — bo to       */
+/*                                   jedyny prawdziwie unikalny hak MAX.   */
+/*  leadWithZero=false (Podstawa) → duża REALNA cena jako headline,       */
+/*                                   promo "pierwsze 12 mies. za 0 zł" jako*/
+/*                                   mniejsza, drugorzędna adnotacja.      */
+/*                                                                         */
+/*  Bez tego rozróżnienia obie zakładki pokazywały to samo "0 zł" na      */
+/*  pierwszym miejscu, co zaprzeczało nagłówkowi sekcji ("70 zł czy 0 zł?")*/
+/*  i rozmywało jedyny realny kontrast między Podstawą a MAX.              */
+/*                                                                         */
+/*  Mechanika promo (0 zł → cena regularna) jest teraz IDENTYCZNA w obu   */
+/*  trybach: 12 miesięcy 0 zł + 12 miesięcy płatne = 24 mies. umowy.       */
+/* ---------------------------------------------------------------------- */
+function PromoCena({
+  promoLabel,
+  regularPrice,
+  regularPriceNote,
+  accent,
+  leadWithZero,
+}: {
+  /** Pełny, zgodny z wytycznymi tekst, np. "Abonament 12 miesięcy za 0 zł po rabatach" */
+  promoLabel: string;
+  /** Realna cena (po okresie promo, albo — gdy leadWithZero=false — to ona jest headline'em) */
+  regularPrice: string;
+  /** Okres/warunek obowiązywania regularPrice */
+  regularPriceNote: string;
+  accent: "orange" | "pink";
+  leadWithZero: boolean;
+}) {
+  const labelColor = accent === "pink" ? "text-pink-300" : "text-orange-300";
+
+  if (leadWithZero) {
+    return (
+      <div className="mt-4 pb-4 border-b border-white/10">
+        <div className="flex items-baseline gap-2.5">
+          <span className="text-4xl font-black leading-none text-white">0 zł</span>
+          <span className="text-base font-semibold text-white/35 line-through">{regularPrice}</span>
+        </div>
+        <p className={`mt-1.5 text-sm font-semibold ${labelColor}`}>{promoLabel}</p>
+        <p className="mt-0.5 text-xs text-white/40">{regularPriceNote}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 pb-4 border-b border-white/10">
+      <div className="flex items-baseline gap-2">
+        <span className="text-4xl font-black leading-none text-white">{regularPrice}</span>
+        <span className="text-sm font-medium text-slate-400">/ mies.</span>
+      </div>
+      <p className={`mt-1.5 text-sm font-semibold ${labelColor}`}>{promoLabel}</p>
+      <p className="mt-0.5 text-xs text-white/40">{regularPriceNote}</p>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------------- */
+/*  SzczegolyOferty — domyślnie zwinięty accordion na długi disclaimer     */
+/*  prawny. Ściana szarego tekstu na dole sekcji cenowej psuła przepływ    */
+/*  wzrokowy; treść nadal musi być dostępna (wymogi prawne), ale nie musi  */
+/*  być widoczna cały czas — użytkownik rozwija ją świadomym kliknięciem.  */
+/* ---------------------------------------------------------------------- */
+function SzczegolyOferty({ children }: { children: ReactNode }) {
+  const [otwarte, setOtwarte] = useState(false);
+
+  return (
+    <div className="mt-10 pt-6 border-t border-white/10 max-w-4xl mx-auto text-center">
+      <button
+        type="button"
+        onClick={() => setOtwarte((o) => !o)}
+        aria-expanded={otwarte}
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/50 transition-colors hover:text-white/75"
+      >
+        {otwarte ? "Ukryj szczegóły oferty" : "Zobacz szczegóły oferty"}
+        <ChevronRight
+          size={13}
+          className={`transition-transform duration-200 ${otwarte ? "rotate-90" : "rotate-0"}`}
+        />
+      </button>
+
+      {otwarte && (
+        <p className="mt-4 text-[11px] leading-relaxed text-slate-500">{children}</p>
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------------- */
+/*  Karta Podstawa.                                                        */
+/* ---------------------------------------------------------------------- */
 const OfferCard = memo(function OfferCard({
   offer,
   reduceMotion,
@@ -838,8 +947,8 @@ const OfferCard = memo(function OfferCard({
   return (
     <m.article
       variants={cardVariants}
-      whileHover={reduceMotion ? undefined : { y: -4 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
+      whileHover={reduceMotion ? undefined : { y: -6 }}
+      transition={HOVER_SPRING}
       className={`relative flex flex-col rounded-2xl border p-6 will-change-transform ${
         offer.featured
           ? "border-teal-400/50 bg-[#0f2436] shadow-[0_0_24px_-8px_rgba(45,212,191,0.25)]"
@@ -847,7 +956,7 @@ const OfferCard = memo(function OfferCard({
       }`}
     >
       {offer.featured && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-teal-400 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#0a1a2b] text-center">
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-teal-400 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#0a1a2b] text-center">
           Najczęściej wybierana
         </span>
       )}
@@ -857,17 +966,16 @@ const OfferCard = memo(function OfferCard({
         {offer.speed} <span className="text-lg font-bold text-slate-300">+ {offer.pkg}</span>
       </p>
 
-      <div className="mt-4 pb-4 border-b border-white/10">
-        <p className="text-xs font-semibold uppercase tracking-wider text-orange-400">
-          Abonament
-        </p>
-        <p className="text-lg font-extrabold text-orange-300 leading-tight">
-          6 miesięcy za 0 zł
-        </p>
-        <p className="text-[11px] text-slate-500">+ po rabatach</p>
-      </div>
+      <PromoCena
+        promoLabel="Abonament 12 miesięcy za 0 zł po rabatach"
+        regularPrice={offer.price}
+        regularPriceNote={`Od 13. do 24. miesiąca: ${offer.price}/mies.`}
+        accent="orange"
+        leadWithZero={false}
+      />
 
-      <ul className="mt-4 space-y-3 flex-1">
+      <div className="mt-4 flex flex-1 flex-col justify-center">
+      <ul className="space-y-3">
         {offer.features.map((f) => (
           <li key={f.label} className="flex items-center gap-2.5 text-sm text-slate-200">
             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-400/15">
@@ -888,30 +996,134 @@ const OfferCard = memo(function OfferCard({
           </li>
         ))}
       </ul>
-
-      <div className="mt-6 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-center">
-        <p className="text-3xl font-extrabold text-white">
-          {offer.price} <span className="text-sm font-medium text-slate-400">/ VAT</span>
-        </p>
-        <p className="text-xs text-slate-500 mt-0.5">{offer.priceNote}</p>
       </div>
 
       <m.a
         href={`tel:${PHONE.replace(/\s/g, "")}`}
-        whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-        whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-        transition={{ duration: 0.15 }}
-        className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-teal-600"
+        whileHover={reduceMotion ? undefined : { scale: 1.03 }}
+        whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+        transition={TAP_SPRING}
+        className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-teal-600"
       >
-         <Phone className="h-4 w-4" />
-         ZADZWOŃ {PHONE}
+        <Phone className="h-4 w-4" />
+        ZADZWOŃ {PHONE}
       </m.a>
 
       <m.a
         href={`sms:${PHONE.replace(/\s/g, "")}?body=INTERNET`}
-        whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-        whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-        transition={{ duration: 0.15 }}
+        whileHover={reduceMotion ? undefined : { scale: 1.03 }}
+        whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+        transition={TAP_SPRING}
+        className="mt-2.5 flex items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-black/20"
+      >
+        <MessageCircle className="h-4 w-4" />
+        WYŚLIJ SMS
+      </m.a>
+    </m.article>
+  );
+});
+
+/* ---------------------------------------------------------------------- */
+/*  Karta MAX — przeniesiona 1:1 ze stylu PackageCard w OfferMaxSection.tsx*/
+/*  (różowy akcent, monthsPill, "od 13 mies."), tylko dołożone wsparcie   */
+/*  dla klikalnych `infoId` (spójne z kartami Podstawa) i dopasowana do   */
+/*  siatki tej sekcji zamiast własnego dużego bloku hero.                 */
+/*                                                                         */
+/*  FIX (czytelność): nazwa pakietu (MAX 1000 / MAX 2000) powiększona z    */
+/*  text-xl na text-3xl/4xl + font-black, spójnie z OfferMaxSection.tsx.  */
+/* ---------------------------------------------------------------------- */
+const MaxOfferCard = memo(function MaxOfferCard({
+  offer,
+  reduceMotion,
+  onPokazInfo,
+}: {
+  offer: MaxOffer;
+  reduceMotion: boolean;
+  onPokazInfo: (infoId: string) => void;
+}) {
+  return (
+    <m.article
+      variants={cardVariants}
+      whileHover={reduceMotion ? undefined : { y: -6 }}
+      transition={HOVER_SPRING}
+      className={`relative flex flex-col rounded-2xl p-6 bg-[#183648] ${
+        offer.featured
+          ? "border-2 border-pink-400/70 shadow-[0_0_0_1px_rgba(244,114,182,0.15),0_20px_45px_-20px_rgba(236,72,153,0.45)]"
+          : "border border-white/10"
+      }`}
+    >
+      {offer.featured && (
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gradient-to-r from-pink-500 to-pink-400 px-3.5 py-1 text-[11px] font-bold uppercase tracking-wide text-[#0B2A3D] shadow-sm">
+          Najczęściej wybierany
+        </span>
+      )}
+
+      <span className="block text-2xl font-black tracking-tight text-pink-400 sm:text-3xl">
+        {offer.name}
+      </span>
+
+      <PromoCena
+        promoLabel={offer.monthsPill}
+        regularPrice={offer.price}
+        regularPriceNote={`Od 13. do 24. miesiąca: ${offer.price}`}
+        accent="pink"
+        leadWithZero={true}
+      />
+
+      <div className="mt-4 flex flex-1 flex-col justify-center">
+      <ul className="space-y-3">
+        <li className="flex items-center gap-2.5 text-sm text-white">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pink-400/10 text-pink-400">
+            <Check size={12} strokeWidth={3} />
+          </span>
+          Internet do <b className="font-bold">{offer.speed}</b>
+        </li>
+        {offer.features.map((f) => (
+          <li key={f.label} className="flex items-start gap-2.5 text-sm text-white">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pink-400/10 text-pink-400">
+              <Check size={12} strokeWidth={3} />
+            </span>
+            {f.infoId ? (
+              <button
+                type="button"
+                onClick={() => onPokazInfo(f.infoId!)}
+                className="inline-flex items-center gap-1 cursor-pointer text-left underline decoration-dotted decoration-pink-300/40 underline-offset-4 transition-colors hover:text-pink-300"
+              >
+                {f.label}
+                <Info size={12} className="shrink-0 opacity-60" />
+              </button>
+            ) : f.label === "Bezpieczny Internet Ultra" ? (
+              <span>
+                {f.label}
+                <span className="mt-0.5 flex items-center gap-1 text-[11px] text-white/55">
+                  <Shield size={11} className="text-pink-300" />
+                  Ochrona 5 urządzeń + CyberEkspert
+                </span>
+              </span>
+            ) : (
+              <span>{f.label}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+      </div>
+
+      <m.a
+        href={`tel:${PHONE.replace(/\s/g, "")}`}
+        whileHover={reduceMotion ? undefined : { scale: 1.03 }}
+        whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+        transition={TAP_SPRING}
+        className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-pink-500 px-4 py-3 text-sm font-bold text-white shadow-[0_8px_20px_-8px_rgba(236,72,153,0.6)]"
+      >
+        <Phone className="h-4 w-4" />
+        ZADZWOŃ {PHONE}
+      </m.a>
+
+      <m.a
+        href={`sms:${PHONE.replace(/\s/g, "")}?body=MAX`}
+        whileHover={reduceMotion ? undefined : { scale: 1.03 }}
+        whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+        transition={TAP_SPRING}
         className="mt-2.5 flex items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-black/20"
       >
         <MessageCircle className="h-4 w-4" />
@@ -923,36 +1135,32 @@ const OfferCard = memo(function OfferCard({
 
 interface OfertyProps {
   /** Miejscownik miasta, np. "Kielcach" — jeśli podany, tytuł zmienia się na
-   *  "Specjalna oferta w {mieście}" zamiast domyślnego "Popularne oferty".
+   *  "Specjalna oferta w {mieście}" zamiast domyślnego "Wybierz swój internet".
    *  Używane na stronach /internet-miasta/[slug]. */
   cityLocative?: string;
+  /** Który tryb pokazać domyślnie. MAX jest domyślny, bo to widok bez
+   *  interakcji dostaje najwięcej ekspozycji — zmień per-strona jeśli
+   *  MAX nie jest tam dostępny/promowany. */
+  defaultOferta?: "podstawa" | "max";
 }
 
-export default function Oferty({ cityLocative }: OfertyProps = {}) {
-  // Respects the OS-level "reduce motion" preference — when set, we skip
-  // hover/tap transforms and let entrance animations fall back to a plain
-  // opacity fade (still declared via variants, just near-instant).
+export default function Oferty({ cityLocative, defaultOferta = "max" }: OfertyProps = {}) {
   const reduceMotion = useReducedMotion();
-
-  // Który popup ze szczegółami pokazać (klucz z INFO_ITEMS, lub null = zamknięty)
   const [aktywnyInfoId, setAktywnyInfoId] = useState<string | null>(null);
+  const [tryb, setTryb] = useState<"podstawa" | "max">(defaultOferta);
 
   return (
-    // LazyMotion + the `m` component (instead of `motion`) trims framer-motion's
-    // client bundle down to ~6kb by loading only the "domAnimation" feature
-    // set (transform/opacity/gestures) instead of the full animation engine.
     <LazyMotion features={domAnimation} strict>
       <section
-        className="relative w-full py-16 px-8 overflow-hidden"
+        className="relative w-full py-8 px-8 overflow-hidden"
         style={{ backgroundColor: "#0B2A3D" }}
-      > 
-        {/* ambient background lines, consistent with hero */}
+      >
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-40"
           style={{
             background:
-              "radial-gradient(600px circle at 15% 10%, rgba(45,212,191,0.08), transparent 60%), radial-gradient(500px circle at 85% 90%, rgba(45,212,191,0.06), transparent 60%)",
+              "radial-gradient(600px circle at 15% 10%, rgba(45,212,191,0.08), transparent 60%), radial-gradient(500px circle at 85% 90%, rgba(45,212,191,0.06), transparent 60%), radial-gradient(500px circle at 85% 10%, rgba(236,72,153,0.05), transparent 60%)",
           }}
         />
 
@@ -962,100 +1170,173 @@ export default function Oferty({ cityLocative }: OfertyProps = {}) {
             whileInView="visible"
             viewport={{ once: true, margin: "-80px" }}
             variants={headerGroupVariants}
-            className="text-center mb-12"
+            className="text-center mb-10"
           >
-            <m.span
+            <m.div
               variants={headerItemVariants}
-              className="inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wide text-teal-300"
+              className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-white/70"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
-              ŚWIATŁOWÓD NETII OPARTY O SIEĆ ORANGE
-            </m.span>
+              <Shield size={13} className="text-teal-300" />
+              14 dni na rezygnację, zero pytań
+            </m.div>
             <m.h2
               variants={headerItemVariants}
-              className="mt-6 text-4xl md:text-5xl font-extrabold text-white"
+              className="text-4xl md:text-5xl font-extrabold text-white"
             >
               {cityLocative ? (
                 <>
-                  Specjalna oferta w <span className="text-teal-400">{cityLocative}</span>
+                  Internet w <span className="text-teal-400">{cityLocative}</span>, który nie
+                  zawodzi. Dwa plany,<br /> jedna decyzja.
                 </>
               ) : (
                 <>
-                  Popularne <span className="text-teal-400">oferty</span>
+                  Dwa plany, jedna decyzja:{" "} <br />
+                  <span className="text-teal-400">70 zł</span> albo{" "}
+                  <span className="text-pink-400">0 zł</span>.
                 </>
               )}
             </m.h2>
-            <m.p
-              variants={headerItemVariants}
-              className="mt-3 text-slate-400 text-base"
-            >
-              Jedna stała opłata przez cały okres umowy — bez ukrytych kosztów.
+            <m.p variants={headerItemVariants} className="mt-3 text-slate-400 text-base">
+              <span className="font-semibold text-white/80">Podstawa</span> — szybki, stabilny
+              internet od 70 zł/mies.
+              <br />
+              <span className="font-semibold text-white/80">MAX</span> — internet + telewizja L
+              4K + pełna ochrona. Abonament 12 miesięcy za 0 zł po rabatach.
             </m.p>
-          </m.div>
 
-          <m.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            variants={gridVariants}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch"
-          >
-            {offers.map((offer) => (
-              <OfferCard
-                key={`${offer.speed}-${offer.pkg}`}
-                offer={offer}
-                reduceMotion={!!reduceMotion}
-                onPokazInfo={setAktywnyInfoId}
+            {/* Segmented control — jedna decyzja na ekranie zamiast dwóch
+                osobnych sekcji ze scrollem. */}
+            <m.div
+              variants={headerItemVariants}
+              role="tablist"
+              aria-label="Wybór trybu oferty"
+              className="relative mt-6 inline-flex rounded-full border border-white/10 bg-white/5 p-1"
+            >
+              <m.span
+                aria-hidden="true"
+                animate={{
+                  x: tryb === "max" ? "calc(100% + 8px)" : 0,
+                }}
+                transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 30 }}
+                className={`absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full ${
+                  tryb === "max"
+                    ? "bg-gradient-to-r from-pink-500 to-pink-400"
+                    : "bg-gradient-to-r from-teal-500 to-teal-400"
+                }`}
               />
-            ))}
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tryb === "podstawa"}
+                onClick={() => setTryb("podstawa")}
+                className={`relative z-10 flex-1 rounded-full px-6 py-2.5 text-center text-sm font-bold transition-colors ${
+                  tryb === "podstawa" ? "text-[#0B2A3D]" : "text-white/70 hover:text-white"
+                }`}
+              >
+                Podstawa
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tryb === "max"}
+                onClick={() => setTryb("max")}
+                className={`relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-full px-6 py-2.5 text-sm font-bold transition-colors ${
+                  tryb === "max" ? "text-white" : "text-white/70 hover:text-white"
+                }`}
+              >
+                <Flame size={14} className={tryb === "max" ? "fill-current" : ""} />
+                MAX
+              </button>
+            </m.div>
+
           </m.div>
 
-          <m.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-40px" }}
-            variants={footerVariants}
-            className="mt-10 flex flex-col items-center justify-center gap-4 text-sm text-slate-300 sm:flex-row sm:flex-wrap sm:gap-x-8 sm:gap-y-3"
-          >
-            {miniBenefits.map(({ icon: Icon, label }, i) => (
-              <span key={label} className="flex items-center gap-2.5">
-                {i > 0 && (
-                  <span className="hidden h-4 w-px bg-white/10 sm:block sm:-ml-4 sm:mr-4" aria-hidden />
-                )}
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-400/10">
-                  <Icon className="h-4 w-4 text-teal-400" />
-                </span>
-                {label}
-              </span>
-            ))}
-          </m.div>
+          <AnimatePresence mode="wait">
+            {tryb === "podstawa" ? (
+              <m.div
+                key="podstawa"
+                initial={reduceMotion ? false : { opacity: 0, y: 10, scale: 0.99 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.99 }}
+                transition={{ duration: 0.35, ease: SMOOTH_EASE }}
+              >
+                <m.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={gridVariants}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch"
+                >
+                  {offers.map((offer) => (
+                    <OfferCard
+                      key={`${offer.speed}-${offer.pkg}`}
+                      offer={offer}
+                      reduceMotion={!!reduceMotion}
+                      onPokazInfo={setAktywnyInfoId}
+                    />
+                  ))}
+                </m.div>
 
-          <m.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-40px" }}
-            variants={footerVariants}
-            className="mt-10 pt-6 border-t border-white/10"
-          >
-            <p className="text-[11px] leading-relaxed text-slate-500 text-center max-w-4xl mx-auto">
-              Prezentowana oferta dotyczy mieszkań. W przypadku budynków jednorodzinnych obowiązuje inna oferta.
-              Prezentowana oferta Netii S.A.: „Wybierz szybszy Internet 6mies. 1/2Gb/s (PON, HFC, ETTH)” obowiązuje
-              przy zawarciu Umowy na czas określony 24 pełnych Okresów Rozliczeniowych przy jednoczesnym korzystaniu
-              z rabatów za e-fakturę (5 zł) i zgody marketingowe (5 zł). W przypadku rezygnacji lub niespełnienia
-              warunków przyznania rabatów, cena wzrośnie o 10 zł. Wraz z pierwszą fakturą zostanie naliczona opłata
-              aktywacyjna w wysokości 79 zł za Internet i 2 zł za Telewizję. Po 24 miesiącach cena abonamentu
-              wzrasta o 10 zł. „Szybki Internet Max (1000, 2000)” stanowi wyłącznie nazwę marketingową. Usługa
-              Internetowa oparta jest na parametrach jakości wynikających z maksymalnych parametrów technicznych
-              danej technologii, w jakiej świadczona jest Usługa Internetowa lub wynikających z ofertowych ustawień
-              technicznych łącza. Prędkość 2 Gb/s jest dostępna na technologii PON. Parametry świadczenia Usługi
-              Internetowej, w szczególności parametry prędkości oraz wpływu innych Usług na Usługę Internetową,
-              dostępne są na stronie netia.pl. Oferta jest ograniczona terytorialnie do zasięgu stacjonarnej sieci
-              PON, HFC, ETTH Operatora.
-            </p>
-          </m.div>
+                <SzczegolyOferty>
+                  Prezentowana oferta dotyczy mieszkań. W przypadku budynków jednorodzinnych obowiązuje inna oferta.
+                  Prezentowana oferta Netii S.A.: „Wybierz szybszy Internet 12 mies. 1/2Gb/s (PON, HFC, ETTH)”
+                  obowiązuje przy zawarciu Umowy na czas określony 24 pełnych Okresów Rozliczeniowych przy
+                  jednoczesnym korzystaniu z rabatów za e-fakturę (5 zł) i zgody marketingowe (5 zł). W przypadku
+                  rezygnacji lub niespełnienia warunków przyznania rabatów, cena wzrośnie o 10 zł. Wraz z pierwszą
+                  fakturą zostanie naliczona opłata aktywacyjna w wysokości 79 zł za Internet i 2 zł za Telewizję.
+                  Po 24 miesiącach cena abonamentu wzrasta o 10 zł. „Szybki Internet Max (1000, 2000)” stanowi
+                  wyłącznie nazwę marketingową. Usługa Internetowa oparta jest na parametrach jakości wynikających
+                  z maksymalnych parametrów technicznych danej technologii, w jakiej świadczona jest Usługa
+                  Internetowa lub wynikających z ofertowych ustawień technicznych łącza. Prędkość 2 Gb/s jest
+                  dostępna na technologii PON. Parametry świadczenia Usługi Internetowej, w szczególności
+                  parametry prędkości oraz wpływu innych Usług na Usługę Internetową, dostępne są na stronie
+                  netia.pl. Oferta jest ograniczona terytorialnie do zasięgu stacjonarnej sieci PON, HFC, ETTH
+                  Operatora.
+                </SzczegolyOferty>
+              </m.div>
+            ) : (
+              <m.div
+                key="max"
+                initial={reduceMotion ? false : { opacity: 0, y: 10, scale: 0.99 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.99 }}
+                transition={{ duration: 0.35, ease: SMOOTH_EASE }}
+              >
+                <m.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={gridVariants}
+                  className="mx-auto grid max-w-3xl grid-cols-1 gap-6 sm:grid-cols-2 items-stretch"
+                >
+                  {maxOffers.map((offer) => (
+                    <MaxOfferCard
+                      key={offer.name}
+                      offer={offer}
+                      reduceMotion={!!reduceMotion}
+                      onPokazInfo={setAktywnyInfoId}
+                    />
+                  ))}
+                </m.div>
+
+
+                <SzczegolyOferty>
+                  Prezentowana oferta Netii S.A.: „Wybierz rabat 12 miesięcy” (PON, HFC, ETTH) obowiązuje przy
+                  zawarciu Umowy na czas określony 24 pełnych Okresów Rozliczeniowych przy jednoczesnym
+                  korzystaniu z rabatów za e-fakturę (5 zł) i zgody marketingowe (5 zł). W przypadku rezygnacji
+                  lub niespełnienia warunków przyznania rabatów, cena wzrośnie o 10 zł. Wraz z pierwszą fakturą
+                  zostanie naliczona opłata aktywacyjna w wysokości 79 zł za Internet i 2 zł za Telewizję. Po 24
+                  miesiącach cena abonamentu wzrasta o 10 zł. „Wybierz rabat 12 miesięcy” stanowi wyłącznie nazwę
+                  marketingową. Usługa Internetowa oparta jest na parametrach jakości wynikających z maksymalnych
+                  parametrów technicznych danej technologii, w jakiej świadczona jest Usługa Internetowa, lub
+                  wynikających z ofertowych ustawień technicznych łącza. Prędkość 2 Gb/s jest dostępna na
+                  technologii PON. Parametry świadczenia Usługi Internetowej, w szczególności parametry prędkości
+                  oraz wpływu innych Usług na Usługę Internetową, dostępne są na stronie netia.pl. Oferta jest
+                  ograniczona terytorialnie do zasięgu stacjonarnej sieci PON, HFC, ETTH Operatora.
+                </SzczegolyOferty>
+              </m.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Popup ze szczegółami — wspólny dla wszystkich klikalnych cech na kartach */}
         <InfoModal infoId={aktywnyInfoId} onClose={() => setAktywnyInfoId(null)} />
       </section>
     </LazyMotion>

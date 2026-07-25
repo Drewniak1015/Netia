@@ -1,18 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { LazyMotion, domAnimation, m, useReducedMotion, AnimatePresence } from "framer-motion";
 import {
   Phone,
   MessageCircle,
   ChevronRight,
-  ChevronDown,
   Plus,
   Check,
   Gauge,
   CreditCard,
   Users,
-  Flame,
+  Tag,
   Info,
   X,
   FileText,
@@ -26,10 +25,8 @@ import {
   Wifi,
   RotateCcw,
   Headset,
-  type LucideIcon,
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
-import { offers, faqs } from "@/components/SpecjalneOferty/popularneData";
 
 /* Wspólny wariant fade-up — zgodnie z Hero.tsx */
 const fadeUp = {
@@ -37,18 +34,115 @@ const fadeUp = {
   visible: { opacity: 1, y: 0 },
 };
 
-/* ======================================================================
-   PASEK ZAUFANIA — ten sam wzorzec co w OfferQuizSection / OfferMaxSection
-   (Gauge / RotateCcw / Headset).
-   ====================================================================== */
-
-interface TrustItem {
-  icon: LucideIcon;
-  title: string;
-  desc: string;
+/* ---------------------------------------------------------------------- */
+/*  DANE OFERT — /NajlepszaCena                                           */
+/*  WYBIERAM 30  →  Internet Max 300 (router + Netia GO w cenie)          */
+/*  WYBIERAM 40  →  Internet Max 300 + TV S (router + dekoder w cenie)    */
+/*                                                                         */
+/*  UWAGA (poprawka copy — 23.07.2026):                                   */
+/*  Dodano `priceNote` — widoczna od razu przy cenie informacja o wzroście */
+/*  abonamentu po 24. miesiącu (obie oferty rosną do 60 zł/mies.).        */
+/*  Wcześniej ta informacja była tylko w długim disclaimerze prawnym na   */
+/*  dole strony. Dodano też `resultLine` — krótki efekt w praktyce pod    */
+/*  listą cech, zamiast samych suchych parametrów technicznych.           */
+/*                                                                         */
+/*  UWAGA (poprawka topografii — 23.07.2026):                             */
+/*  "Internet do 300 Mb/s" przeniesione z osobnej linijki pod nagłówkiem  */
+/*  karty na pierwszą pozycję listy cech (jak w MaxOfferCard w Oferty.tsx: */
+/*  "Internet do <b>{speed}</b>" jako pierwszy punkt z ptaszkiem). Ujedno- */
+/*  licona topografia karty w całym serwisie: nagłówek+cena, potem cała   */
+/*  lista cech zaczynająca się od prędkości internetu.                    */
+/*                                                                         */
+/*  UWAGA (poprawka czytelności — 24.07.2026):                            */
+/*  Prędkość ("300 Mb/s") była widoczna wyłącznie jako pierwsza pozycja   */
+/*  listy cech — łatwo umykała przy skanowaniu karty. Dodano osobną       */
+/*  plakietkę z prędkością w nagłówku karty (obok "WYBIERZ 30/40"), żeby  */
+/*  była widoczna od razu, poza listą benefitów.                         */
+/* ---------------------------------------------------------------------- */
+interface OfferFeature {
+  label: string;
+  infoId?: string;
 }
 
-const TRUST_ITEMS: TrustItem[] = [
+interface Offer {
+  id: string;
+  eyebrow: string;
+  speed: string;
+  highlighted?: boolean;
+  badgeLabel: string;
+  promoEyebrow?: string;
+  promoHeadline?: string;
+  promoNote?: string;
+  features: OfferFeature[];
+  price: string;
+  priceUnit: string;
+  priceNote: string;
+  resultLine: string;
+}
+
+const offers: Offer[] = [
+  {
+    id: "super-30",
+    eyebrow: "Internet + TV XS",
+    speed: "300 Mb/s",
+    badgeLabel: "WYBIERZ 30",
+    features: [
+      { label: "Router w cenie abonamentu", infoId: "router-wifi" },
+      { label: "Aplikacja Netia GO w cenie", infoId: "netia-go" },
+    ],
+    price: "30 zł",
+    priceUnit: "/mies.",
+    priceNote: "Od 25. miesiąca: 60 zł/mies.",
+    resultLine: "Wystarczy do codziennej pracy, przeglądania i streamingu — bez dopłat za sprzęt.",
+  },
+  {
+    id: "super-40",
+    eyebrow: "Internet + TV S",
+    speed: "300 Mb/s",
+    highlighted: true,
+    badgeLabel: "WYBIERZ 40",
+    features: [
+      { label: "Netia Player/Evobox 4K", infoId: "dekoder-evobox" },
+      { label: "Router w cenie abonamentu", infoId: "router-wifi" },
+      { label: "Aplikacja Netia GO w cenie", infoId: "netia-go" },
+    ],
+    price: "40 zł",
+    priceUnit: "/mies.",
+    priceNote: "Od 25. miesiąca: 60 zł/mies.",
+    resultLine: "To samo, co WYBIERZ 30, plus telewizja 4K — bez osobnego abonamentu za dekoder.",
+  },
+];
+
+const faqs = [
+  {
+    icon: <CreditCard size={18} />,
+    q: "Czy cena 30 zł / 40 zł to cena na stałe?",
+    a: "Cena promocyjna obowiązuje przez pierwsze 24 miesiące umowy. Od 25. miesiąca abonament wzrasta do 60 zł/mies. dla obu pakietów.",
+  },
+  {
+    icon: <Wallet size={18} />,
+    q: "Czy jest opłata aktywacyjna?",
+    a: "Wraz z pierwszą fakturą naliczana jest jednorazowa opłata aktywacyjna — Netia informuje o jej wysokości przy podpisaniu umowy, zależnie od aktualnej promocji.",
+  },
+  {
+    icon: <Gauge size={18} />,
+    q: "Jaka jest różnica między WYBIERZ 30 a WYBIERZ 40?",
+    a: "Obie oferty mają ten sam Internet światłowodowy do 300 Mb/s wraz z routerem w cenie i aplikacją Netia GO. WYBIERZ 30 zawiera pakiet telewizyjny TV XS, natomiast WYBIERZ 40 bogatszy pakiet TV S wraz z dekoderem Netia Player/Evobox 4K.",
+  },
+  {
+    icon: <Info size={18} />,
+    q: "Na jaki okres podpisywana jest umowa?",
+    a: "Obie oferty dostępne są w ramach umowy na czas określony — 24 pełne okresy rozliczeniowe.",
+  },
+];
+
+/* ---------------------------------------------------------------------- */
+/*  GUARANTEES — kompaktowy pasek "Kupujesz bez ryzyka", spójny z tym,    */
+/*  co jest na stronie głównej. Ta zakładka wcześniej nie miała żadnej    */
+/*  sekcji budującej zaufanie — a to kluczowy moment dla kogoś, kto       */
+/*  szuka najtańszej oferty i może się obawiać "taniość = gorsza jakość". */
+/* ---------------------------------------------------------------------- */
+const GUARANTEES = [
   {
     icon: Gauge,
     title: "Prędkość zgodna z umową",
@@ -66,83 +160,8 @@ const TRUST_ITEMS: TrustItem[] = [
   },
 ];
 
-function TrustBar({ reduceMotion }: { reduceMotion: boolean | null }) {
-  return (
-    <m.div
-      variants={fadeUp}
-      initial={reduceMotion ? false : "hidden"}
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.4 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="mx-auto mt-10 grid max-w-4xl grid-cols-1 gap-2.5 sm:grid-cols-3"
-    >
-      {TRUST_ITEMS.map((item) => {
-        const TrustIcon = item.icon;
-        return (
-          <div key={item.title} className="flex items-start gap-2.5 rounded-xl px-3.5 py-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-white/70">
-              <TrustIcon size={16} strokeWidth={2} />
-            </span>
-            <div>
-              <p className="text-xs font-semibold text-white/90">{item.title}</p>
-              <p className="mt-0.5 text-[11px] leading-relaxed text-white/50">{item.desc}</p>
-            </div>
-          </div>
-        );
-      })}
-    </m.div>
-  );
-}
-
-/* ======================================================================
-   SZCZEGÓŁY OFERTY (PRAWNE) — domyślnie zwinięte, rozwijane przyciskiem
-   "Zobacz szczegóły oferty" (ta sama technika grid-template-rows co
-   akordeon FAQ poniżej / w OfferQuizSection / OfferMaxSection).
-   ====================================================================== */
-
-function LegalDisclosure({
-  paragraphs,
-  reduceMotion,
-}: {
-  paragraphs: string[];
-  reduceMotion: boolean | null;
-}) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="mx-auto mt-10 max-w-4xl border-t border-white/10 pt-6 text-center">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="mx-auto flex items-center gap-1.5 text-[12px] font-semibold text-white/40 underline decoration-dotted underline-offset-4 transition-colors hover:text-white/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400"
-      >
-        {open ? "Ukryj szczegóły oferty" : "Zobacz szczegóły oferty"}
-        <ChevronDown
-          size={14}
-          className="shrink-0 transition-transform duration-300"
-          style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
-        />
-      </button>
-
-      <div
-        className="grid transition-all duration-300 ease-out"
-        style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
-      >
-        <div className="overflow-hidden">
-          <div className="space-y-3 pt-4 text-left text-[11px] leading-relaxed text-white/40">
-            {paragraphs.map((p, i) => (
-              <p key={i}>{p}</p>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /* ---------------------------------------------------------------------- */
-/*  Popupy "Szczegóły" — routery, dekoder, Netia GO, Giganagrywarka       */
+/*  Popupy "Szczegóły" — routery, dekoder, Netia GO                       */
 /*  Klikalna jest KAŻDA pozycja w liście cech karty ofertowej, która ma   */
 /*  przypisany `infoId` wskazujący na wpis w INFO_ITEMS poniżej.          */
 /* ---------------------------------------------------------------------- */
@@ -225,136 +244,6 @@ const INFO_ITEMS: Record<string, InfoItem> = {
     instrukcjaUrl: "/pdf/Instrukcja_Router_Huawei_HG8245Q.pdf",
   },
 
-  "router-wifi6": {
-    id: "router-wifi6",
-    model: "HUAWEI HG8245X6-10",
-    podtytul: "Router instalowany do Internetu Światłowodowego Netii przy prędkościach do 1 Gb/s",
-    zdjecie: "/images/MidRouter.webp",
-    sections: [
-      {
-        title: "Opis urządzenia",
-        icon: FileText,
-        content: {
-          type: "paragraphs",
-          items: [
-            "Huawei HG8245X6-10 to nowoczesny terminal GPON wyposażony w technologię Wi-Fi 6. Zapewnia wyższą przepustowość, stabilność oraz lepszą obsługę wielu urządzeń równocześnie, co czyni go idealnym dla gospodarstw domowych z telewizorami 4K, konsolami, laptopami i systemami smart home.",
-            "Router obsługuje szybkie połączenia bezprzewodowe, IPTV i VoIP, a cztery gigabitowe porty LAN umożliwiają podłączenie urządzeń wymagających maksymalnej stabilności. HG8245X6-10 pozwala w pełni wykorzystać możliwości światłowodu o prędkości do 1 Gb/s.",
-          ],
-        },
-      },
-      {
-        title: "Specyfikacja techniczna",
-        icon: ListChecks,
-        content: {
-          type: "specTable",
-          items: [
-            { label: "Światłowód / PON", value: "GPON, port SC/APC" },
-            { label: "Porty", value: "4× LAN 1 Gb/s, 2× TEL, 1× USB, zasilanie DC" },
-            { label: "Wi-Fi 6 (802.11ax)", value: "2.4 i 5 GHz, OFDMA, MU-MIMO, WPA2 / WPA3*" },
-            { label: "Funkcje", value: "IPTV / VLAN, NAT / DHCP / firewall, QoS, WPS" },
-            { label: "Wymiary", value: "235 × 150 × 33 mm" },
-            { label: "Zawartość zestawu", value: "Router, zasilacz, kabel Ethernet, instrukcja" },
-          ],
-        },
-      },
-      {
-        title: "Technologia Wi-Fi 6",
-        icon: Wifi,
-        content: {
-          type: "bullets",
-          items: [
-            "wyższe prędkości i niższe opóźnienia",
-            "streaming 4K/8K bez buforowania",
-            "większa stabilność przy wielu urządzeniach",
-            "lepszy zasięg i odporność na zakłócenia",
-          ],
-        },
-      },
-      {
-        title: "Prędkość Internetu Światłowodowego Netia",
-        icon: Gauge,
-        content: {
-          type: "box",
-          text: "Router Huawei HG8245X6-10 jest instalowany przy prędkościach do 1 Gb/s.",
-        },
-      },
-      {
-        title: "Koszt routera zawarty w umowie",
-        icon: Wallet,
-        content: {
-          type: "box",
-          text: "Dostarczany i instalowany przez technika w dniu instalacji usługi Internetu bez dodatkowych kosztów.",
-        },
-      },
-    ],
-    instrukcjaUrl: "/pdf/Instrukcja_Router_Huawei_HG8245X6_10.pdf",
-  },
-
-  "router-wifi7": {
-    id: "router-wifi7",
-    model: "HUAWEI HG8145B7N",
-    podtytul: "Router instalowany do Internetu Światłowodowego Netii przy prędkościach do 2 Gb/s",
-    zdjecie: "/images/TopRouter.webp",
-    sections: [
-      {
-        title: "Opis urządzenia",
-        icon: FileText,
-        content: {
-          type: "paragraphs",
-          items: [
-            "Huawei HG8145B7N to najbardziej zaawansowany router dostępny w Netii. Wyposażony w najnowszy standard Wi-Fi 7 oraz port LAN 2.5 Gb/s, pozwala wykorzystać pełny potencjał światłowodu o prędkości do 2 Gb/s.",
-            "Urządzenie obsługuje najnowocześniejsze funkcje, takie jak Multi-Link Operation, kanały 320 MHz i modulację 4096-QAM, co gwarantuje szybkie, stabilne i odporne na zakłócenia połączenie. Router idealnie sprawdza się w środowiskach o dużym obciążeniu — streaming 8K, VR, gaming, praca w chmurze i profesjonalne zestawy multimedialne.",
-          ],
-        },
-      },
-      {
-        title: "Specyfikacja techniczna",
-        icon: ListChecks,
-        content: {
-          type: "specTable",
-          items: [
-            { label: "Światłowód / PON", value: "GPON / XG-PON, port SC/APC" },
-            { label: "Porty", value: "1× LAN 2.5 Gb/s, 3× LAN 1 Gb/s, 2× TEL, 1× USB, zasilanie DC" },
-            { label: "Wi-Fi 7 (802.11be)", value: "2.4 / 5 / 6 GHz, 320 MHz kanały, 4096-QAM, MLO, MU-MIMO, OFDMA" },
-            { label: "Funkcje", value: "VoIP, IPTV, NAT / DHCP / firewall, QoS" },
-            { label: "Wymiary", value: "250 × 160 × 40 mm" },
-            { label: "Zawartość zestawu", value: "Router, zasilacz, kabel Ethernet, instrukcja" },
-          ],
-        },
-      },
-      {
-        title: "Technologia Wi-Fi 7",
-        icon: Wifi,
-        content: {
-          type: "bullets",
-          items: [
-            "ultrawysokie prędkości",
-            "najniższe opóźnienia",
-            "praca na wielu pasmach jednocześnie (MLO)",
-            "idealny do VR, 8K, gamingu i pracy profesjonalnej",
-          ],
-        },
-      },
-      {
-        title: "Prędkość Internetu Światłowodowego Netia",
-        icon: Gauge,
-        content: {
-          type: "box",
-          text: "Router Huawei HG8145B7N jest instalowany przy prędkościach do 2 Gb/s.",
-        },
-      },
-      {
-        title: "Koszt routera zawarty w umowie",
-        icon: Wallet,
-        content: {
-          type: "box",
-          text: "Dostarczany i instalowany przez technika w dniu instalacji usługi Internetu bez dodatkowych kosztów.",
-        },
-      },
-    ],
-    instrukcjaUrl: "/pdf/Instrukcja_Router_ONTCombo_HuaweiHG8145B7N-_2-5G_WiFi7.pdf",
-  },
-
   "dekoder-evobox": {
     id: "dekoder-evobox",
     model: "Netia EvoBox 4K",
@@ -399,6 +288,7 @@ const INFO_ITEMS: Record<string, InfoItem> = {
         },
       },
     ],
+    uwaga: "Netia Player / Evobox — dostępność zależna od bieżących stanów magazynowych.",
     instrukcjaUrl: "/pdf/Instrukcja_uzytkownika_netia_dekodera_evobox_4K.pdf",
   },
 
@@ -491,69 +381,6 @@ const INFO_ITEMS: Record<string, InfoItem> = {
         },
       },
     ],
-  },
-
-  giganagrywarka: {
-    id: "giganagrywarka",
-    model: "Giganagrywarka",
-    podtytul: "Nagrywanie programów w chmurze — wersje Basic i Maxi",
-    banner: "Do 1500 godzin nagrań w chmurze, przez 120 dni",
-    bannerAkcent: "red",
-    sections: [
-      {
-        title: "Opis usługi",
-        icon: FileText,
-        content: {
-          type: "paragraphs",
-          items: [
-            "Nagrywaj programy w chmurze, przewijaj do 2 godzin wstecz i oglądaj wybrane audycje nawet do 7 dni po emisji. W wersji Maxi przechowasz do 1500 godzin przez 120 dni.",
-          ],
-        },
-      },
-      {
-        title: "Porównanie wersji Basic / Maxi",
-        icon: Table2,
-        content: {
-          type: "compareTable",
-          rows: [
-            { funkcja: "Ilość godzin do nagrania", basic: "100 godzin", maxi: "1500 godzin" },
-            { funkcja: "Czas przechowywania", basic: "30 dni", maxi: "120 dni" },
-            { funkcja: "Time Shift (przewijanie do tyłu)", basic: "Przewijanie do 2 godzin wstecz", maxi: "Przewijanie do 2 godzin wstecz" },
-            { funkcja: "Catch-up (oglądanie po emisji)", basic: "Do 7 dni wstecz (na wybranych kanałach)", maxi: "Do 7 dni wstecz (na wybranych kanałach)" },
-            { funkcja: "Równoległe nagrywanie", basic: "Nagrywaj wiele programów jednocześnie", maxi: "Nagrywaj wiele programów jednocześnie" },
-            { funkcja: "Nagrywanie przy wyłączonym dekoderze", basic: "Działa także przy wyłączonym dekoderze", maxi: "Działa także przy wyłączonym dekoderze" },
-          ],
-        },
-      },
-      {
-        title: "Najważniejsze funkcje",
-        icon: Sparkles,
-        content: {
-          type: "bullets",
-          items: [
-            "Oglądanie wybranych programów do 7 dni po emisji",
-            "Przewijanie programów do 2 godzin wstecz",
-            "Równoległe nagrywanie wielu kanałów",
-            "Do 1500 godzin nagrań (Maxi) przez 120 dni",
-            "Zaplanowane nagrania działają bez zasilania dekodera",
-          ],
-        },
-      },
-      {
-        title: "Jak włączyć",
-        icon: ListOrdered,
-        content: {
-          type: "steps",
-          items: [
-            "Wejdź do menu dekodera Netia TV.",
-            "Otwórz sekcję Usługi dodatkowe.",
-            "Wybierz Giganagrywarka (Basic lub Maxi).",
-            "Potwierdź aktywację.",
-          ],
-        },
-      },
-    ],
-    uwaga: "Dostępność funkcji może zależeć od kanału i praw licencyjnych.",
   },
 };
 
@@ -818,7 +645,7 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
                     )}
 
                     {item.instrukcjaUrl && (
-                    <a
+                      <a
                         href={item.instrukcjaUrl}
                         download
                         target="_blank"
@@ -851,7 +678,40 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
   );
 }
 
-export default function PopularneOferty() {
+/* ---------------------------------------------------------------------- */
+/*  SzczegolyOferty — domyślnie zwinięty accordion na długi disclaimer     */
+/*  prawny. Ten sam wzorzec co w Oferty.tsx (sekcja MAX/Podstawa na       */
+/*  stronie głównej) — treść musi być dostępna, ale nie musi zaśmiecać    */
+/*  widoku na stałe.                                                      */
+/* ---------------------------------------------------------------------- */
+function SzczegolyOferty({ children }: { children: ReactNode }) {
+  const [otwarte, setOtwarte] = useState(false);
+
+  return (
+    <div className="mx-auto mt-10 max-w-4xl border-t border-white/10 pt-6 text-center">
+      <button
+        type="button"
+        onClick={() => setOtwarte((o) => !o)}
+        aria-expanded={otwarte}
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/50 transition-colors hover:text-white/75"
+      >
+        {otwarte ? "Ukryj szczegóły oferty" : "Zobacz szczegóły oferty"}
+        <ChevronRight
+          size={13}
+          className={`transition-transform duration-200 ${otwarte ? "rotate-90" : "rotate-0"}`}
+        />
+      </button>
+
+      {otwarte && (
+        <div className="mt-4 space-y-3 text-left text-[11px] leading-relaxed text-white/40">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function NajlepszaCenaOferty() {
   const reduceMotion = useReducedMotion();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [aktywnyInfoId, setAktywnyInfoId] = useState<string | null>(null);
@@ -859,15 +719,15 @@ export default function PopularneOferty() {
   return (
     <LazyMotion features={domAnimation} strict>
       <style>{`
-        @keyframes popularne-oferty-faq-pulse {
+        @keyframes najlepsza-cena-faq-pulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.45); }
           50% { box-shadow: 0 0 0 8px rgba(45, 212, 191, 0); }
         }
-        .popularne-oferty-faq-cta-pulse {
-          animation: popularne-oferty-faq-pulse 2.4s ease-out infinite;
+        .najlepsza-cena-faq-cta-pulse {
+          animation: najlepsza-cena-faq-pulse 2.4s ease-out infinite;
         }
         @media (prefers-reduced-motion: reduce) {
-          .popularne-oferty-faq-cta-pulse {
+          .najlepsza-cena-faq-cta-pulse {
             animation: none;
           }
         }
@@ -936,9 +796,9 @@ export default function PopularneOferty() {
               transition={{ duration: 0.4, delay: 0.1 }}
               className="relative z-10 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-teal-500 to-teal-400 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.06em] text-[#0B2A3D] shadow-[0_6px_16px_-6px_rgba(45,212,191,0.7)]"
             >
-              <Flame size={13} className="fill-current" />
-              Najpopularniejsze
-              <Flame size={13} className="fill-current" />
+              <Tag size={13} />
+              Najlepsza cena
+              <Tag size={13} />
             </m.span>
 
             <m.h1
@@ -948,9 +808,19 @@ export default function PopularneOferty() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="relative z-10 m-0 text-[clamp(28px,4.4vw,44px)] font-extrabold text-white"
             >
-              Najczęściej wybierane{" "}
-              <span className="text-teal-300">pakiety</span>
+              Dwie najtańsze oferty Netii{" "} <br />
+              <span className="text-teal-300">dla nowych klientów</span>
             </m.h1>
+
+            <m.p
+              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.28 }}
+              className="relative z-10 mt-3 text-[clamp(18px,2.4vw,24px)] font-bold text-white/90"
+            >
+              Internet <span className="text-teal-300">300 Mb/s</span>
+            </m.p>
 
             <m.p
               initial={reduceMotion ? false : { opacity: 0 }}
@@ -960,8 +830,7 @@ export default function PopularneOferty() {
               className="relative z-10 mt-1 flex flex-wrap items-center justify-center gap-2 text-sm text-white/65 sm:text-base"
             >
               <Users size={15} className="text-teal-300" />
-              Internet i telewizja w najkorzystniejszych cenach — sprawdzone
-              przez ponad{" "}
+              Dwie oferty z najniższą ceną startową — sprawdzone przez{" "}
               <span className="font-semibold text-white">2,4 mln klientów</span>{" "}
               w całej Polsce.
             </m.p>
@@ -971,35 +840,62 @@ export default function PopularneOferty() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.45 }}
-              className="relative z-10 mt-4 flex flex-col gap-2.5 sm:flex-row"
+              className="relative z-10 mt-4 flex flex-col items-stretch gap-3 sm:flex-row"
             >
               <m.a
                 href="tel:+48883334124"
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                className="flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-5 py-3 text-sm font-bold text-white"
+                className="flex items-center justify-between gap-3 rounded-2xl bg-teal-500 px-5 py-3 text-white shadow-[0_8px_20px_-8px_rgba(45,212,191,0.6)] sm:w-64"
               >
-                <Phone size={15} />
-                ZADZWOŃ +48 883 334 124
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
+                    <Phone size={16} />
+                  </span>
+                  <span className="text-left">
+                    <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
+                    <span className="block text-xs font-normal text-white/85">+48 883 334 124</span>
+                  </span>
+                </span>
+                <ChevronRight size={16} className="shrink-0 text-white/70" />
               </m.a>
               <m.a
                 href="sms:+48883334124?body=INTERNET"
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white"
+                className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-white sm:w-64"
               >
-                <MessageCircle size={15} />
-                WYŚLIJ SMS
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">
+                    <MessageCircle size={16} />
+                  </span>
+                  <span className="text-sm font-bold">Wyślij SMS</span>
+                </span>
+                <ChevronRight size={16} className="shrink-0 text-white/50" />
               </m.a>
             </m.div>
           </m.div>
 
-          <div className="relative mt-14">
+          <m.div
+            initial={reduceMotion ? false : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.6 }}
+            variants={fadeUp}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="mt-14 mb-8 text-center sm:mt-16 sm:mb-10"
+          >
+            <h2 className="text-[clamp(24px,3.4vw,34px)] font-extrabold text-white">
+              Wybierz swoją <span className="text-teal-300">ofertę</span>
+            </h2>
+            <span className="mx-auto mt-3 block h-1 w-14 rounded-full bg-gradient-to-r from-teal-500 to-teal-300" />
+          </m.div>
+
+          <div className="relative">
             <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
               <DottedBackground variant="dots" size={22} />
             </div>
 
-            <div className="relative grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
+ <div className="relative mx-auto grid w-full max-w-[1140px] grid-cols-1 items-stretch gap-6 px-4 sm:grid-cols-2 sm:px-6">
               {offers.map((offer, i) => (
                 <m.div
                   key={offer.id}
@@ -1014,50 +910,43 @@ export default function PopularneOferty() {
                   }`}
                 >
                   {offer.highlighted && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#0B2A3D]">
-                      Najczęściej wybierany
+                    <span className="absolute -top-3 left-1/2 w-[calc(100%-2rem)] max-w-[240px] -translate-x-1/2 whitespace-normal rounded-xl bg-amber-400 px-3 py-1.5 text-center text-[10px] font-bold leading-tight uppercase tracking-wide text-[#0B2A3D] sm:w-auto sm:max-w-none sm:whitespace-nowrap sm:rounded-full sm:px-3.5 sm:py-1 sm:text-[11px]">
+                      Najlepszy stosunek ceny do pakietu
                     </span>
                   )}
 
-                  <p className="text-sm font-medium text-slate-300">Internet do</p>
-                  <p className="mt-1 text-2xl font-extrabold leading-tight text-white">
-                    {offer.speedBold}
-                    {offer.speedSuffix && (
-                      <span className="ml-1.5 text-lg font-bold text-slate-300">
-                        {offer.speedSuffix}
-                      </span>
-                    )}
-                  </p>
-
-                  <div className="mt-4 border-b border-white/10 pb-4">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-4xl font-black leading-none text-white">
-                        {offer.price}
-                      </span>
-                      <span className="text-sm font-medium text-slate-400">
-                        {offer.priceUnit}
-                      </span>
-                    </div>
-                    {offer.promoHeadline ? (
-                      <>
-                        <p className="mt-1.5 text-xs font-bold uppercase tracking-wider text-orange-400">
-                          {offer.promoEyebrow}
-                        </p>
-                        <p className="text-sm font-semibold text-orange-300">
-                          {offer.promoHeadline}
-                        </p>
-                      </>
-                    ) : (
-                      <p className="mt-1.5 text-sm font-bold uppercase tracking-wide text-teal-300">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-3xl font-black leading-tight text-white sm:text-4xl">
                         {offer.badgeLabel}
+                      </h3>
+                      <p className="mt-1 text-sm font-bold uppercase tracking-wide text-teal-300">
+                        {offer.eyebrow}
                       </p>
-                    )}
-                    {offer.priceNote && (
-                      <p className="mt-0.5 text-xs text-white/40">{offer.priceNote}</p>
-                    )}
+                    </div>
+                    {/* Prędkość widoczna od razu w nagłówku karty — poza listą
+                        benefitów, żeby nie umykała przy szybkim skanowaniu. */}
+                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-teal-400/10 px-3 py-1.5 text-[13px] font-extrabold text-teal-300">
+                      <Wifi size={13} />
+                      {offer.speed}
+                    </span>
                   </div>
 
-                  <ul className="mt-5 flex-1 space-y-2.5">
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-2xl font-extrabold text-white">{offer.price}</span>
+                    <span className="text-sm font-medium text-white/60">{offer.priceUnit}</span>
+                  </div>
+                  <p className="mt-0.5 text-[11px] text-white/40">{offer.priceNote}</p>
+
+                  <div className="mt-5 border-t border-white/10" />
+
+             <ul className="mt-5 flex-1 grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2">
+                    <li className="flex items-center gap-2 text-xs text-white sm:text-sm">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-400/15 text-teal-300">
+                        <Check size={12} />
+                      </span>
+                      Internet do <b className="font-bold">{offer.speed}</b>
+                    </li>
                     {offer.features.map((f, idx) => (
                       <li
                         key={idx}
@@ -1085,22 +974,41 @@ export default function PopularneOferty() {
                     ))}
                   </ul>
 
-                  <div className="mt-auto flex flex-col gap-2.5 pt-6">
+                  <p className="mt-4 border-t border-white/10 pt-3 text-xs leading-relaxed text-white/45">
+                    {offer.resultLine}
+                  </p>
+
+                  <div className="mt-5 flex flex-wrap gap-3 sm:flex-row sm:flex-wrap">
                     <m.a
                       href="tel:+48883334124"
                       whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                       whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                      className="flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-4 py-2.5 text-sm font-bold text-white"
+className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center justify-between gap-3 rounded-2xl border border-transparent bg-teal-500 px-4 py-3 text-white shadow-[0_8px_20px_-8px_rgba(45,212,191,0.6)]"
                     >
-                      <Phone size={14} /> ZADZWOŃ +48 883 334 124
+                      <span className="flex items-center gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
+                          <Phone size={16} />
+                        </span>
+                        <span className="text-left">
+                          <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
+                          <span className="block text-xs font-normal text-white/85">+48 883 334 124</span>
+                        </span>
+                      </span>
+                      <ChevronRight size={16} className="shrink-0 text-white/70" />
                     </m.a>
                     <m.a
                       href="sms:+48883334124?body=INTERNET"
                       whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                       whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                      className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white"
+ className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-white"
                     >
-                      <MessageCircle size={14} /> WYŚLIJ SMS
+                      <span className="flex items-center gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">
+                          <MessageCircle size={16} />
+                        </span>
+                        <span className="text-sm font-bold">Wyślij SMS</span>
+                      </span>
+                      <ChevronRight size={16} className="shrink-0 text-white/50" />
                     </m.a>
                   </div>
                 </m.div>
@@ -1108,17 +1016,42 @@ export default function PopularneOferty() {
             </div>
           </div>
 
-          {/* PASEK ZAUFANIA */}
-          <TrustBar reduceMotion={reduceMotion} />
+          {/* Pasek gwarancji — "Kupujesz bez ryzyka", spójny ze stroną główną. */}
+          <m.div
+            initial={reduceMotion ? false : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.4 }}
+            variants={fadeUp}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="mx-auto mt-8 grid max-w-4xl grid-cols-1 gap-2.5 sm:grid-cols-3"
+          >
+            {GUARANTEES.map((g, i) => {
+              const Icon = g.icon;
+              return (
+                <div
+                  key={i}
+                  className="flex items-start gap-2.5 rounded-xl px-3.5 py-3"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-white/70">
+                    <Icon size={16} strokeWidth={2} />
+                  </span>
+                  <div>
+                    <p className="text-xs font-semibold text-white/90">{g.title}</p>
+                    <p className="mt-0.5 text-[11px] leading-relaxed text-white/50">{g.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </m.div>
 
-          {/* SZCZEGÓŁY OFERTY — zwinięte domyślnie, rozwijane przyciskiem
-              "Zobacz szczegóły oferty" */}
-          <LegalDisclosure
-            reduceMotion={reduceMotion}
-            paragraphs={[
-"Prezentowana oferta dotyczy mieszkań. W przypadku budynków jednorodzinnych obowiązuje inna oferta. Prezentowana oferta Netii S.A.: „Wybierz szybszy Internet 12 mies. 1/2Gb/s (PON, HFC, ETTH)” obowiązuje przy zawarciu Umowy na czas określony 24 pełnych Okresów Rozliczeniowych przy jednoczesnym korzystaniu z rabatów za e-fakturę (5 zł) i zgody marketingowe (5 zł). W przypadku rezygnacji lub niespełnienia warunków przyznania rabatów, cena wzrośnie o 10 zł. Wraz z pierwszą fakturą zostanie naliczona opłata aktywacyjna w wysokości 79 zł za Internet i 2 zł za Telewizję. Po 24 miesiącach cena abonamentu wzrasta o 10 zł. „Szybki Internet Max (1000, 2000)” stanowi wyłącznie nazwę marketingową. Usługa Internetowa oparta jest na parametrach jakości wynikających z maksymalnych parametrów technicznych danej technologii, w jakiej świadczona jest Usługa Internetowa lub wynikających z ofertowych ustawień technicznych łącza. Prędkość 2 Gb/s jest dostępna na technologii PON. Parametry świadczenia Usługi Internetowej, w szczególności parametry prędkości oraz wpływu innych Usług na Usługę Internetową, dostępne są na stronie netia.pl. Oferta jest ograniczona terytorialnie do zasięgu stacjonarnej sieci PON, HFC, ETTH Operatora."
-            ]}
-          />
+          <SzczegolyOferty>
+  
+            <p>
+                          Prezentowana oferta dotyczy mieszkań. W przypadku budynków
+              jednorodzinnych obowiązuje inna oferta.
+ Prezentowana oferta Netii S.A.: „WYBIERZ 30” (Internet do 300 Mb/s + TV XS) w cenie 30 zł/mies. oraz „WYBIERZ 40” (Internet do 300 Mb/s + TV S) w cenie 40 zł/mies. obowiązuje przy zawarciu Umowy na czas określony 24 pełnych Okresów Rozliczeniowych przy jednoczesnym korzystaniu z rabatów za e-fakturę (5 zł) i zgody marketingowe (5 zł). W przypadku rezygnacji lub niespełnienia warunków przyznania rabatów, cena wzrośnie o 10 zł. Wraz z pierwszą fakturą zostanie naliczona opłata aktywacyjna w wysokości 79 zł za Internet i 2 zł za Telewizję. Po 24 miesiącach (od 25. miesiąca) cena abonamentu wzrasta do 60 zł/mies. Nazwy promocji oraz pakiety stanowią wyłącznie nazwy marketingowe. Usługa Internetowa oparta jest na parametrach jakości wynikających z maksymalnych parametrów technicznych danej technologii, w jakiej świadczona jest Usługa Internetowa lub wynikających z ofertowych ustawień technicznych łącza. Parametry świadczenia Usługi Internetowej, w szczególności parametry prędkości oraz wpływu innych Usług na Usługę Internetową, dostępne są na stronie netia.pl. Oferta jest ograniczona terytorialnie do zasięgu stacjonarnej sieci Operatora.
+            </p>
+          </SzczegolyOferty>
 
           <div className="mx-auto mt-16 max-w-310">
             <div className="text-center">
@@ -1246,7 +1179,7 @@ export default function PopularneOferty() {
                 href="tel:+48883334124"
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                className="popularne-oferty-faq-cta-pulse flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white sm:min-w-60"
+                className="najlepsza-cena-faq-cta-pulse flex items-center justify-between gap-4 rounded-2xl bg-teal-500 px-5 py-3.5 text-white shadow-[0_8px_20px_-8px_rgba(45,212,191,0.6)] sm:min-w-60"
               >
                 <span className="flex items-center gap-3">
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
@@ -1254,7 +1187,7 @@ export default function PopularneOferty() {
                   </span>
                   <span className="text-left">
                     <span className="block text-sm font-bold leading-tight">
-                      ZADZWOŃ
+                      Zadzwoń
                     </span>
                     <span className="block text-xs text-white/85">
                       +48 883 334 124
@@ -1268,7 +1201,7 @@ export default function PopularneOferty() {
                 href="sms:+48883334124?body=INTERNET"
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white sm:min-w-60"
+                className="flex items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/5 px-5 py-3.5 text-white sm:min-w-60"
               >
                 <span className="flex items-center gap-3">
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
@@ -1276,7 +1209,7 @@ export default function PopularneOferty() {
                   </span>
                   <span className="text-left">
                     <span className="block text-sm font-bold leading-tight">
-                      WYŚLIJ SMS
+                      Wyślij SMS
                     </span>
                     <span className="block text-xs text-white/70">
                       Oddzwonimy w kilka minut

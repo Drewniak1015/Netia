@@ -178,9 +178,9 @@ export default function NetiaFAQ() {
           </p>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <a>
+            <a 
               href="tel:+48883334124"
-              className="faq-cta-pulse flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] sm:min-w-60"
+              className="faq-cta-pulse flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] sm:min-w-60">
      
               <span className="flex items-center gap-3">
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">

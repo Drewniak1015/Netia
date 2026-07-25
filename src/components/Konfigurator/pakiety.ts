@@ -2,18 +2,10 @@ import type { Pakiet } from "./types";
 
 /* ---------------------------------------------------------------------- */
 /*  Dane pakietów internetowych — umowa 24 mies.                           */
+/*  UWAGA: pakiet "Internet do 150Mb/s" (id: 24-150) został usunięty       */
+/*  na życzenie — nie jest już częścią oferty.                            */
 /* ---------------------------------------------------------------------- */
 export const PAKIETY_24: Pakiet[] = [
-  {
-    id: "24-150",
-    nazwa: "Internet do 150Mb/s",
-    predkosc: "150 Mb/s",
-    upload: "Upload do 50 Mb/s",
-    wyposazenie: "Router WiFi",
-    routerId: "domyslny",
-    cena: 55,
-    promoBadge: "Abonament 3 mies. 0 zł po rabatach",
-  },
   {
     id: "24-300",
     nazwa: "Internet do 300Mb/s",
@@ -59,6 +51,11 @@ export const PAKIETY_24: Pakiet[] = [
 
 /* ---------------------------------------------------------------------- */
 /*  Dane pakietów internetowych — bez zobowiązań                          */
+/*  UWAGA: od teraz w UI dostępna jest wyłącznie umowa 24-miesięczna      */
+/*  (patrz index.tsx — przełącznik umowy zastąpiony statycznym badge'em). */
+/*  Ten zbiór zostaje w kodzie jako dead code / na wypadek przywrócenia   */
+/*  opcji "bez zobowiązań" w przyszłości — nieużywany, tree-shaking i tak */
+/*  go wytnie z bundla.                                                   */
 /*  TODO: podmień na realne nazwy / opisy / ceny dla oferty bez umowy     */
 /* ---------------------------------------------------------------------- */
 export const PAKIETY_BEZ: Pakiet[] = [

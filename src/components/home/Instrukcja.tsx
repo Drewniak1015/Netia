@@ -15,7 +15,7 @@ const steps: Step[] = [
     number: "1",
     title: "Skontaktuj się z nami",
     description:
-      "Zadzwoń, wyślij SMS lub skonfiguruj pakiet Internet Netia online w naszym konfiguratorze.",
+      "Zadzwoń albo napisz SMS-a, a resztą się zajmiemy – zamówisz pakiet Internet Netia w kilka chwil.",
     Icon: PhoneCall,
   },
   {
@@ -29,7 +29,7 @@ const steps: Step[] = [
     number: "3",
     title: "Instalacja i aktywacja",
     description:
-      "Technik instaluje usługę — Internet Netia może działać nawet następnego dnia roboczego.",
+      "Technik zainstaluje usługę nawet następnego dnia roboczego. A jeśli coś się zepsuje — reagujemy w 24h, nie w tygodnie.",
     Icon: Wrench,
   },
 ];

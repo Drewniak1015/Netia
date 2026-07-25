@@ -15,27 +15,27 @@ import {
 const benefits = [
   {
     icon: Rocket,
-    title: "Ekspresowy montaż – nawet w ciągu 24 godzin",
+    title: "Internet gotowy już następnego dnia",
   },
   {
     icon: MonitorPlay,
-    title: "Bogata oferta kanałów i pakietów tematycznych",
+    title: "238 kanałów zawsze pod ręką",
   },
   {
     icon: Tv,
-    title: "Nowoczesne dekodery 4K z krystalicznym obrazem",
+    title: "Obraz w jakości 4K, bez zacięć",
   },
   {
     icon: Wifi,
-    title: "Błyskawiczny i stabilny internet Wi-Fi",
+    title: "Stabilne połączenie bez przerw",
   },
   {
     icon: Headset,
-    title: "Całodobowa pomoc techniczna – wsparcie 24/7",
+    title: "Pomoc techniczna 24/7, bez automatów",
   },
   {
     icon: ShieldCheck,
-    title: "Niezawodna jakość usług potwierdzona przez klientów",
+    title: "Ocena 4,8/5 od 2,4 mln klientów",
   },
 ];
 

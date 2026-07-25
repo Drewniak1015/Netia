@@ -25,9 +25,16 @@ import {
 } from "@/lib/channels";
 import DottedBackground from "@/components/ui/DottedBackground";
 
-// Pakiety główne prezentowane na stronie (XS jest bazą wliczoną automatycznie
-// do każdego z poniższych, dlatego nie pokazujemy go jako osobnej opcji).
+// Pakiety główne prezentowane na stronie. Wcześniej XS był pomijany jako
+// osobna opcja (traktowany wyłącznie jako baza automatycznie wliczona do
+// S/M/L) — teraz pokazujemy go jako pełnoprawną, czwartą kartę do wyboru,
+// bo dane dla niego są już kompletne i zweryfikowane w lib/channels.ts.
 const SELECTABLE_TIERS: { tier: Tier; name: string; desc: string }[] = [
+  {
+    tier: "xs",
+    name: "Pakiet XS",
+    desc: "Baza — kanały ogólnopolskie i regionalne TVP, bez dopłat.",
+  },
   {
     tier: "s",
     name: "Pakiet S",
@@ -244,7 +251,7 @@ export default function Przewodnik({
 
             <p className="relative z-10 mt-1 max-w-2xl text-sm text-white/65 sm:text-base leading-relaxed">
               W ofercie Netii znajdziesz {totalChannelsCount} kanałów rozproszonych po
-              pakietach głównych (S, M, L) oraz dodatkach tematycznych i premium.
+              pakietach głównych (XS, S, M, L) oraz dodatkach tematycznych i premium.
               Poniżej znajdziesz przewodnik — co tematycznie zawiera każda grupa.
             </p>
 
@@ -287,12 +294,16 @@ export default function Przewodnik({
                 Pakiety główne — wybierasz jeden
               </m.p>
 
+              {/* Siatka rozszerzona z 3 na 4 karty (dodano XS): 1 kolumna na
+                  mobile, 2 od sm, pełne 4 od lg — przy 4 elementach 3-kolumnowy
+                  układ zostawiał samotną kartę w nowym wierszu na średnich
+                  szerokościach, stąd dodatkowy krok sm:grid-cols-2. */}
               <m.div
                 initial="hidden"
                 whileInView="show"
                 viewport={{ once: true, margin: "-80px" }}
                 variants={staggerContainer}
-                className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12 auto-rows-fr"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12 auto-rows-fr"
               >
                 {SELECTABLE_TIERS.map((pkg) => {
                   const active = tier === pkg.tier;

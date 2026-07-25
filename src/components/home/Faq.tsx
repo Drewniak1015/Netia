@@ -6,6 +6,7 @@ import {
   Phone,
   MessageCircle,
   ChevronRight,
+  ChevronDown,
   Plus,
   ShieldCheck,
   Clock,
@@ -14,14 +15,13 @@ import {
   Router,
   Banknote,
   Tag,
-  Home,
   Tv,
-  Database,
-  Smartphone,
   Lock,
-  Baby,
+  Undo2,
+  Percent,
+  Truck,
+  ClipboardCheck,
 } from "lucide-react";
-import { FAQ_ITEMS } from "./homeFaqData";
 import type { ElementType } from "react";
 
 type FaqItem = {
@@ -30,7 +30,7 @@ type FaqItem = {
   icon: ElementType;
 };
 
-// Tier 1 — najsilniejsze objection-killery, zawsze na górze
+// Tier 1 — najsilniejsze objection-killery, zawsze widoczne domyślnie
 const TIER_1: FaqItem[] = [
   {
     icon: FileX,
@@ -41,6 +41,11 @@ const TIER_1: FaqItem[] = [
     icon: ShieldCheck,
     q: "Co jeśli internet nie będzie działał tak, jak obiecano?",
     a: "Zgłoś to naszemu wsparciu technicznemu dostępnemu 24/7 pod numerem +48 793 800 300. Gwarantujemy minimum 50% zadeklarowanej prędkości — jeśli usługa nie spełnia parametrów z oferty, doradca zaproponuje rozwiązanie od razu, telefonicznie.",
+  },
+  {
+    icon: Undo2,
+    q: "A co jeśli po zmianie okaże się gorzej niż u obecnego dostawcy?",
+    a: "Masz ustawowe 14 dni na odstąpienie od umowy bez podania przyczyny — otrzymasz zwrot całości wpłaty. Nie musisz się wiązać na próbę: sprawdzasz usługę bez ryzyka.",
   },
   {
     icon: Clock,
@@ -59,7 +64,7 @@ const TIER_1: FaqItem[] = [
   },
 ];
 
-// Tier 2 — wspierają decyzję, gaszą praktyczne wątpliwości
+// Tier 2 — wspierają decyzję, gaszą praktyczne wątpliwości (widoczne po rozwinięciu)
 const TIER_2: FaqItem[] = [
   {
     icon: Router,
@@ -74,12 +79,22 @@ const TIER_2: FaqItem[] = [
   {
     icon: Tag,
     q: "Jaki jest najtańszy internet w Netii?",
-    a: "Najtańsza oferta to 40 zł/mies. za Internet do 300 Mb/s + Telewizję S (umowa 24-miesięczna). Sam internet bez TV — najpopularniejszy wariant to 1000 Mb/s w promocji „6 miesięcy za 0 zł„ , potem 65 zł/mies. Ostateczna cena zależy od technologii dostępnej pod Twoim adresem.",
+    a: "Najtańsza oferta to 40 zł/mies. za Internet do 300 Mb/s + Telewizję S (umowa 24-miesięczna). Sam internet bez TV — najpopularniejszy wariant to 1000 Mb/s w promocji „6 miesięcy za 0 zł„, potem 65 zł/mies. Ostateczna cena zależy od technologii dostępnej pod Twoim adresem.",
   },
   {
-    icon: Home,
-    q: "Czy Netia działa w blokach i domach jednorodzinnych?",
-    a: "Tak — światłowód dostępny jest w obu typach budynków.",
+    icon: Percent,
+    q: "Mam teraz promocję u obecnego dostawcy — czy zmiana się opłaca?",
+    a: "Sprawdzimy Twoją obecną cenę telefonicznie i pokażemy realne porównanie — bez naciągania. W większości przypadków nasza oferta jest konkurencyjna już od pierwszego miesiąca, a stała cena obowiązuje przez całą umowę, bez podwyżek w trakcie jej trwania.",
+  },
+  {
+    icon: Truck,
+    q: "Planuję się niedługo przeprowadzić — czy to ma sens?",
+    a: "Tak — usługę przenosimy razem z Tobą na nowy adres bez dodatkowych kar. Jeśli światłowód nie dotrze jeszcze do nowej lokalizacji, doradca podpowie najlepsze rozwiązanie na czas przeprowadzki.",
+  },
+  {
+    icon: ClipboardCheck,
+    q: "Kto zajmuje się formalnościami przy przejściu, np. cesją numeru?",
+    a: "My. Wypełniamy i pilnujemy dokumentów przeniesienia numeru oraz kontaktu ze starym operatorem, żebyś nie musiał tego robić sam. Cały proces koordynuje jeden doradca, z którym możesz się kontaktować na bieżąco.",
   },
   {
     icon: Clock,
@@ -93,35 +108,22 @@ const TIER_2: FaqItem[] = [
   },
 ];
 
-// Tier 3 — uzupełnienie, mała waga sprzedażowa
+// Tier 3 — uzupełnienie, mała waga sprzedażowa (widoczne po rozwinięciu)
 const TIER_3: FaqItem[] = [
-  {
-    icon: Database,
-    q: "Czy Netia ma limit danych?",
-    a: "Nie — internet światłowodowy Netii jest nielimitowany.",
-  },
-  {
-    icon: Smartphone,
-    q: "Czy mogę połączyć Internet z TV i usługami mobilnymi?",
-    a: "Tak — w konfiguratorze dobierzesz Internet + TV + Mobile 5G (plany SUPER / VIP / GIGA, pierwsze 6 mies. za 0 zł) w jednej umowie i na jednej fakturze.",
-  },
   {
     icon: Lock,
     q: "Co to jest Bezpieczny Internet Netii?",
     a: "To usługa chroniąca przed wirusami, phishingiem, złośliwym oprogramowaniem i wyciekiem danych.",
   },
-  {
-    icon: Baby,
-    q: "Czy Bezpieczny Internet obejmuje kontrolę rodzicielską?",
-    // TODO: uzupełnić treść odpowiedzi — czy to jest w cenie Bezpiecznego Internetu,
-    // czy osobny płatny dodatek, i jak go włączyć/skonfigurować.
-    a: "Uzupełnij odpowiedź przed publikacją.",
-  },
 ];
 
+const EXTRA_ITEMS = [...TIER_2, ...TIER_3];
 
 export default function NetiaFAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [showAll, setShowAll] = useState(false);
+
+  const visibleItems = showAll ? [...TIER_1, ...EXTRA_ITEMS] : TIER_1;
 
   return (
     <section
@@ -164,13 +166,13 @@ export default function NetiaFAQ() {
         </motion.p>
 
         {/* Accordion — dwie kolumny od sm w górę, jedna na mobile */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-14 items-start">
-          {FAQ_ITEMS.map((item, i) => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 items-start">
+          {visibleItems.map((item, i) => {
             const isOpen = openIndex === i;
             const Icon = item.icon;
             return (
               <motion.div
-                key={i}
+                key={item.q}
                 role="button"
                 tabIndex={0}
                 aria-expanded={isOpen}
@@ -266,6 +268,26 @@ export default function NetiaFAQ() {
           })}
         </div>
 
+        {/* Toggle — trzyma domyślną wysokość sekcji krótką, bez tracenia treści */}
+        {!showAll && (
+          <div className="flex justify-center mb-14">
+            <motion.button
+              type="button"
+              onClick={() => {
+                setShowAll(true);
+                setOpenIndex(null);
+              }}
+              whileHover={{ y: -1 }}
+              whileTap={{ scale: 0.98 }}
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white transition-colors duration-200"
+            >
+              Pokaż więcej pytań ({EXTRA_ITEMS.length})
+              <ChevronDown size={16} />
+            </motion.button>
+          </div>
+        )}
+        {showAll && <div className="mb-14" />}
+
         {/* Closing CTA — call or SMS only, styled like Hero buttons */}
         <motion.div
           className="max-w-2xl mx-auto rounded-3xl border border-white/10 bg-white/5 px-6 py-8 sm:px-10 sm:py-10 text-center"
@@ -320,7 +342,7 @@ export default function NetiaFAQ() {
                 </span>
                 <span className="text-left">
                   <span className="block text-sm font-bold leading-tight">WYŚLIJ SMS</span>
-                  <span className="block text-xs text-white/70">Oddzwonimy w kilka minut</span>
+                  <span className="block text-xs text-white/70">Oddzwonimy w 3 minuty</span>
                 </span>
               </span>
               <ChevronRight size={18} className="text-white/50" />

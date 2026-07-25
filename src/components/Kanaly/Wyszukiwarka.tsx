@@ -22,7 +22,10 @@ type Props = {
   onTierChange: (tier: Tier) => void;
 };
 
-const SELECTABLE_TIERS: Tier[] = ["s", "m", "l"];
+// Dodano "xs" — wcześniej pakiet bazowy nie był wybieralny osobno w
+// wyszukiwarce (choć dane dla niego istniały w lib/channels.ts). Teraz
+// użytkownik może zawęzić wyniki wyłącznie do kanałów z pakietu XS.
+const SELECTABLE_TIERS: Tier[] = ["xs", "s", "m", "l"];
 
 // FIX (TBT/Style & Layout): przy pełnej liście (np. ~200 kanałów w
 // pakiecie S) montowanie WSZYSTKICH kafelków naraz przy pierwszym
@@ -207,7 +210,9 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
             <p className="text-xs text-white/40 mb-7">Filtruj po nazwie. Możesz też przełączać pakiety.</p>
 
             <p className="text-xs font-semibold uppercase tracking-wide text-white/40 mb-3">Pakiety główne</p>
-            <div className="grid grid-cols-3 gap-3 mb-2">
+            {/* Siatka 2 kolumny na mobile / 4 od sm w górę — dopasowana pod
+                4 pakiety (XS/S/M/L) zamiast poprzednich 3 (S/M/L). */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-2">
               {SELECTABLE_TIERS.map((t) => {
                 const active = tier === t && !selectedAddon;
                 return (
@@ -230,7 +235,7 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
                 );
               })}
             </div>
-            <p className="text-xs text-white/40 mb-7">Wybierz jeden z pakietów głównych (S, M, L)</p>
+            <p className="text-xs text-white/40 mb-7">Wybierz jeden z pakietów głównych (XS, S, M, L)</p>
 
             <p className="text-xs font-semibold uppercase tracking-wide text-white/40 mb-3">Pakiety dodatkowe</p>
             <div className="flex flex-wrap gap-2 mb-2">

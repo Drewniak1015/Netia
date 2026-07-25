@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   Search,
   BadgeCheck,
+  Radio,
   PlayCircle,
   Users,
   Crown,
@@ -25,12 +26,17 @@ const FAQ_ITEMS = [
   {
     icon: Search,
     q: "Jak działa wyszukiwarka kanałów?",
-    a: "Wpisz minimum 3 znaki z nazwy kanału w polu „Szukaj Kanału” — wyniki aktualizują się na żywo. Możesz dodatkowo zawęzić listę zaznaczając pakiet główny (jeden z S / M / L, opcjonalnie w wariancie 4K) i jeden pakiet dodatkowy (Dla Dzieci, Ukraina, Dla dorosłych). Widok wyników przełączysz przyciskami „Kafelki” (z logo kanałów) i „Lista” (kompaktowa). Aktualną listę pobierzesz w PDF przyciskiem „Pobierz listę kanałów (PDF)”.",
+    a: "Wpisz minimum 3 znaki z nazwy kanału w polu „Szukaj Kanału” — wyniki aktualizują się na żywo. Możesz dodatkowo zawęzić listę zaznaczając pakiet główny (jeden z XS / S / M / L, opcjonalnie w wariancie 4K) i jeden pakiet dodatkowy (Dla Dzieci, Ukraina, Dla dorosłych). Widok wyników przełączysz przyciskami „Kafelki” (z logo kanałów) i „Lista” (kompaktowa). Aktualną listę pobierzesz w PDF przyciskiem „Pobierz listę kanałów (PDF)”.",
   },
   {
     icon: BadgeCheck,
     q: "Co oznacza „kanał gwarantowany” vs „niegwarantowany”?",
     a: "Gwarantowany to kanał, który Netia zobowiązuje się utrzymać w pakiecie przez czas trwania Twojej umowy. Niegwarantowany może zostać czasowo zamieniony lub usunięty z pakietu bez zmiany ceny — w takim przypadku Netia poinformuje Cię mailem przed zmianą. Większość kanałów premium (HBO, Cinemax, FilmBox) ma status gwarantowany; w pakietach głównych proporcja to około 1/3 gwarantowanych do 2/3 niegwarantowanych.",
+  },
+  {
+    icon: Radio,
+    q: "Co zawiera Pakiet XS?",
+    a: "Pakiet XS to baza dołączona automatycznie do każdego pakietu głównego (S, M, L zawierają w sobie wszystkie kanały z XS). To 35 kanałów: główne ogólnopolskie stacje (Polsat, TVP1, TVP2, TV4), kilka kanałów tematycznych i regionalnych oraz 16 kanałów regionalnych TVP liczonych łącznie. Jeśli szukasz absolutnego minimum bez dopłat za pakiet główny — to właśnie ten zestaw.",
   },
   {
     icon: PlayCircle,
@@ -49,8 +55,8 @@ const FAQ_ITEMS = [
   },
   {
     icon: Layers,
-    q: "Czym dokładnie różnią się Pakiety S, M i L?",
-    a: "Progresja jest narastająca — M zawiera wszystko co S plus dodatkowe sport / filmy / tematyczne, L zawiera wszystko co M plus duży zestaw dokumentalnych, premium ogólnodostępnych, muzycznych i dodatkowych sport / film. W liczbach: S = 81, M = 106 (+25 vs S), L = 185 (+79 vs M). Cena rośnie proporcjonalnie — sprawdź konfigurator pakietów na /oferta dla aktualnych dopłat.",
+    q: "Czym dokładnie różnią się Pakiety XS, S, M i L?",
+    a: "Progresja jest narastająca — XS to baza wliczona automatycznie w każdy pakiet główny, S dodaje do niej klasyczny zestaw informacyjno-rozrywkowy, M dodaje do S sport / filmy / tematyczne, a L dodaje do M duży zestaw dokumentalnych, premium ogólnodostępnych, muzycznych i dodatkowych sport / film. W liczbach: XS = 35, S = 81, M = 106 (+25 vs S), L = 185 (+79 vs M). Cena rośnie proporcjonalnie — sprawdź konfigurator pakietów na /oferta dla aktualnych dopłat.",
   },
   {
     icon: MonitorPlay,
@@ -80,7 +86,7 @@ const FAQ_ITEMS = [
   {
     icon: Hash,
     q: "Ile w sumie kanałów ma Netia w ofercie TV?",
-    a: "Baza obejmuje 232 unikalne kanały rozproszone po pakietach głównych (S / M / L), wariantach 4K, dodatkach tematycznych (Dzieci, Ukraina, Dla dorosłych) oraz pakietach premium kanałowych (HBO, Canal+, Polsat Sport Premium, Eleven, FilmBox, Cinemax). Większość kanałów występuje w więcej niż jednym pakiecie (np. kanał z pakietu S znajdziesz też w M i L), dlatego suma „kanałów w pakiecie” jest większa niż liczba unikalnych pozycji w bazie.",
+    a: "Baza obejmuje 232 unikalne kanały rozproszone po pakietach głównych (XS / S / M / L), wariantach 4K, dodatkach tematycznych (Dzieci, Ukraina, Dla dorosłych) oraz pakietach premium kanałowych (HBO, Canal+, Polsat Sport Premium, Eleven, FilmBox, Cinemax). Większość kanałów występuje w więcej niż jednym pakiecie (np. kanał z pakietu XS znajdziesz też w S, M i L), dlatego suma „kanałów w pakiecie” jest większa niż liczba unikalnych pozycji w bazie.",
   },
   {
     icon: RefreshCw,
@@ -183,7 +189,7 @@ const [openIndex, setOpenIndex] = useState<number | null>(null);
           className="text-center mb-12 max-w-lg mx-auto text-sm sm:text-base text-white/65 faq-animate"
           style={{ animationDelay: "160ms" }}
         >
-          Wszystko o wyszukiwarce kanałów, różnicach między pakietami S / M / L
+          Wszystko o wyszukiwarce kanałów, różnicach między pakietami XS / S / M / L
           oraz dodatkach tematycznych i premium.
         </p>
 
