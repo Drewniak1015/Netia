@@ -994,7 +994,13 @@ export default function PopularneOferty() {
             </m.div>
           </m.div>
 
-          <div className="relative mt-14">
+          {/* PACKAGE CARDS — id="pakiety" + scroll-mt-[140px], analogicznie do
+              id="pakiety-max" w OfferMaxSection.tsx. Link "6 Miesięcy za 0 zł"
+              w NetiaHeader.tsx prowadzi na "/oferty/popularne#pakiety", więc po
+              kliknięciu strona ląduje bezpośrednio przy kartach ofertowych,
+              a nie na samej górze (hero banner) — scroll-mt kompensuje
+              wysokość fixed headera. */}
+          <div id="pakiety" className="relative mt-14 scroll-mt-[140px]">
             <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
               <DottedBackground variant="dots" size={22} />
             </div>

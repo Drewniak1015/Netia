@@ -876,13 +876,21 @@ export default function NajlepszaCenaOferty() {
             </m.div>
           </m.div>
 
+          {/* SECTION TITLE — id="pakiety" + scroll-mt-[140px], analogicznie do
+              id="pakiety-max" w OfferMaxSection.tsx oraz id="pakiety" w
+              PopularneOferty.tsx. Link "Najlepsza Cena" w NetiaHeader.tsx
+              prowadzi na "/oferty/NajlepszaCena#pakiety", więc po kliknięciu
+              strona ląduje bezpośrednio przy kartach ofertowych, a nie na
+              samej górze (hero banner) — scroll-mt kompensuje wysokość fixed
+              headera. */}
           <m.div
+            id="pakiety"
             initial={reduceMotion ? false : "hidden"}
             whileInView="visible"
             viewport={{ once: true, amount: 0.6 }}
             variants={fadeUp}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="mt-14 mb-8 text-center sm:mt-16 sm:mb-10"
+            className="mt-14 mb-8 scroll-mt-[140px] text-center sm:mt-16 sm:mb-10"
           >
             <h2 className="text-[clamp(24px,3.4vw,34px)] font-extrabold text-white">
               Wybierz swoją <span className="text-teal-300">ofertę</span>

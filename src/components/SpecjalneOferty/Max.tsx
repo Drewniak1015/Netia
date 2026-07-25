@@ -71,6 +71,13 @@ import DottedBackground from "@/components/ui/DottedBackground";
  * PopularneOferty — oraz zwinięty domyślnie panel "Zobacz szczegóły oferty"
  * z pełnym zapisem prawnym (wcześniej tekst prawny był zawsze widoczny na
  * pełną szerokość na dole sekcji).
+ *
+ * FIX (kotwica z headera): sekcja tytułu + siatki kart pakietów (MAX 1000 /
+ * MAX 2000) ma teraz id="pakiety-max" + scroll-mt-[110px]. Link "12 Miesięcy
+ * za 0 zł" w NetiaHeader.tsx prowadzi na "/oferty/max#pakiety-max", więc po
+ * kliknięciu strona ląduje bezpośrednio przy kartach ofertowych, a nie na
+ * samej górze (hero banner) — scroll-mt kompensuje wysokość fixed headera,
+ * żeby nagłówek sekcji nie chował się pod nim.
  */
 
 /* Wspólny wariant fade-up — zgodnie z PopularneOferty.tsx */
@@ -599,14 +606,21 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
         </m.section>
 
         <div className="mx-auto max-w-[1140px] px-4 sm:px-6">
-          {/* SECTION TITLE */}
+          {/* SECTION TITLE + PACKAGE CARDS — id="pakiety-max" + scroll-mt-[110px]
+              to cel kotwicy z NetiaHeader.tsx ("/oferty/max#pakiety-max").
+              scroll-mt kompensuje wysokość fixed headera (Logo h-16 + py-4
+              ≈ 96px), żeby po przewinięciu tytuł sekcji nie chował się pod
+              nim. id musi siedzieć na tym samym elemencie, który ma się
+              pojawić na górze viewportu po scrollu — stąd na wrapperze
+              tytułu, a nie np. na samej siatce kart poniżej. */}
           <m.div
+            id="pakiety-max"
             initial={reduceMotion ? false : "hidden"}
             whileInView="visible"
             viewport={{ once: true, amount: 0.6 }}
             variants={fadeUp}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="mt-12 mb-8 text-center sm:mt-16 sm:mb-10"
+            className="mt-12 mb-8 scroll-mt-[140px] text-center sm:mt-16 sm:mb-10"
           >
             <h2 className="text-[clamp(24px,3.4vw,34px)] font-extrabold text-white">
               Wybierz swój pakiet <span className="text-pink-400">Max</span>

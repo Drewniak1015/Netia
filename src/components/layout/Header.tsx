@@ -74,19 +74,27 @@ const NAV: NavItem[] = [
   icon: Sparkles,
   badge: "NOWOŚĆ",
   accent: true,
-  href: "/oferty/max",
+  // Kotwica #pakiety-max: klik z headera ma lądować od razu w sekcji z
+  // kartami pakietów (MAX 1000 / MAX 2000) na stronie /oferty/max, a nie
+  // na samej górze (hero banner). Patrz OfferMaxSection.tsx — id + scroll-mt
+  // dodane na kontenerze tej sekcji.
+  href: "/oferty/max#pakiety-max",
 },
 {
   title: "6 Miesięcy za 0 zł",
   desc: "Internet + router i dekoder w cenie — szybki start bez dopłat do sprzętu.",
   icon: Wifi,
-  href: "/oferty/popularne",
+  // Kotwica #pakiety: analogicznie do #pakiety-max powyżej — klik z headera
+  // ma lądować bezpośrednio przy kartach ofertowych na /oferty/popularne,
+  // a nie na samej górze (hero banner). Patrz PopularneOferty.tsx — id
+  // "pakiety" + scroll-mt dodane na kontenerze siatki kart.
+  href: "/oferty/popularne#pakiety",
 },
 {
   title: "Najlepsza Cena",
   desc: "Internet i TV bez zbędnych dodatków — płacisz tylko za to, czego potrzebujesz.",
   icon: Tag,
-  href: "/oferty/NajlepszaCena",
+  href: "/oferty/NajlepszaCena#pakiety",
 },
           ],
         },

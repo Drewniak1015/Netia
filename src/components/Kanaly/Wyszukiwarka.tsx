@@ -27,6 +27,17 @@ type Props = {
 // użytkownik może zawęzić wyniki wyłącznie do kanałów z pakietu XS.
 const SELECTABLE_TIERS: Tier[] = ["xs", "s", "m", "l"];
 
+// Klik w pakiet (XS/S/M/L) lub dodatek wewnątrz samej wyszukiwarki ma
+// przewijać w dół do listy wyników — po zmianie filtra lista bywa
+// niewidoczna (np. na mobile, po dłuższym scrollu w dół strony), więc bez
+// tego user musiałby sam szukać, gdzie wyniki się zaktualizowały.
+// `scroll-mt-[110px]` na elemencie docelowym (patrz niżej) daje
+// natywny odstęp od górnej krawędzi viewportu przy scrollIntoView.
+function scrollToResults() {
+  const el = document.getElementById("wyniki-kanalow");
+  el?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 // FIX (TBT/Style & Layout): przy pełnej liście (np. ~200 kanałów w
 // pakiecie S) montowanie WSZYSTKICH kafelków naraz przy pierwszym
 // renderze to spory koszt głównego wątku (każdy kafelek to osobny
@@ -221,6 +232,7 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
                     onClick={() => {
                       setSelectedAddon(null);
                       onTierChange(t);
+                      scrollToResults();
                     }}
                     whileHover={{ scale: 1.015 }}
                     whileTap={{ scale: 0.98 }}
@@ -244,7 +256,10 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
                 return (
                   <m.button
                     key={a.key}
-                    onClick={() => setSelectedAddon(active ? null : a.key)}
+                    onClick={() => {
+                      setSelectedAddon(active ? null : a.key);
+                      scrollToResults();
+                    }}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     className={`rounded-full border px-4 py-2 text-xs sm:text-sm font-medium transition-colors duration-200 ${
@@ -303,8 +318,10 @@ export default function Wyszukiwarka({ tier, onTierChange }: Props) {
           {/* Wyniki wyszukiwarki — full-bleed kropkowane tło pod spodem.
               Niższe opacity i mniejszy rozstaw niż gdzie indziej, bo kafelki
               kanałów są bardzo małe i gęsto upakowane — subtelniejszy wzór
-              lepiej się komponuje i nie tworzy szumu między logotypami. */}
-          <div className="relative">
+              lepiej się komponuje i nie tworzy szumu między logotypami.
+              id + scroll-mt: cel dla scrollToResults() wywoływanego po
+              kliknięciu pakietu/dodatku powyżej. */}
+          <div id="wyniki-kanalow" className="relative scroll-mt-[110px]">
             <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
               <DottedBackground variant="dots" size={20} opacity={0.08} />
             </div>

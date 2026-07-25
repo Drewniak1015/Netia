@@ -29,11 +29,12 @@ import DottedBackground from "@/components/ui/DottedBackground";
 // osobna opcja (traktowany wyłącznie jako baza automatycznie wliczona do
 // S/M/L) — teraz pokazujemy go jako pełnoprawną, czwartą kartę do wyboru,
 // bo dane dla niego są już kompletne i zweryfikowane w lib/channels.ts.
-const SELECTABLE_TIERS: { tier: Tier; name: string; desc: string }[] = [
+const SELECTABLE_TIERS: { tier: Tier; name: string; desc: string; note?: string }[] = [
   {
     tier: "xs",
     name: "Pakiet XS",
     desc: "Baza — kanały ogólnopolskie i regionalne TVP, bez dopłat.",
+    note: "w tym 16 kanałów regionalnych TVP",
   },
   {
     tier: "s",
@@ -311,7 +312,20 @@ export default function Przewodnik({
                     <m.button
                       key={pkg.tier}
                       type="button"
-                      onClick={() => onTierChange(pkg.tier)}
+                      onClick={() => {
+                        onTierChange(pkg.tier);
+                        // Klik w pakiet ma od razu zaprowadzić do wyników
+                        // (ten sam cel #wyniki-kanalow, do którego prowadzą
+                        // przyciski pakietów wewnątrz samej Wyszukiwarki) —
+                        // nie tylko do nagłówka całej sekcji.
+                        // requestAnimationFrame: czekamy na jedną klatkę,
+                        // żeby zmiana stanu (aktywny kafelek, ewentualny
+                        // re-render Wyszukiwarki) zdążyła się odbić w DOM
+                        // przed policzeniem pozycji do scrolla — bez tego
+                        // sporadycznie potrafiło "nie zadziałać" przy
+                        // pierwszym kliknięciu (stare współrzędne elementu).
+                        requestAnimationFrame(() => scrollToLocalSection("wyniki-kanalow"));
+                      }}
                       variants={cardItem}
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.98 }}
@@ -333,6 +347,11 @@ export default function Przewodnik({
                       <span className="text-xs font-semibold text-teal-400">
                         {TIER_CHANNEL_COUNTS[pkg.tier]} kanałów
                       </span>
+                      {pkg.note && (
+                        <span className="mt-1 text-[11px] text-white/40 leading-snug">
+                          {pkg.note}
+                        </span>
+                      )}
                     </m.button>
                   );
                 })}
