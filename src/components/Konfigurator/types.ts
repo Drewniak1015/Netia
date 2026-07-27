@@ -33,6 +33,16 @@ export interface Pakiet {
   cena: number;
   promoBadge?: string;
   wyrozniony?: boolean;
+  /** Informacja, że pakiet domyślnie zawiera bazowy pakiet TV (np. "Telewizja XS w pakiecie"). */
+  tvDomyslny?: string;
+  /**
+   * Tiery Pakietów TV dostępne do wyboru/dokupienia przy tym pakiecie
+   * internetowym. Jeśli brak (undefined), dostępne są wszystkie pakiety
+   * z `OFERTY_TV`. Np. dla 600 Mb/s tylko "m" i "l" — "s" nie jest
+   * pokazywane jako opcja, bo Telewizja XS jest już wliczona domyślnie
+   * (patrz `tvDomyslny`).
+   */
+  dostepneTV?: Tier[];
 }
 
 /* ---------------------------------------------------------------------- */
@@ -55,6 +65,16 @@ export interface OfertaDodatek extends Oferta {
   /** Klucz z lib/channels.ts (pole ADDONS[].key) — jeśli podany, kafelek
    *  pokaże dodatkowy przycisk "Zobacz kanały" otwierający listę kanałów. */
   addonKey?: string;
+  /**
+   * Cena dodatku zależna od wybranego pakietu TV (tier "s" | "m" | "l").
+   * Jeśli dla aktywnego tieru istnieje wpis, zastępuje on `cena` przy
+   * wyświetlaniu w konfiguratorze (np. Giga Nagrywarka Maxi: 5 zł przy
+   * Pakiecie S, 0 zł — czyli w cenie — przy Pakietach M i L).
+   * Wartość 0 oznacza, że dodatek jest wliczony w pakiet TV i kafelek
+   * powinien pokazać "Już w Twoim pakiecie" zamiast ceny (patrz
+   * Konfigurator.tsx: cenaDodatku / jestWliczony).
+   */
+  cenaPerTier?: Partial<Record<Tier, number>>;
 }
 
 /* ---------------------------------------------------------------------- */

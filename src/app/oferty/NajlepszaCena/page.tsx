@@ -35,29 +35,16 @@ const fadeUp = {
 };
 
 /* ---------------------------------------------------------------------- */
-/*  DANE OFERT — /NajlepszaCena                                           */
-/*  WYBIERAM 30  →  Internet Max 300 (router + Netia GO w cenie)          */
-/*  WYBIERAM 40  →  Internet Max 300 + TV S (router + dekoder w cenie)    */
-/*                                                                         */
-/*  UWAGA (poprawka copy — 23.07.2026):                                   */
-/*  Dodano `priceNote` — widoczna od razu przy cenie informacja o wzroście */
-/*  abonamentu po 24. miesiącu (obie oferty rosną do 60 zł/mies.).        */
-/*  Wcześniej ta informacja była tylko w długim disclaimerze prawnym na   */
-/*  dole strony. Dodano też `resultLine` — krótki efekt w praktyce pod    */
-/*  listą cech, zamiast samych suchych parametrów technicznych.           */
-/*                                                                         */
-/*  UWAGA (poprawka topografii — 23.07.2026):                             */
-/*  "Internet do 300 Mb/s" przeniesione z osobnej linijki pod nagłówkiem  */
-/*  karty na pierwszą pozycję listy cech (jak w MaxOfferCard w Oferty.tsx: */
-/*  "Internet do <b>{speed}</b>" jako pierwszy punkt z ptaszkiem). Ujedno- */
-/*  licona topografia karty w całym serwisie: nagłówek+cena, potem cała   */
-/*  lista cech zaczynająca się od prędkości internetu.                    */
-/*                                                                         */
-/*  UWAGA (poprawka czytelności — 24.07.2026):                            */
-/*  Prędkość ("300 Mb/s") była widoczna wyłącznie jako pierwsza pozycja   */
-/*  listy cech — łatwo umykała przy skanowaniu karty. Dodano osobną       */
-/*  plakietkę z prędkością w nagłówku karty (obok "WYBIERZ 30/40"), żeby  */
-/*  była widoczna od razu, poza listą benefitów.                         */
+/*  FIX (responsywność na tablety — 26.07.2026):                          */
+/*  Zewnętrzna siatka kart (2 oferty) przełączała się na 2 kolumny już od */
+/*  sm (640px) — DOKŁADNIE w tym samym momencie, w którym WEWNĘTRZNA      */
+/*  lista cech w środku karty też przechodzi na 2 kolumny (sm:grid-cols-2).*/
+/*  Na tablecie w portrecie (768px) karta ma wtedy ~360px szerokości, a   */
+/*  lista cech w środku próbuje zmieścić 2 kolumny w tej wąskiej karcie — */
+/*  teksty typu "Netia Player/Evobox 4K" łamały się nieczytelnie.         */
+/*  Przesunięto próg zewnętrznej siatki kart do `lg` (1024px), więc karty */
+/*  zostają w pełnej szerokości przez cały zakres tabletów, a wewnętrzna  */
+/*  lista cech ma zawsze wystarczająco miejsca na 2 kolumny.              */
 /* ---------------------------------------------------------------------- */
 interface OfferFeature {
   label: string;
@@ -136,12 +123,6 @@ const faqs = [
   },
 ];
 
-/* ---------------------------------------------------------------------- */
-/*  GUARANTEES — kompaktowy pasek "Kupujesz bez ryzyka", spójny z tym,    */
-/*  co jest na stronie głównej. Ta zakładka wcześniej nie miała żadnej    */
-/*  sekcji budującej zaufanie — a to kluczowy moment dla kogoś, kto       */
-/*  szuka najtańszej oferty i może się obawiać "taniość = gorsza jakość". */
-/* ---------------------------------------------------------------------- */
 const GUARANTEES = [
   {
     icon: Gauge,
@@ -160,11 +141,6 @@ const GUARANTEES = [
   },
 ];
 
-/* ---------------------------------------------------------------------- */
-/*  Popupy "Szczegóły" — routery, dekoder, Netia GO                       */
-/*  Klikalna jest KAŻDA pozycja w liście cech karty ofertowej, która ma   */
-/*  przypisany `infoId` wskazujący na wpis w INFO_ITEMS poniżej.          */
-/* ---------------------------------------------------------------------- */
 type SectionContent =
   | { type: "paragraphs"; items: string[] }
   | { type: "bullets"; items: string[] }
@@ -678,12 +654,6 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
   );
 }
 
-/* ---------------------------------------------------------------------- */
-/*  SzczegolyOferty — domyślnie zwinięty accordion na długi disclaimer     */
-/*  prawny. Ten sam wzorzec co w Oferty.tsx (sekcja MAX/Podstawa na       */
-/*  stronie głównej) — treść musi być dostępna, ale nie musi zaśmiecać    */
-/*  widoku na stałe.                                                      */
-/* ---------------------------------------------------------------------- */
 function SzczegolyOferty({ children }: { children: ReactNode }) {
   const [otwarte, setOtwarte] = useState(false);
 
@@ -876,13 +846,6 @@ export default function NajlepszaCenaOferty() {
             </m.div>
           </m.div>
 
-          {/* SECTION TITLE — id="pakiety" + scroll-mt-[140px], analogicznie do
-              id="pakiety-max" w OfferMaxSection.tsx oraz id="pakiety" w
-              PopularneOferty.tsx. Link "Najlepsza Cena" w NetiaHeader.tsx
-              prowadzi na "/oferty/NajlepszaCena#pakiety", więc po kliknięciu
-              strona ląduje bezpośrednio przy kartach ofertowych, a nie na
-              samej górze (hero banner) — scroll-mt kompensuje wysokość fixed
-              headera. */}
           <m.div
             id="pakiety"
             initial={reduceMotion ? false : "hidden"}
@@ -903,7 +866,13 @@ export default function NajlepszaCenaOferty() {
               <DottedBackground variant="dots" size={22} />
             </div>
 
- <div className="relative mx-auto grid w-full max-w-[1140px] grid-cols-1 items-stretch gap-6 px-4 sm:grid-cols-2 sm:px-6">
+            {/* FIX (responsywność na tablety): karty zostają w 1 kolumnie
+                (pełna szerokość) aż do `lg` (1024px) — wcześniej przełączały
+                się na 2 kolumny już od `sm` (640px), dokładnie w tym samym
+                momencie co WEWNĘTRZNA lista cech w środku każdej karty
+                (patrz niżej), co na tablecie w portrecie ściskało cechy
+                (np. "Netia Player/Evobox 4K") w ~170px szerokiej kolumnie. */}
+            <div className="relative mx-auto grid w-full max-w-[1140px] grid-cols-1 items-stretch gap-6 px-4 sm:px-6 lg:grid-cols-2">
               {offers.map((offer, i) => (
                 <m.div
                   key={offer.id}
@@ -932,8 +901,6 @@ export default function NajlepszaCenaOferty() {
                         {offer.eyebrow}
                       </p>
                     </div>
-                    {/* Prędkość widoczna od razu w nagłówku karty — poza listą
-                        benefitów, żeby nie umykała przy szybkim skanowaniu. */}
                     <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-teal-400/10 px-3 py-1.5 text-[13px] font-extrabold text-teal-300">
                       <Wifi size={13} />
                       {offer.speed}
@@ -1024,7 +991,6 @@ className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center jus
             </div>
           </div>
 
-          {/* Pasek gwarancji — "Kupujesz bez ryzyka", spójny ze stroną główną. */}
           <m.div
             initial={reduceMotion ? false : "hidden"}
             whileInView="visible"

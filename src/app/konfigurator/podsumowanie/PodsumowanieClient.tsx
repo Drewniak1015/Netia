@@ -81,7 +81,7 @@ export default function PodsumowaniePage() {
     .join(", ");
 
   const smsBody = encodeURIComponent(
-    `Dzwonię ws. skonfigurowanej oferty: ${opisKonfiguracji}. Łącznie: ${suma} zł/mies. (pierwsze 3 miesiące gratis na internet${tv ? " i TV" : ""}) + 79 zł aktywacji jednorazowo.`
+    `Dzwonię ws. skonfigurowanej oferty: ${opisKonfiguracji}. Łącznie: ${suma} zł/mies. (pierwsze 3 miesiące gratis na internet${tv ? " i TV" : ""}) + 79 zł aktywacji internetu${tv ? " i 2 zł aktywacji telewizji" : ""} jednorazowo.`
   );
 
   return (
@@ -166,8 +166,10 @@ export default function PodsumowaniePage() {
 
                   {pozycja.promoKolor && (
                     <div className="flex justify-start [grid-area:badge] sm:justify-center">
-                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold ${promoKlasy[pozycja.promoKolor]}`}>
-                        <Gift size={10} />
+                      {/* Powiększona plakietka "3 mies. gratis": text-[10px]→text-xs,
+                          px-2.5 py-1→px-3.5 py-1.5, ikona 10→13px. */}
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold ${promoKlasy[pozycja.promoKolor]}`}>
+                        <Gift size={13} />
                         3 mies. gratis
                       </span>
                     </div>
@@ -224,7 +226,7 @@ export default function PodsumowaniePage() {
               )}
             </AnimatePresence>
 
-            {/* Stała pozycja — jednorazowa opłata aktywacyjna, doliczana zawsze do pierwszej faktury */}
+            {/* Stała pozycja — jednorazowa opłata aktywacyjna internetu, doliczana zawsze do pierwszej faktury */}
             <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-4 last:border-none sm:grid sm:grid-cols-[11rem_1fr_6.5rem] sm:items-center sm:gap-3 sm:px-5 md:grid-cols-[13rem_1fr_6.5rem]">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="hidden h-4 w-4 shrink-0 sm:block" aria-hidden="true" />
@@ -240,6 +242,33 @@ export default function PodsumowaniePage() {
               </div>
             </div>
 
+            {/* Aktywacja telewizji — osobna, niższa opłata jednorazowa, tylko gdy TV jest w konfiguracji */}
+            <AnimatePresence initial={false}>
+              {tv && (
+                <m.div
+                  layout
+                  initial={reduceMotion ? false : { opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="overflow-hidden border-b border-white/10 px-4 py-4 last:border-none sm:grid sm:grid-cols-[11rem_1fr_6.5rem] sm:items-center sm:gap-3 sm:px-5 md:grid-cols-[13rem_1fr_6.5rem]"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="hidden h-4 w-4 shrink-0 sm:block" aria-hidden="true" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-white">Aktywacja telewizji</p>
+                      <p className="text-xs text-white/50">Opłata jednorazowa, na pierwszej fakturze</p>
+                    </div>
+                  </div>
+                  <div className="hidden sm:block" />
+                  <div className="flex items-center justify-end gap-3">
+                    <span className="text-sm font-bold text-white">2 zł</span>
+                    <div className="hidden h-7 w-7 shrink-0 sm:block" aria-hidden="true" />
+                  </div>
+                </m.div>
+              )}
+            </AnimatePresence>
+
             <div className="bg-teal-400/10 px-5 py-5">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold text-white">Razem miesięcznie</span>
@@ -254,7 +283,7 @@ export default function PodsumowaniePage() {
                 </m.span>
               </div>
               <p className="mt-1 text-xs text-white/45">
-                + jednorazowa aktywacja 79 zł na pierwszej fakturze
+                + jednorazowa aktywacja 79 zł{tv ? " (internet) + 2 zł (telewizja)" : ""} na pierwszej fakturze
               </p>
             </div>
           </m.div>

@@ -64,11 +64,44 @@ export const OFERTY_5G: Oferta5G[] = [
 /* ---------------------------------------------------------------------- */
 /*  Usługi dodatkowe — umowa 24 mies.                                      */
 /*  TODO: nazwa tej sekcji nie została podana — zmień na docelową         */
+/*                                                                          */
+/*  UWAGA (Giga Nagrywarka Maxi):                                          */
+/*  Cena zależy od wybranego pakietu TV — 5 zł przy Pakiecie S, w cenie   */
+/*  (0 zł / wliczone) przy Pakietach M i L. Pole `cenaPerTier` mapuje      */
+/*  tier Pakietu TV ("s" | "m" | "l") na cenę dodatku. Tam gdzie tego pola */
+/*  brak, obowiązuje zwykłe pole `cena` niezależnie od pakietu TV.         */
+/*                                                                          */
+/*  WYMAGANA ZMIANA W types.ts:                                           */
+/*  export interface OfertaDodatek extends Oferta {                       */
+/*    addonKey?: string;                                                  */
+/*    cenaPerTier?: Partial<Record<OfertaTV["tier"], number>>;             */
+/*  }                                                                      */
+/*                                                                          */
+/*  WYMAGANA ZMIANA W KOMPONENCIE KONFIGURATORA (miejsce, gdzie renderuje  */
+/*  się lista dodatków i liczy cena koszyka) — dla pozycji z              */
+/*  `cenaPerTier`, gdy cena dla aktywnego tieru wynosi 0:                  */
+/*    - nie pokazywać "0 zł",                                              */
+/*    - wyszarzyć wiersz/kartę dodatku (np. opacity-50, tekst text-white/40),*/
+/*    - podpisać np. "Już w Twoim pakiecie" zamiast ceny.                  */
+/*  Przykładowa funkcja pomocnicza (do wklejenia w tamtym komponencie):    */
+/*                                                                          */
+/*  function cenaDodatku(dodatek: OfertaDodatek, tier: OfertaTV["tier"]) { */
+/*    return dodatek.cenaPerTier?.[tier] ?? dodatek.cena;                  */
+/*  }                                                                      */
+/*  function jestWliczony(dodatek: OfertaDodatek, tier: OfertaTV["tier"]) {*/
+/*    return dodatek.cenaPerTier?.[tier] === 0;                           */
+/*  }                                                                      */
 /* ---------------------------------------------------------------------- */
 export const OFERTY_DODATKOWE: OfertaDodatek[] = [
   { id: "multiroom", nazwa: "Multiroom", opis: "Oglądaj telewizję na dodatkowym telewizorze w innym pokoju.", cena: 10 },
   { id: "multiroom-4k", nazwa: "Multiroom 4K", opis: "Dodatkowy dekoder 4K w innym pomieszczeniu.", cena: 15 },
-  { id: "giga-nagrywarka-maxi", nazwa: "Giga Nagrywarka Maxi", opis: "Więcej miejsca na nagrania programów w chmurze.", cena: 15 },
+  {
+    id: "giga-nagrywarka-maxi",
+    nazwa: "Giga Nagrywarka Maxi",
+    opis: "Więcej miejsca na nagrania programów w chmurze.",
+    cena: 5,
+    cenaPerTier: { s: 5, m: 0, l: 0 },
+  },
   { id: "bezpieczny-internet", nazwa: "Bezpieczny Internet", opis: "Ochrona urządzeń i bezpieczeństwo podczas korzystania z internetu.", cena: 10 },
   { id: "stale-ip", nazwa: "Stałe IP", opis: "Publiczny, niezmienny adres IP do zdalnego dostępu i serwerów.", cena: 10 },
   { id: "hbo", nazwa: "HBO + MAX", opis: "Kanały HBO oraz dostęp do platformy streamingowej Max.", cena: 25, addonKey: "hbo" },

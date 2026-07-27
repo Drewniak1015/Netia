@@ -216,7 +216,7 @@ export default function PoradnikTechnologie() {
           >
             Pakiety Netii zaczynają się od 30 zł/mies. —{" "}
             <Link
-              href="/oferty/NajlepszaCena"
+              href="/oferty/NajlepszaCena#pakiety"
               className="inline-flex items-center gap-1 font-semibold text-teal-400 hover:text-teal-300 transition-colors"
             >
             wybierz ofertę i sprawdź dostępność pod swoim adresem

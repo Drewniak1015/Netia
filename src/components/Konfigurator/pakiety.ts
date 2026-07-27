@@ -2,20 +2,16 @@ import type { Pakiet } from "./types";
 
 /* ---------------------------------------------------------------------- */
 /*  Dane pakietów internetowych — umowa 24 mies.                           */
-/*  UWAGA: pakiet "Internet do 150Mb/s" (id: 24-150) został usunięty       */
-/*  na życzenie — nie jest już częścią oferty.                            */
+/*  UWAGA: pakiety "Internet do 150Mb/s" oraz "Internet do 300Mb/s" zostały*/
+/*  usunięte na życzenie — nie są już częścią oferty.                    */
+/*                                                                          */
+/*  NOWOŚĆ: każdy pakiet ma domyślnie wliczoną Telewizję XS (`tvDomyslny`) */
+/*  — konfigurator pokazuje to jako informację nad sekcją Telewizja. Dla   */
+/*  600 Mb/s dodatkowo ograniczono wybór do Pakietów M i L (`dostepneTV`)  */
+/*  — Pakiet S nie jest pokazywany jako opcja, bo XS jest już bazowo w    */
+/*  cenie.                                                                 */
 /* ---------------------------------------------------------------------- */
 export const PAKIETY_24: Pakiet[] = [
-  {
-    id: "24-300",
-    nazwa: "Internet do 300Mb/s",
-    predkosc: "300 Mb/s",
-    upload: "Upload do 50 Mb/s",
-    wyposazenie: "Router WiFi",
-    routerId: "domyslny",
-    cena: 55,
-    promoBadge: "Abonament 3 mies. 0 zł po rabatach",
-  },
   {
     id: "24-600",
     nazwa: "Internet do 600Mb/s",
@@ -25,7 +21,8 @@ export const PAKIETY_24: Pakiet[] = [
     routerId: "domyslny",
     cena: 65,
     promoBadge: "Abonament 3 mies. 0 zł po rabatach",
-    wyrozniony: true,
+    tvDomyslny: "Telewizja XS w pakiecie",
+    dostepneTV: ["m", "l"],
   },
   {
     id: "24-1000",
@@ -36,6 +33,8 @@ export const PAKIETY_24: Pakiet[] = [
     routerId: "szablon-1",
     cena: 80,
     promoBadge: "Abonament 3 mies. 0 zł po rabatach",
+    wyrozniony: true,
+    tvDomyslny: "Telewizja XS w pakiecie",
   },
   {
     id: "24-2000",
@@ -46,6 +45,7 @@ export const PAKIETY_24: Pakiet[] = [
     routerId: "szablon-2",
     cena: 100,
     promoBadge: "Abonament 3 mies. 0 zł po rabatach",
+    tvDomyslny: "Telewizja XS w pakiecie",
   },
 ];
 

@@ -8,6 +8,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: "https://netia.vercel.app/", priority: 1.0, changeFrequency: "daily" },
     { url: "https://netia.vercel.app/oferty/max", priority: 0.9, changeFrequency: "weekly" },
     { url: "https://netia.vercel.app/oferty/popularne", priority: 0.9, changeFrequency: "weekly" },
+    { url: "https://netia.vercel.app/oferty/dobierz", priority: 0.9, changeFrequency: "weekly" },
+    { url: "https://netia.vercel.app/oferty/internet-tv", priority: 0.9, changeFrequency: "weekly" },
     { url: "https://netia.vercel.app/konfigurator", priority: 0.8, changeFrequency: "monthly" },
     { url: "https://netia.vercel.app/kanaly", priority: 0.5, changeFrequency: "monthly" },
     { url: "https://netia.vercel.app/pomoc/faq", priority: 0.6, changeFrequency: "monthly" },

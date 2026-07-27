@@ -239,27 +239,45 @@ function Hero({ city }: { city: City }) {
         viewport={viewportOnce}
       >
         {HERO_STATS.map((stat) => (
-          <motion.div
-            key={stat.label}
-            variants={fadeUp}
-            className={`rounded-2xl border px-4 py-5 text-center ${
-              stat.highlighted
-                ? "border-teal-300/50 bg-teal-400/10"
-                : "border-white/10 bg-white/5"
-            }`}
-          >
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
-              Już od
-            </p>
-            <p
-              className={`mt-1 text-2xl font-extrabold sm:text-3xl ${
-                stat.highlighted ? "text-teal-300" : "text-white"
+          <motion.div key={stat.label} variants={fadeUp}>
+            <Link
+              href="/konfigurator/InternetOrazTelewizja"
+              className={`group relative block rounded-2xl border px-4 py-5 text-center shadow-[0_0_0_1px_rgba(255,255,255,0)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(45,212,191,0.35)] ${
+                stat.highlighted
+                  ? "border-teal-300/50 bg-teal-400/10 hover:border-teal-300/80 hover:bg-teal-400/15"
+                  : "border-white/10 bg-white/5 hover:border-teal-300/50 hover:bg-white/[0.08]"
               }`}
             >
-              {stat.price}
-            </p>
-            <p className="mt-0.5 text-[11px] text-white/50">{stat.note}</p>
-            <p className="mt-2 text-xs font-medium text-white/70">{stat.label}</p>
+              <span
+                className={`absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full transition-transform duration-200 group-hover:translate-x-0.5 ${
+                  stat.highlighted ? "bg-teal-300/20 text-teal-200" : "bg-white/10 text-white/50 group-hover:text-teal-300"
+                }`}
+              >
+                <ChevronRight size={14} />
+              </span>
+
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
+                Już od
+              </p>
+              <p
+                className={`mt-1 text-2xl font-extrabold sm:text-3xl ${
+                  stat.highlighted ? "text-teal-300" : "text-white"
+                }`}
+              >
+                {stat.price}
+              </p>
+              <p className="mt-0.5 text-[11px] text-white/50">{stat.note}</p>
+              <p className="mt-2 text-xs font-medium text-white/70">{stat.label}</p>
+
+              <span
+                className={`mt-3 flex items-center justify-center gap-1 text-[11px] font-semibold ${
+                  stat.highlighted ? "text-teal-300" : "text-teal-300/80"
+                }`}
+              >
+                Skonfiguruj
+                <ChevronRight size={12} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+              </span>
+            </Link>
           </motion.div>
         ))}
       </motion.div>
@@ -284,45 +302,6 @@ function Hero({ city }: { city: City }) {
   );
 }
 
-/* PromoBanner — wcześniej pomarańczowy (orange-400/500), teraz przekolorowany
-   na teal, żeby trzymać się jednej, spójnej palety akcentu w całym serwisie
-   (ten sam teal co CTA, badge'e i gradienty hero). */
-function PromoBanner() {
-  return (
-    <motion.div
-      className="mx-auto mt-10 max-w-305 rounded-2xl border border-teal-400/25 bg-teal-400/[0.06] px-5 py-4 sm:px-6"
-      variants={fadeUp}
-      initial="hidden"
-      whileInView="show"
-      viewport={viewportOnce}
-    >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-teal-300">
-            Internet 1000 Mb/s — najczęściej wybierane
-          </p>
-          <p className="mt-1 text-sm font-semibold text-white/85 sm:text-base">
-            Sam Internet do 1000 Mb/s z routerem Combo ONT Wi-Fi 6. Promocja „6 miesięcy za
-            0 zł” — przez pół roku tylko aktywacja, potem 65 zł/mies.
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-3">
-          <div className="text-right">
-            <span className="mr-1 text-xs text-white/40 line-through">65 zł</span>
-            <span className="text-2xl font-extrabold text-white">0 zł</span>
-          </div>
-          <Link
-            href="/oferty/popularne"
-            className="whitespace-nowrap rounded-xl bg-teal-500 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-teal-600"
-          >
-            Sprawdź ofertę
-          </Link>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
 function MiniOfferCard({ offer }: { offer: (typeof MINI_OFFERS)[number] }) {
   return (
     <motion.div
@@ -338,7 +317,7 @@ function MiniOfferCard({ offer }: { offer: (typeof MINI_OFFERS)[number] }) {
         <span className="text-xs text-white/40 line-through">{offer.oldPrice}</span>
       </div>
       <Link
-        href="/oferty/popularne"
+        href="/konfigurator/InternetOrazTelewizja"
         className="mt-4 flex items-center justify-center gap-1.5 rounded-xl border border-teal-300/30 bg-teal-300/5 px-4 py-2.5 text-sm font-semibold text-teal-200 transition-colors hover:bg-teal-300/15"
       >
         Zobacz szczegóły
@@ -365,7 +344,6 @@ export default function CityPageClient({ city, districts, nearbyCities, faq }: C
 
       <div className="px-5 sm:px-6 lg:px-8">
         <Hero city={city} />
-        <PromoBanner />
       </div>
 
       {/* Główne oferty pakietowe — komponent współdzielony z home/Oferty.tsx,
@@ -460,7 +438,7 @@ export default function CityPageClient({ city, districts, nearbyCities, faq }: C
           </motion.p>
           <motion.div variants={fadeUp} className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
-              href="/konfigurator"
+              href="/konfigurator/InternetOrazTelewizja"
               className="flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-teal-600"
             >
               <Sliders size={15} />

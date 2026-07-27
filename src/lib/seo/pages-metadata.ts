@@ -1,4 +1,4 @@
-// lib/seo/pages-metadata.ts
+// src/lib/seo/pages-metadata.ts
 //
 // Centralny rejestr title + description dla wszystkich statycznych
 // podstron serwisu. Każdy page.tsx importuje stąd swój klucz zamiast
@@ -6,8 +6,8 @@
 // edytuje się w jednym miejscu.
 //
 // Strony dynamiczne (blog posty, miasta) MAJĄ WŁASNE źródło prawdy:
-//   - blog:   content/blog/posts/index.ts (POSTS) + generateMetadata()
-//   - miasta: content/cities.ts (CITIES) + generateMetadata()
+//   - blog:   src/app/content/blog/posts (POSTS) + generateMetadata()
+//   - miasta: src/lib/cities.ts (CITIES) + generateMetadata()
 // Nie duplikuj ich tutaj — patrz komentarz na końcu pliku.
 
 import type { Metadata } from "next";
@@ -83,8 +83,7 @@ export const pagesMetadata: Record<string, Metadata> = {
       "Awaria internetu lub TV? Sprawdź 6 kroków naprawczych i zadzwoń na infolinię techniczną Netii, czynną całodobowo pod numerem 793 800 300.",
   },
 
-  // 11. /blog (wariant domyślny, bez kategorii — patrz generateMetadata
-  //     w app/blog/page.tsx dla wariantów per kategoria)
+  // 11. /blog
   blog: {
     title: "Blog Netia – Poradniki o Internecie, TV i Technologii",
     description:
@@ -104,20 +103,35 @@ export const pagesMetadata: Record<string, Metadata> = {
     title: "Podsumowanie Konfiguracji – Netia",
     robots: { index: false, follow: true },
   },
+
+  // 17. /oferty/dobierz — sekcja OfferQuizSection ("Dwa pytania i gotowe")
+  ofertyDobierz: {
+    title: "Dobierz Ofertę Netia – Internet + TV w 2 Pytania | Kalkulator",
+    description:
+      "Odpowiedz na 2 pytania i sprawdź dopasowaną ofertę Internetu i TV Netii – od 40 zł/mies., światłowód do 2 Gb/s, TV 4K w cenie. Bez zobowiązań, 3 min przez telefon.",
+  },
+
+  // 18. /oferty/internet-tv — sekcja OfferInternetTvSection ("Internet + TV XS")
+  //     PODMIEŃ klucz i ścieżkę page.tsx, jeśli realna trasa jest inna.
+  ofertyInternetTv: {
+    title: "Internet + Telewizja XS Netia – już od 30 zł/mies.",
+    description:
+      "Internet światłowodowy do 2 Gb/s z Telewizją XS od 30 zł/mies. Router i Netia GO w cenie, do 6 miesięcy za 0 zł. Sprawdź pakiety 300/600/1000/2000 Mb/s.",
+  },
 };
 
 /* -------------------------------------------------------------------- */
 /*  NIE dodawaj tutaj:                                                    */
 /*                                                                        */
 /*  #12, #13 — /blog/[slug] (posty)                                      */
-/*    Źródło: content/blog/posts/index.ts (POSTS), pole meta.title/       */
+/*    Źródło: src/app/content/blog/posts (POSTS), pole meta.title/        */
 /*    meta.excerpt. Generowane przez generateMetadata({ params }) w       */
-/*    app/blog/[slug]/page.tsx na podstawie POSTS.find(slug).             */
+/*    src/app/blog/[slug]/page.tsx na podstawie POSTS.find(slug).         */
 /*                                                                        */
 /*  #15 — /internet-miasta/[slug] (miasta)                               */
-/*    Źródło: content/cities.ts (CITIES). Generowane przez                */
-/*    generateMetadata({ params }) w app/internet-miasta/[slug]/page.tsx  */
-/*    wg szablonu:                                                        */
+/*    Źródło: src/lib/cities.ts (CITIES). Generowane przez                */
+/*    generateMetadata({ params }) w                                      */
+/*    src/app/internet-miasta/[slug]/page.tsx wg szablonu:                */
 /*      title: `Internet Netia ${city.name} – już od ${city.priceFrom}    */
 /*              zł/mies. | Oferta 2026`                                   */
 /*      description: `Światłowód Netia w ${city.name} od                 */

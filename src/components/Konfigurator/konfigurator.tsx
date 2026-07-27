@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState, useCallback, useEffect } from "react";
+import { useMemo, useState, useCallback, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { LazyMotion, domAnimation, m, useReducedMotion, AnimatePresence } from "framer-motion";
-import { Wifi, Tv, Smartphone, Gift, Flame, FileCheck2 } from "lucide-react";
+import { Wifi, Tv, Smartphone, Gift, Flame, FileCheck2, ArrowRight } from "lucide-react";
 import type { Tier } from "@/lib/channels";
 import type { Oferta5G } from "@/components/Konfigurator/Oferta5G";
 import DottedBackground from "@/components/ui/DottedBackground";
@@ -66,8 +67,39 @@ const AddonKanalyModal = dynamic(() => import("./AddonKanalyModal"), { ssr: fals
 /*  zależy już od useSearchParams(), więc nie ma ryzyka powrotu tego buga. */
 /* ---------------------------------------------------------------------- */
 
+/* ---------------------------------------------------------------------- */
+/*  NOWOŚĆ (cena dodatku zależna od pakietu TV):                          */
+/*  Niektóre dodatki (np. Giga Nagrywarka Maxi) mają różną cenę w         */
+/*  zależności od wybranego pakietu TV — zob. pole `cenaPerTier` w        */
+/*  `OfertaDodatek` (./types, ./oferty). `cenaDodatku` zwraca cenę        */
+/*  właściwą dla aktualnie wybranego pakietu TV (albo `oferta.cena`,      */
+/*  gdy dodatek nie ma cennika per-tier lub TV nie jest jeszcze wybrane). */
+/*  `jestWliczony` mówi kafelkowi, żeby zamiast ceny pokazać wyszarzone   */
+/*  "Już w Twoim pakiecie" (patrz KafelekOferty.tsx).                     */
+/* ---------------------------------------------------------------------- */
+function cenaDodatku(oferta: OfertaDodatek, tier: Tier | null): number {
+  if (tier && oferta.cenaPerTier && oferta.cenaPerTier[tier] !== undefined) {
+    return oferta.cenaPerTier[tier]!;
+  }
+  return oferta.cena;
+}
+
+function jestWliczony(oferta: OfertaDodatek, tier: Tier | null): boolean {
+  return tier !== null && !!oferta.cenaPerTier && oferta.cenaPerTier[tier] === 0;
+}
+
+/** Scrolluje do elementu z odsunięciem od góry (np. na stały nagłówek/nav),
+ * żeby po auto-przejściu do kolejnej sekcji jej tytuł nie chował się pod
+ * nim. Domyślny offset 160px. */
+function scrollToOffset(el: HTMLElement | null, offset = 160) {
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({ top, behavior: "smooth" });
+}
+
 function KonfiguratorZawartosc() {
   const reduceMotion = useReducedMotion();
+  const router = useRouter();
 
   const {
     umowa,
@@ -88,6 +120,36 @@ function KonfiguratorZawartosc() {
   const [aktywnaOferta5G, setAktywnaOferta5G] = useState<Oferta5G | null>(null);
   const [aktywnyDodatekAddon, setAktywnyDodatekAddon] = useState<string | null>(null);
 
+  // Auto-scroll między sekcjami po każdym wyborze — z tym samym odsunięciem
+  // 160px (np. na stały nagłówek), żeby tytuł kolejnej sekcji nie chował
+  // się pod nim po przewinięciu.
+  const sekcjaOfertRef = useRef<HTMLDivElement>(null);
+  const sekcja5gRef = useRef<HTMLDivElement>(null);
+  const sekcjaDodatkiRef = useRef<HTMLDivElement>(null);
+
+  // 1) Pakiet internetowy wybrany → scroll do sekcji Telewizja (+5G+Dodatki).
+  // Sekcja montuje się dopiero po zmianie stanu (AnimatePresence), stąd
+  // mikro-opóźnienie — żeby zdążyła się pojawić w DOM przed liczeniem pozycji.
+  useEffect(() => {
+    if (!wybranyPakietObj) return;
+    const timeout = setTimeout(() => scrollToOffset(sekcjaOfertRef.current), 120);
+    return () => clearTimeout(timeout);
+  }, [wybranyPakietObj]);
+
+  // 2) Pakiet TV wybrany → scroll do sekcji Usługi Mobilne 5G.
+  useEffect(() => {
+    if (!wybranaTvObj) return;
+    const timeout = setTimeout(() => scrollToOffset(sekcja5gRef.current), 120);
+    return () => clearTimeout(timeout);
+  }, [wybranaTvObj]);
+
+  // 3) Usługa 5G wybrana → scroll do sekcji Usługi Dodatkowe.
+  useEffect(() => {
+    if (!wybrana5gObj) return;
+    const timeout = setTimeout(() => scrollToOffset(sekcjaDodatkiRef.current), 120);
+    return () => clearTimeout(timeout);
+  }, [wybrana5gObj]);
+
   // Wymuszenie umowy 24-miesięcznej w współdzielonym kontekście — na
   // wypadek, gdyby domyślna wartość w KonfiguratorContext była inna
   // (np. zostałaby po staru ustawiona na "bez") albo user wszedł z linku
@@ -102,6 +164,31 @@ function KonfiguratorZawartosc() {
   const pakiety = PAKIETY_24;
   const oferty5g = OFERTY_5G;
   const ofertyDodatkowe = OFERTY_DODATKOWE;
+
+  // Tier aktualnie wybranego pakietu TV ("s" | "m" | "l") albo null, gdy
+  // TV nie jest jeszcze wybrane. Wyszukiwany po id w OFERTY_TV, bo
+  // `wybranaTvObj` (z kontekstu) nie przechowuje samego pola `tier`.
+  const tierAktywny = useMemo<Tier | null>(() => {
+    if (!wybranaTvObj) return null;
+    return OFERTY_TV.find((o) => o.id === wybranaTvObj.id)?.tier ?? null;
+  }, [wybranaTvObj]);
+
+  // Pełny obiekt wybranego pakietu internetowego (z `dostepneTV` i
+  // `tvDomyslny`) — `wybranyPakietObj` z kontekstu jest tylko uproszczoną
+  // pozycją {id, nazwa, cena}, więc doczytujemy resztę pól z `pakiety`.
+  const pakietPelny = useMemo(
+    () => (wybranyPakietObj ? pakiety.find((p) => p.id === wybranyPakietObj.id) ?? null : null),
+    [wybranyPakietObj, pakiety]
+  );
+
+  // Lista Pakietów TV dostępnych do wyboru dla aktualnie wybranego pakietu
+  // internetowego. Jeśli pakiet nie ogranicza wyboru (`dostepneTV` brak),
+  // dostępne są wszystkie z OFERTY_TV — np. dla 600 Mb/s zawężone do M i L.
+  const ofertyTvDostepne = useMemo(() => {
+    if (!pakietPelny?.dostepneTV) return OFERTY_TV;
+    const dozwolone = pakietPelny.dostepneTV;
+    return OFERTY_TV.filter((o) => dozwolone.includes(o.tier));
+  }, [pakietPelny]);
 
   // FIX (TBT): lista dodatków zależnych od TV filtrowana raz na zmianę
   // zależności, a nie tworzona od nowa w JSX przy każdym renderze.
@@ -147,8 +234,8 @@ function KonfiguratorZawartosc() {
   );
 
   const toggleDodatekHandler = useCallback(
-    (oferta: OfertaDodatek) =>
-      toggleDodatek({ id: oferta.id, nazwa: oferta.nazwa, cena: oferta.cena }),
+    (oferta: OfertaDodatek, cenaEfektywna: number) =>
+      toggleDodatek({ id: oferta.id, nazwa: oferta.nazwa, cena: cenaEfektywna }),
     [toggleDodatek]
   );
 
@@ -275,6 +362,7 @@ function KonfiguratorZawartosc() {
                 {wybranyPakietObj !== null && (
                   <m.div
                     key="sekcje-ofert"
+                    ref={sekcjaOfertRef}
                     initial={reduceMotion ? false : { opacity: 0, y: -12 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -12 }}
@@ -285,8 +373,11 @@ function KonfiguratorZawartosc() {
                         <Tv size={22} className="text-teal-300" />
                         Telewizja
                       </h2>
+                      {pakietPelny?.tvDomyslny && (
+                        <p className="mt-2 text-sm text-white/55">{pakietPelny.tvDomyslny}</p>
+                      )}
                       <div className="mt-6 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
-                        {OFERTY_TV.map((oferta, i) => (
+                        {ofertyTvDostepne.map((oferta, i) => (
                           <KafelekTV
                             key={oferta.id}
                             oferta={oferta}
@@ -300,7 +391,7 @@ function KonfiguratorZawartosc() {
                       </div>
                     </div>
 
-                    <div className="mt-12 lg:mt-16">
+                    <div ref={sekcja5gRef} className="mt-12 lg:mt-16">
                       <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
                         <Smartphone size={22} className="text-teal-300" />
                         Usługi Mobilne 5G
@@ -322,24 +413,42 @@ function KonfiguratorZawartosc() {
                       </div>
                     </div>
 
-                    <div className="mt-12 lg:mt-16">
-                      <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
-                        <Gift size={22} className="text-teal-300" />
-                        Usługi Dodatkowe
-                      </h2>
+                    <div ref={sekcjaDodatkiRef} className="mt-12 lg:mt-16">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
+                          <Gift size={22} className="text-teal-300" />
+                          Usługi Dodatkowe
+                        </h2>
+                        <m.button
+                          type="button"
+                          onClick={() => router.push("/konfigurator/podsumowanie")}
+                          whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+                          whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+                          className="inline-flex items-center gap-2 rounded-xl bg-teal-400 px-4 py-2.5 text-sm font-bold text-[#0B2A3D] shadow-[0_6px_16px_-6px_rgba(45,212,191,0.6)] transition-opacity hover:opacity-90"
+                        >
+                          Przejdź do podsumowania
+                          <ArrowRight size={16} />
+                        </m.button>
+                      </div>
                       <div className="mt-6 grid grid-cols-1 gap-5 p-1 sm:grid-cols-2 lg:grid-cols-3">
-                        {widoczneDodatki.map((oferta, i) => (
-                          <KafelekOferty
-                            key={oferta.id}
-                            oferta={oferta}
-                            wybrana={wybraneDodatki.some((d) => d.id === oferta.id)}
-                            onWybierz={() => toggleDodatekHandler(oferta)}
-                            onPokazKanaly={
-                              oferta.addonKey ? () => setAktywnyDodatekAddon(oferta.addonKey!) : undefined
-                            }
-                            delay={0.08 * i}
-                          />
-                        ))}
+                        {widoczneDodatki.map((oferta, i) => {
+                          const cena = cenaDodatku(oferta, tierAktywny);
+                          const wliczony = jestWliczony(oferta, tierAktywny);
+                          return (
+                            <KafelekOferty
+                              key={oferta.id}
+                              oferta={oferta}
+                              wybrana={wybraneDodatki.some((d) => d.id === oferta.id)}
+                              onWybierz={() => toggleDodatekHandler(oferta, cena)}
+                              onPokazKanaly={
+                                oferta.addonKey ? () => setAktywnyDodatekAddon(oferta.addonKey!) : undefined
+                              }
+                              cenaWyswietlana={cena}
+                              wliczone={wliczony}
+                              delay={0.08 * i}
+                            />
+                          );
+                        })}
                       </div>
                     </div>
                   </m.div>

@@ -16,6 +16,8 @@ const KafelekOferty = memo(function KafelekOferty({
   onPokazKanaly,
   gradient,
   delay,
+  cenaWyswietlana,
+  wliczone,
 }: {
   oferta: Oferta;
   wybrana: boolean;
@@ -24,8 +26,14 @@ const KafelekOferty = memo(function KafelekOferty({
   onPokazKanaly?: () => void;
   gradient?: string;
   delay: number;
+  /** Cena do wyświetlenia zamiast `oferta.cena` (np. przeliczona per pakiet TV). Jeśli brak, używana jest `oferta.cena`. */
+  cenaWyswietlana?: number;
+  /** Gdy true: karta jest wyszarzona, a zamiast ceny pokazuje się "Już w Twoim pakiecie". */
+  wliczone?: boolean;
 }) {
   const reduceMotion = useReducedMotion();
+  const cena = cenaWyswietlana ?? oferta.cena;
+
   return (
     <m.div
       role="button"
@@ -47,15 +55,23 @@ const KafelekOferty = memo(function KafelekOferty({
       whileTap={reduceMotion ? undefined : { scale: 0.99 }}
       className={`flex h-full flex-col rounded-2xl border p-5 text-left transition-colors ${
         wybrana ? "border-teal-300 bg-[#183648]" : "border-white/10 bg-[#183648]"
-      }`}
+      } ${wliczone ? "opacity-60 grayscale" : ""}`}
     >
       <div className="flex flex-1 flex-col text-left">
         <h3 className="text-lg font-extrabold text-white">{oferta.nazwa}</h3>
         <p className="mt-2 text-sm leading-snug text-white/65">{oferta.opis}</p>
-        <div className="mt-4 flex items-end gap-1.5">
-          <span className="text-2xl font-extrabold text-white">{oferta.cena} zł</span>
-          <span className="mb-0.5 text-xs text-white/60">/mies.</span>
-        </div>
+        {wliczone ? (
+          <div className="mt-4 flex items-end gap-1.5">
+            <span className="text-sm font-bold uppercase tracking-wide text-white/50">
+              Już w Twoim pakiecie
+            </span>
+          </div>
+        ) : (
+          <div className="mt-4 flex items-end gap-1.5">
+            <span className="text-2xl font-extrabold text-white">{cena} zł</span>
+            <span className="mb-0.5 text-xs text-white/60">/mies.</span>
+          </div>
+        )}
       </div>
 
       <div className="mt-4 flex gap-2">
@@ -93,21 +109,23 @@ const KafelekOferty = memo(function KafelekOferty({
           </m.button>
         )}
 
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onWybierz();
-          }}
-          className={`flex flex-1 basis-1/2 cursor-pointer items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors ${
-            wybrana
-              ? "border border-teal-400 bg-teal-400 text-[#0B2A3D]"
-              : "border border-teal-300/50 bg-teal-300/5 text-teal-200"
-          }`}
-        >
-          {wybrana && <Check size={14} />}
-          {wybrana ? "Wybrano" : "Wybierz"}
-        </button>
+        {!wliczone && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onWybierz();
+            }}
+            className={`flex flex-1 basis-1/2 cursor-pointer items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors ${
+              wybrana
+                ? "border border-teal-400 bg-teal-400 text-[#0B2A3D]"
+                : "border border-teal-300/50 bg-teal-300/5 text-teal-200"
+            }`}
+          >
+            {wybrana && <Check size={14} />}
+            {wybrana ? "Wybrano" : "Wybierz"}
+          </button>
+        )}
       </div>
     </m.div>
   );

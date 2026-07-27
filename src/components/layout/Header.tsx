@@ -110,7 +110,7 @@ const NAV: NavItem[] = [
         {
           heading: "Wybierz długość umowy",
           items: [
-{ title: "Szybki Internet", desc: "Streaming, praca, gaming – bez lagów. Od 29,99 zł/mies.", icon: Wifi, href: "/konfigurator/Internet" },
+{ title: "Szybki Internet", desc: "Streaming, praca, gaming – bez lagów. Od 29,99 zł/mies.", icon: Wifi, href: "/konfigurator/Internet#pakiety-internet-tv"},
 { title: "Internet + TV – Duet", desc: "Wszystko w jednej fakturze. Zaoszczędź nawet 240 zł rocznie.", icon: Tv, href: "/konfigurator/InternetOrazTelewizja" },
             { title: "Stwórz Własną Oferte", desc: "Najniższa cena miesięczna.", icon: Wifi, href: "/konfigurator?umowa=24" },
 
@@ -128,6 +128,7 @@ const NAV: NavItem[] = [
         {
           heading: "Pakiety telewizyjne",
           items: [
+            { title: "Pakiet XS", desc: "Najbardziej podstawowy pakiet kanałów.", icon: Tv, href: "/kanaly?tier=xs" },
             { title: "Pakiet S", desc: "Kanały podstawowe.", icon: Tv, href: "/kanaly?tier=s" },
             { title: "Pakiet M", desc: "Więcej rozrywki i sportu.", icon: Tv, href: "/kanaly?tier=m" },
             { title: "Pakiet L", desc: "Pełna oferta, kanały premium.", icon: Tv, href: "/kanaly?tier=l" },

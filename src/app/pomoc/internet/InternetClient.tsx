@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Wifi,
   HelpCircle,
@@ -8,6 +9,9 @@ import {
   Gauge,
   Wallet,
   FileText,
+  Sliders,
+  ArrowRight,
+  PhoneCall,
 } from "lucide-react";
 import { useState, useRef, useEffect, type ReactNode, type ElementType } from "react";
 
@@ -507,6 +511,66 @@ function DeviceDetailCard({
   );
 }
 
+/* ---------- back-to-configurator CTA ----------
+   Closing nudge, same "ZADZWOŃ / KONFIGURUJ" two-button layout as the
+   Zgłaszanie Awarii help page — identical card so all "one product"
+   pages close the same way. */
+function BackToConfiguratorCta() {
+  return (
+    <Reveal y={20} className="mt-14">
+      <div
+        className="rounded-[22px] px-6 sm:px-10 py-9 text-center"
+        style={{ background: "#173547", border: `1px solid ${c.border}` }}
+      >
+        <h3 className="text-[22px] font-extrabold" style={{ color: c.text }}>
+          Wciąż masz pytania?
+        </h3>
+        <p className="mt-2 text-[14.5px]" style={{ color: c.muted }}>
+          Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
+        </p>
+
+        <div className="mx-auto mt-6 flex max-w-[560px] flex-col gap-3 sm:flex-row">
+          <a
+            href="tel:+48883334124"
+            className="flex flex-1 items-center gap-3 rounded-2xl bg-teal-500 px-5 py-3.5 text-left transition-transform duration-200 hover:scale-[1.02]"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 text-white">
+              <PhoneCall size={18} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[13.5px] font-extrabold text-white">ZADZWOŃ</span>
+              <span className="block text-[12.5px] text-white/85">+48 883 334 124</span>
+            </span>
+            <ArrowRight size={16} className="shrink-0 text-white/70" />
+          </a>
+
+          <Link
+            href="/konfigurator/InternetOrazTelewizja"
+            className="flex flex-1 items-center gap-3 rounded-2xl px-5 py-3.5 text-left transition-transform duration-200 hover:scale-[1.02]"
+            style={{ background: "#233f50", border: `1px solid ${c.border}` }}
+          >
+            <span
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+              style={{ background: c.tealDim, color: c.teal }}
+            >
+              <Sliders size={18} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[13.5px] font-extrabold" style={{ color: c.text }}>
+                KONFIGURUJ
+              </span>
+              <span className="block text-[12.5px]" style={{ color: c.faint }}>
+                Dokończ wybór pakietu
+              </span>
+            </span>
+            <ArrowRight size={16} style={{ color: c.faint }} className="shrink-0" />
+          </Link>
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
 /* ---------- page ---------- */
 
 export default function NetiaInternetPomocPage() {
@@ -741,6 +805,8 @@ export default function NetiaInternetPomocPage() {
             Abonent nie musi kupować routera — sprzęt jest dzierżawiony i wymieniany przez Netię
             w razie awarii.
           </Note>
+
+          <BackToConfiguratorCta />
         </div>
       </div>
     </div>

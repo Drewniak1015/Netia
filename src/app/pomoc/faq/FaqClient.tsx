@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Search,
   ChevronDown,
@@ -33,6 +34,8 @@ import {
   XCircle,
   CreditCard,
   CalendarClock,
+  Sliders,
+  PhoneCall,
   type LucideIcon,
 } from "lucide-react";
 import { CATEGORIES, FAQ_ITEMS, type Category, type FaqItem } from "./faqPomocData";
@@ -301,6 +304,65 @@ function FaqRow({
   );
 }
 
+/* ---------- back-to-configurator CTA ----------
+   Ta sama ciemna karta co na pozostałych stronach Pomocy (Awaria,
+   Internet, Usługi Mobilne, Telewizja) — celowo NIE w jasnej palecie
+   tej strony, tylko identyczny, kontrastowy blok, żeby CTA wyglądało
+   tak samo wszędzie. */
+function BackToConfiguratorCta() {
+  return (
+    <div
+      className="faq-fade-up rounded-[22px] px-6 sm:px-10 py-9 mt-6 text-center"
+      style={{ background: "#173547", border: "1px solid rgba(255,255,255,.12)" }}
+    >
+      <h3 className="text-[22px] font-extrabold" style={{ color: "#eef5f7" }}>
+        Wciąż masz pytania?
+      </h3>
+      <p className="mt-2 text-[14.5px]" style={{ color: "#a7b9c6" }}>
+        Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
+      </p>
+
+      <div className="mx-auto mt-6 flex max-w-[560px] flex-col gap-3 sm:flex-row">
+        <a
+          href="tel:+48883334124"
+          className="flex flex-1 items-center gap-3 rounded-2xl bg-teal-500 px-5 py-3.5 text-left transition-transform duration-200 hover:scale-[1.02]"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 text-white">
+            <PhoneCall size={18} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[13.5px] font-extrabold text-white">ZADZWOŃ</span>
+            <span className="block text-[12.5px] text-white/85">+48 883 334 124</span>
+          </span>
+          <ArrowRight size={16} className="shrink-0 text-white/70" />
+        </a>
+
+        <Link
+          href="/konfigurator/InternetOrazTelewizja"
+          className="flex flex-1 items-center gap-3 rounded-2xl px-5 py-3.5 text-left no-underline transition-transform duration-200 hover:scale-[1.02]"
+          style={{ background: "#233f50", border: "1px solid rgba(255,255,255,.12)" }}
+        >
+          <span
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+            style={{ background: "rgba(45,217,196,.14)", color: "#2dd9c4" }}
+          >
+            <Sliders size={18} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[13.5px] font-extrabold" style={{ color: "#eef5f7" }}>
+              KONFIGURUJ
+            </span>
+            <span className="block text-[12.5px]" style={{ color: "#8fa4b5" }}>
+              Dokończ wybór pakietu
+            </span>
+          </span>
+          <ArrowRight size={16} style={{ color: "#8fa4b5" }} className="shrink-0" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 /* ---------- page ---------- */
 
 export default function FaqPage() {
@@ -431,6 +493,8 @@ export default function FaqPage() {
               />
             ))
           )}
+
+          <BackToConfiguratorCta />
         </div>
       </main>
     </div>

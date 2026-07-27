@@ -83,7 +83,7 @@ export const CHANNELS: Channel[] = [
   // Dodano wg oficjalnej, ponumerowanej listy kanałów Netia GO (Pakiet XS) -
   // brakowało go mimo że TIER_CHANNEL_COUNTS.xs = 35 już go zakładało
   // (18 pozostałych kanałów jawnych + 16 regionalnych TVP = 34, brakowało jednego).
-  { number: 0, name: "ZERO", tier: "xs", color: "#111827" },
+  { number: 0, name: "ZERO", tier: "xs", color: "#111827",logoUrl:"/Kanaly/KanalZero.webp" },
   { number: 1, name: "POLSAT HD", tier: "xs", guaranteed: true, color: "#be123c", logoUrl: "/Kanaly/Polsat_HD_logo.webp" },
   { number: 7, name: "TVP 1 HD", tier: "xs", guaranteed: true, color: "#16a34a", logoUrl: "/Kanaly/TVP_1_HD_logo.webp" },
   { number: 8, name: "TVP 2 HD", tier: "xs", guaranteed: true, color: "#7c3aed", logoUrl: "/Kanaly/TVP_2_HD_logo.webp" },
