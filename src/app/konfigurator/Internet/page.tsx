@@ -5,7 +5,7 @@
 // wcześniej wysłane pliki nie miały podanej lokalizacji docelowej).
 
 import OfferInternetTvSection from "@/app/konfigurator/Internet/OfferInternetTvSection";
-import { OfferInternetTvSchema } from "@/app/konfigurator/Internet/vOfferInternetTvSchema";
+import { OfferInternetTvSchema } from "@/app/konfigurator/Internet/OfferInternetTvSchema";
 import { pagesMetadata } from "@/lib/seo/pages-metadata";
 
 export const metadata = pagesMetadata.ofertyInternetTv;
