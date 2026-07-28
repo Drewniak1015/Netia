@@ -121,6 +121,18 @@ function Hero() {
 
   return (
     <LazyMotion features={domAnimation} strict>
+    {/* [DODANO] Jawny <link rel="preload"> dla obrazka LCP (MainHero.svg).
+        Next.js automatycznie "podnosi" ten tag do prawdziwego <head>
+        dokumentu, nawet renderowany z komponentu klienckiego — pod
+        warunkiem że jest w normalnym JSX, nie warunkowo po zamontowaniu.
+        SVG czasem nie dostaje poprawnego fetchpriority=high tylko z samego
+        atrybutu `priority` w next/image, stąd ten dodatkowy, jawny hint. */}
+    <link
+      rel="preload"
+      as="image"
+      href="/images/MainHero.svg"
+      fetchPriority="high"
+    />
     <section
       style={{ backgroundColor: "#0B2A3D" }}
       className="relative mt-18 overflow-hidden font-sans"
