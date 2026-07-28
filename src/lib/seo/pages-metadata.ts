@@ -101,7 +101,7 @@ export const pagesMetadata: Record<string, Metadata> = {
   //     strona ma unikać indeksowania (dynamiczna, per-sesja treść)
   konfiguratorPodsumowanie: {
     title: "Podsumowanie Konfiguracji – Netia",
-    robots: { index: false, follow: true },
+    // robots: { index: false, follow: true },
   },
 
   // 17. /oferty/dobierz — sekcja OfferQuizSection ("Dwa pytania i gotowe")

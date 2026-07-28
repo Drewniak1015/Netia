@@ -103,17 +103,31 @@ const NAV: NavItem[] = [
   },
   {
     key: "konfigurator",
-    label: "Konfigurator Ofert",
+    label: "Dopasuj Ofertę",
     panel: {
       type: "simple",
       columns: [
         {
           heading: "Wybierz długość umowy",
           items: [
-{ title: "Szybki Internet", desc: "Streaming, praca, gaming – bez lagów. Od 29,99 zł/mies.", icon: Wifi, href: "/konfigurator/Internet#pakiety-internet-tv"},
-{ title: "Internet + TV – Duet", desc: "Wszystko w jednej fakturze. Zaoszczędź nawet 240 zł rocznie.", icon: Tv, href: "/konfigurator/InternetOrazTelewizja" },
-            { title: "Stwórz Własną Oferte", desc: "Najniższa cena miesięczna.", icon: Wifi, href: "/konfigurator?umowa=24" },
-
+            {
+              title: "Internet",
+              desc: "Szybki internet + TV XS w pakiecie. Od 30 zł/mies.",
+              icon: Wifi,
+              href: "/konfigurator/Internet#pakiety-internet-tv",
+            },
+            {
+              title: "Internet + Telewizja",
+              desc: "Dwa razy więcej, jedna opłata. Pełny wybór kanałów, realnie oszczędzasz na wspólnym pakiecie.",
+              icon: Tv,
+              href: "/konfigurator/InternetOrazTelewizja",
+            },
+            {
+              title: "Stwórz Własną Oferte",
+              desc: "Twoje zasady, Twoja cena. Płacisz tylko za to, czego potrzebujesz.",
+              icon: Wifi,
+              href: "/konfigurator",
+            },
           ],
         },
       ],
