@@ -51,18 +51,18 @@ export default function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewsSchema) }} />
-      {/* <EntryGate/> */}
+      <EntryGate/>
       <MainHero />
       {/* <MaxxBanner /> */}
-      {/* <Oferty /> */}
-      {/* <Instrukcja /> */}
+      <Oferty />
+      <Instrukcja />
       {/* <OfertyInternet /> */}
-      {/* <Benefity /> */}
-      {/* <Opinie /> */}
-      {/* <PoradnikTechnologie /> */}
+      <Benefity />
+      <Opinie />
+      <PoradnikTechnologie />
       {/* <CTA /> */}
-      {/* <NetiaFAQ /> */}
-      {/* <Miasta /> */}
+      <NetiaFAQ />
+      <Miasta />
     </>
   );
 }
