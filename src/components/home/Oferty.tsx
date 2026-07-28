@@ -417,23 +417,6 @@ const INFO_ITEMS: Record<string, InfoItem> = {
 
 /* ---------------------------------------------------------------------- */
 /*  Dane ofert — Podstawa i MAX.                                          */
-/*                                                                         */
-/*  UWAGA (poprawka spójności umowy — 20.07.2026):                       */
-/*  Obie zakładki (Podstawa i MAX) opierają się na TEJ SAMEJ umowie na    */
-/*  24 pełne okresy rozliczeniowe (patrz disclaimer w SzczegolyOferty).   */
-/*  Mechanika promocji dla obu musi więc być identyczna:                  */
-/*    12 miesięcy 0 zł  +  12 miesięcy płatne  =  24 miesiące łącznie.    */
-/*  Wcześniej karty Podstawa mówiły o "6 miesiącach za 0 zł", co stało    */
-/*  w sprzeczności z 24-miesięcznym disclaimerem i z kartami MAX (które   */
-/*  poprawnie liczyły to jako "rok 0 zł, potem płatne do 24. miesiąca").  */
-/*  Ujednolicono na 12 mies. we wszystkich kartach.                       */
-/*                                                                         */
-/*  UWAGA (poprawka copy — 22.07.2026):                                   */
-/*  `regularPriceNote` przebudowane z formy "Czyli: pierwszy rok 0 zł,    */
-/*  potem X/mies. (do 24. miesiąca)." na precyzyjny zakres miesięcy:      */
-/*  "Od 13. do 24. miesiąca: X/mies." — zgodne z wytycznymi (dokładny     */
-/*  zakres, nie sama końcowa granica) i bez "Czyli", które brzmiało jak   */
-/*  tłumaczenie się.                                                      */
 /* ---------------------------------------------------------------------- */
 type Feature = {
   label: string;
@@ -518,7 +501,29 @@ const maxOffers: MaxOffer[] = [
   },
 ];
 
-const PHONE = "+48 883 334 124";
+const PHONE = "+48 887 843 260";
+
+/* [DODANO] Helper do odpalania zdarzenia Meta Pixel "Contact" — ten sam
+   wzorzec co w Hero.tsx. content_name mówi z której konkretnie karty
+   oferty przyszło kliknięcie (np. "oferta_podstawa_1000_tv_s"), co
+   pozwala później zobaczyć w Meta, które oferty faktycznie generują
+   telefony/SMS-y, a które tylko oglądanie. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
+
+/* [DODANO] Buduje slug z prędkości + pakietu do użycia w content_name,
+   np. "1000 Mb/s" + "TV S" -> "1000_tv_s". Tylko do własnego raportowania
+   w Meta, nie widoczne dla użytkownika. */
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/ł/g, "l")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
 
 // Custom cubic-bezier (easeOutExpo-ish) zamiast wbudowanego "easeOut" —
 // wolniejszy, bardziej "ciężki" start i długie, miękkie wyhamowanie na
@@ -841,22 +846,7 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
 }
 
 /* ---------------------------------------------------------------------- */
-/*  PromoCena — wspólny blok ceny dla obu typów kart, ale z DWOMA trybami: */
-/*                                                                         */
-/*  leadWithZero=true  (MAX)      → duże "0 zł" + przekreślona cena       */
-/*                                   regularna. To jedyne miejsce, gdzie   */
-/*                                   "0 zł" jest headline'em — bo to       */
-/*                                   jedyny prawdziwie unikalny hak MAX.   */
-/*  leadWithZero=false (Podstawa) → duża REALNA cena jako headline,       */
-/*                                   promo "pierwsze 12 mies. za 0 zł" jako*/
-/*                                   mniejsza, drugorzędna adnotacja.      */
-/*                                                                         */
-/*  Bez tego rozróżnienia obie zakładki pokazywały to samo "0 zł" na      */
-/*  pierwszym miejscu, co zaprzeczało nagłówkowi sekcji ("70 zł czy 0 zł?")*/
-/*  i rozmywało jedyny realny kontrast między Podstawą a MAX.              */
-/*                                                                         */
-/*  Mechanika promo (0 zł → cena regularna) jest teraz IDENTYCZNA w obu   */
-/*  trybach: 12 miesięcy 0 zł + 12 miesięcy płatne = 24 mies. umowy.       */
+/*  PromoCena — wspólny blok ceny dla obu typów kart.                      */
 /* ---------------------------------------------------------------------- */
 function PromoCena({
   promoLabel,
@@ -865,11 +855,8 @@ function PromoCena({
   accent,
   leadWithZero,
 }: {
-  /** Pełny, zgodny z wytycznymi tekst, np. "Abonament 12 miesięcy za 0 zł po rabatach" */
   promoLabel: string;
-  /** Realna cena (po okresie promo, albo — gdy leadWithZero=false — to ona jest headline'em) */
   regularPrice: string;
-  /** Okres/warunek obowiązywania regularPrice */
   regularPriceNote: string;
   accent: "orange" | "pink";
   leadWithZero: boolean;
@@ -901,12 +888,6 @@ function PromoCena({
   );
 }
 
-/* ---------------------------------------------------------------------- */
-/*  SzczegolyOferty — domyślnie zwinięty accordion na długi disclaimer     */
-/*  prawny. Ściana szarego tekstu na dole sekcji cenowej psuła przepływ    */
-/*  wzrokowy; treść nadal musi być dostępna (wymogi prawne), ale nie musi  */
-/*  być widoczna cały czas — użytkownik rozwija ją świadomym kliknięciem.  */
-/* ---------------------------------------------------------------------- */
 function SzczegolyOferty({ children }: { children: ReactNode }) {
   const [otwarte, setOtwarte] = useState(false);
 
@@ -944,6 +925,13 @@ const OfferCard = memo(function OfferCard({
   reduceMotion: boolean;
   onPokazInfo: (infoId: string) => void;
 }) {
+  // [DODANO] Treść SMS-a — konkretna oferta zamiast generycznego "INTERNET",
+  // np. "Interesuje mnie oferta: Internet 1000 Mb/s + TV M. Oddzwońcie."
+  const smsBody = encodeURIComponent(
+    `Interesuje mnie oferta: Internet ${offer.speed} + ${offer.pkg}. Oddzwońcie do mnie.`
+  );
+  const contentName = `oferta_podstawa_${slugify(offer.speed)}_${slugify(offer.pkg)}`;
+
   return (
     <m.article
       variants={cardVariants}
@@ -1000,6 +988,7 @@ const OfferCard = memo(function OfferCard({
 
       <m.a
         href={`tel:${PHONE.replace(/\s/g, "")}`}
+        onClick={() => trackContact(`${contentName}_tel`)}
         whileHover={reduceMotion ? undefined : { scale: 1.03 }}
         whileTap={reduceMotion ? undefined : { scale: 0.97 }}
         transition={TAP_SPRING}
@@ -1010,7 +999,8 @@ const OfferCard = memo(function OfferCard({
       </m.a>
 
       <m.a
-        href={`sms:${PHONE.replace(/\s/g, "")}?body=INTERNET`}
+        href={`sms:${PHONE.replace(/\s/g, "")}?body=${smsBody}`}
+        onClick={() => trackContact(`${contentName}_sms`)}
         whileHover={reduceMotion ? undefined : { scale: 1.03 }}
         whileTap={reduceMotion ? undefined : { scale: 0.97 }}
         transition={TAP_SPRING}
@@ -1024,13 +1014,7 @@ const OfferCard = memo(function OfferCard({
 });
 
 /* ---------------------------------------------------------------------- */
-/*  Karta MAX — przeniesiona 1:1 ze stylu PackageCard w OfferMaxSection.tsx*/
-/*  (różowy akcent, monthsPill, "od 13 mies."), tylko dołożone wsparcie   */
-/*  dla klikalnych `infoId` (spójne z kartami Podstawa) i dopasowana do   */
-/*  siatki tej sekcji zamiast własnego dużego bloku hero.                 */
-/*                                                                         */
-/*  FIX (czytelność): nazwa pakietu (MAX 1000 / MAX 2000) powiększona z    */
-/*  text-xl na text-3xl/4xl + font-black, spójnie z OfferMaxSection.tsx.  */
+/*  Karta MAX.                                                            */
 /* ---------------------------------------------------------------------- */
 const MaxOfferCard = memo(function MaxOfferCard({
   offer,
@@ -1041,6 +1025,12 @@ const MaxOfferCard = memo(function MaxOfferCard({
   reduceMotion: boolean;
   onPokazInfo: (infoId: string) => void;
 }) {
+  // [DODANO] Treść SMS-a z nazwą konkretnej oferty MAX (np. "MAX 2000")
+  const smsBody = encodeURIComponent(
+    `Interesuje mnie oferta: ${offer.name} (${offer.speed}). Oddzwońcie do mnie.`
+  );
+  const contentName = `oferta_max_${slugify(offer.name)}`;
+
   return (
     <m.article
       variants={cardVariants}
@@ -1110,6 +1100,7 @@ const MaxOfferCard = memo(function MaxOfferCard({
 
       <m.a
         href={`tel:${PHONE.replace(/\s/g, "")}`}
+        onClick={() => trackContact(`${contentName}_tel`)}
         whileHover={reduceMotion ? undefined : { scale: 1.03 }}
         whileTap={reduceMotion ? undefined : { scale: 0.97 }}
         transition={TAP_SPRING}
@@ -1120,7 +1111,8 @@ const MaxOfferCard = memo(function MaxOfferCard({
       </m.a>
 
       <m.a
-        href={`sms:${PHONE.replace(/\s/g, "")}?body=MAX`}
+        href={`sms:${PHONE.replace(/\s/g, "")}?body=${smsBody}`}
+        onClick={() => trackContact(`${contentName}_sms`)}
         whileHover={reduceMotion ? undefined : { scale: 1.03 }}
         whileTap={reduceMotion ? undefined : { scale: 0.97 }}
         transition={TAP_SPRING}
@@ -1134,13 +1126,7 @@ const MaxOfferCard = memo(function MaxOfferCard({
 });
 
 interface OfertyProps {
-  /** Miejscownik miasta, np. "Kielcach" — jeśli podany, tytuł zmienia się na
-   *  "Specjalna oferta w {mieście}" zamiast domyślnego "Wybierz swój internet".
-   *  Używane na stronach /internet-miasta/[slug]. */
   cityLocative?: string;
-  /** Który tryb pokazać domyślnie. MAX jest domyślny, bo to widok bez
-   *  interakcji dostaje najwięcej ekspozycji — zmień per-strona jeśli
-   *  MAX nie jest tam dostępny/promowany. */
   defaultOferta?: "podstawa" | "max";
 }
 
@@ -1204,8 +1190,6 @@ export default function Oferty({ cityLocative, defaultOferta = "max" }: OfertyPr
               4K + pełna ochrona. Abonament 12 miesięcy za 0 zł po rabatach.
             </m.p>
 
-            {/* Segmented control — jedna decyzja na ekranie zamiast dwóch
-                osobnych sekcji ze scrollem. */}
             <m.div
               variants={headerItemVariants}
               role="tablist"

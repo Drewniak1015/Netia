@@ -28,6 +28,17 @@ function useIsDesktop() {
   return isDesktop;
 }
 
+/* [DODANO] Mały helper do odpalania zdarzeń Meta Pixel — rzutujemy window
+   na `any` celowo (patrz komentarz w MetaPixel.tsx o unikaniu konfliktów
+   typów). content_name pomaga później rozróżnić w Meta, z którego dokładnie
+   przycisku/miejsca na stronie przyszło kliknięcie (Hero, stopka, itd.),
+   jeśli kiedyś dodasz więcej takich przycisków w innych miejscach. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
+
 /* Wspólny wariant fade-up, żeby nie powielać initial/animate w każdym elemencie */
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -51,7 +62,8 @@ function Hero() {
     >
       {/* CTA primary */}
       <m.a
-        href="tel:+48883334124"
+        href="tel:+48887843260"
+        onClick={() => trackContact("hero_phone_button")}
         whileHover={reduceMotion ? undefined : { scale: 1.02 }}
         whileTap={reduceMotion ? undefined : { scale: 0.98 }}
         className="flex min-h-[60px] items-center justify-between gap-4 rounded-2xl bg-teal-500 px-5 py-3 text-white shadow-lg shadow-teal-500/20 outline-none transition-shadow hover:shadow-teal-400/30 focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
@@ -62,7 +74,7 @@ function Hero() {
           </span>
           <span className="text-left">
             <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
-            <span className="block text-xs text-white/85">+48 883 334 124</span>
+            <span className="block text-xs text-white/85">+48 887 843 260</span>
           </span>
         </span>
         <ChevronRight size={18} className="shrink-0 text-white/70" />
@@ -70,7 +82,8 @@ function Hero() {
 
       {/* CTA secondary — ta sama wielkość, styl obrysowany, żeby nie konkurował kolorem z primary */}
       <m.a
-        href="sms:+48883334124?body=SPRAWDŹ"
+        href="sms:+48887843260?body=SPRAWDŹ"
+        onClick={() => trackContact("hero_sms_button")}
         whileHover={reduceMotion ? undefined : { scale: 1.02 }}
         whileTap={reduceMotion ? undefined : { scale: 0.98 }}
         className="flex min-h-[60px] items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-white outline-none transition-colors hover:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
