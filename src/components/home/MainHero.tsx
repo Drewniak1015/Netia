@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
+import Image from "next/image";
 import {
   Phone,
   MessageCircle,
@@ -21,200 +21,206 @@ const fadeUp = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  HERO — dwie kolumny: tekst + gwiazdki na górze / wizualizacja z CTA */
-/*  Układ mobile/desktop rozstrzyga wyłącznie CSS grid (bez JS-owego   */
-/*  matchMedia i bez duplikowania obrazka/CTA w DOM).                 */
-/* ------------------------------------------------------------------ */
+/*  HERO — dwie kolumny: tekst + gwiazdki na górze / wizualizacja z CTA
+    Układ mobile/desktop jest teraz w całości sterowany CSS-em (grid +
+    order), a nie warunkiem JS opartym na matchMedia. Dzięki temu obraz
+    LCP i sekcja CTA są obecne w wygenerowanym przez serwer HTML-u od
+    razu — przeglądarka może je wykryć i spreloadować z
+    fetchpriority="high" (dzięki `priority` na next/image) zanim
+    jakikolwiek JS się uruchomi. Poprzednio komponent czekał na
+    useEffect + matchMedia, więc na desktopie obraz LCP w ogóle nie
+    trafiał do początkowego HTML-a — to była główna przyczyna
+    ostrzeżenia Lighthouse o niewykrywalności LCP / braku
+    fetchpriority=high. */
 function Hero() {
   const reduceMotion = useReducedMotion();
 
   return (
     <LazyMotion features={domAnimation} strict>
-    <section
-      style={{ backgroundColor: "#0B2A3D" }}
-      className="relative mt-18 overflow-hidden font-sans"
-    >
-      <DottedBackground variant="dots-fade" focusY="25%" size={24} />
+      <section
+        style={{ backgroundColor: "#0B2A3D" }}
+        className="relative mt-18 overflow-hidden font-sans"
+      >
+        <DottedBackground variant="dots-fade" focusY="25%" size={24} />
 
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-32 top-10 z-0 h-[34rem] w-[34rem] rounded-full bg-teal-400/10 blur-[110px]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -left-40 bottom-0 z-0 h-96 w-96 rounded-full bg-teal-500/5 blur-[100px]"
-      />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-32 top-10 z-0 h-[34rem] w-[34rem] rounded-full bg-teal-400/10 blur-[110px]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-40 bottom-0 z-0 h-96 w-96 rounded-full bg-teal-500/5 blur-[100px]"
+        />
 
-      <div className="relative z-10 mx-auto grid max-w-320 grid-cols-1 items-center gap-10 px-5 py-10 sm:px-6 sm:py-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-8 lg:px-8 lg:py-20">
-        {/* Kolumna tekstowa */}
-        <div className="relative z-10 text-center lg:text-left">
-          {/* LCP element: bez opacity w animacji, tylko h1 statyczny */}
-          <m.h1
-            initial={reduceMotion ? false : "hidden"}
-            animate="visible"
-            variants={fadeUp}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0 }}
-            className="text-3xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-4xl lg:text-5xl xl:text-6xl"
-          >
-            Koniec z internetem, który{" "}
-            <span className="text-teal-300">pada</span>{" "}
-            w najgorszym momencie.
-          </m.h1>
-
-          <m.h2
-            initial={reduceMotion ? false : "hidden"}
-            animate="visible"
-            variants={fadeUp}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
-            className="mx-auto mt-5 max-w-xl text-base font-normal leading-snug text-white/75 sm:text-lg lg:mx-0"
-          >
-            Instalacja w 3 dni. Stała cena przez całą umowę —{" "}
-            <span className="font-semibold text-teal-300">
-              bez podwyżek co pół roku
-            </span>{" "}
-            i bez czekania na infolinii.{" "}
-            <span className="italic text-teal-200/85">
-              Wideorozmowy bez zacięć, filmy bez buforowania —
-              internet, o którym w końcu przestajesz myśleć.
-            </span>
-          </m.h2>
-
-          {/* Social proof — card z awatarem zamiast płaskiego cytatu z myślnikiem */}
-          <m.div
-            initial={reduceMotion ? false : "hidden"}
-            animate="visible"
-            variants={fadeUp}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-            className="mx-auto mt-6 flex max-w-xl items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 lg:mx-0"
-          >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-teal-300/20 bg-gradient-to-br from-teal-400/25 to-teal-600/10">
-              <UserRound size={20} className="text-teal-200" />
-            </span>
-            <span className="text-left">
-              <span className="flex items-center gap-2">
-                <span className="flex shrink-0 items-center gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} size={12} className="fill-amber-400 text-amber-400" />
-                  ))}
-                </span>
-                <span className="text-xs font-medium text-white/50">
-                  jeden z 2.4 mln klientów po zmianie dostawcy
-                </span>
-              </span>
-              <p className="mt-1 text-sm italic leading-snug text-white/90 sm:text-base">
-                „Nareszcie nie muszę myśleć o internecie”
-              </p>
-            </span>
-          </m.div>
-
-          {/* Trust badges + risk reversal — jeden spójny wiersz pigułek, ten sam styl */}
-          <m.div
-            initial={reduceMotion ? false : "hidden"}
-            animate="visible"
-            variants={fadeUp}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.3 }}
-            className="mt-5 flex flex-wrap items-center justify-center gap-2 lg:justify-start"
-          >
-            <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white/90 sm:text-sm">
-              <ShieldCheck size={14} className="shrink-0 text-teal-300" />
-              Umowa online w 5 minut
-            </span>
-            <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white/90 sm:text-sm">
-              <Zap size={14} className="shrink-0 text-teal-300" />
-              Serwisant w 24h
-            </span>
-            <span className="flex items-center gap-1.5 rounded-full border border-teal-400/30 bg-teal-400/10 px-3 py-1.5 text-xs font-semibold text-white/90 sm:text-sm">
-              <ShieldCheck size={14} className="shrink-0 text-teal-300" />
-              Rezygnacja bez kosztów w 14 dni
-            </span>
-          </m.div>
-        </div>
-
-        {/* Kolumna wizualna — jedyna instancja w DOM.
-            Na mobile (grid-cols-1) po prostu "spada" pod kolumnę tekstową,
-            na desktopie (lg:grid-cols-[...]) staje obok niej jako druga kolumna.
-            Dzięki temu nie renderujemy dwa razy obrazka ani CTA i nie ma
-            zależności od JS-owego matchMedia (brak hydration mismatch / CLS). */}
-        <div className="flex flex-col">
-          <m.div
-            initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.3 }}
-            className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40"
-          >
-            <Image
-              src="/images/MainHero.svg"
-              alt="Rodzina w salonie ogląda film bez przerywania dzięki stabilnemu połączeniu światłowodowemu"
-              width={1600}
-              height={900}
-              priority
-              sizes="(min-width: 1024px) 45vw, 100vw"
-              className="h-auto w-full"
-            />
-          </m.div>
-
-          <m.div
-            initial={reduceMotion ? false : "hidden"}
-            animate="visible"
-            variants={fadeUp}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.42 }}
-            className="mt-10 flex flex-col items-stretch gap-4 sm:flex-row sm:justify-center lg:justify-start"
-          >
-            {/* CTA primary */}
-            <m.a
-              href="tel:+48887843260"
-              onClick={() => trackContact("hero_phone_button")}
-              whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-              whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-              className="flex min-h-[60px] items-center justify-between gap-4 rounded-2xl bg-teal-500 px-5 py-3 text-white shadow-lg shadow-teal-500/20 outline-none transition-shadow hover:shadow-teal-400/30 focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
+        <div className="relative z-10 mx-auto grid max-w-320 grid-cols-1 items-center gap-10 px-5 py-10 sm:px-6 sm:py-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-8 lg:px-8 lg:py-20">
+          {/* Kolumna tekstowa — zawsze pierwsza w porządku DOM i wizualnym */}
+          <div className="relative z-10 order-1 text-center lg:text-left">
+            {/* LCP element: bez opacity w animacji, tylko h1 statyczny */}
+            <m.h1
+              initial={reduceMotion ? false : "hidden"}
+              animate="visible"
+              variants={fadeUp}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0 }}
+              className="text-3xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-4xl lg:text-5xl xl:text-6xl"
             >
-              <span className="flex items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
-                  <Phone size={16} />
-                </span>
-                <span className="text-left">
-                  <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
-                  <span className="block text-xs text-white/85">+48 887 843 260</span>
-                </span>
-              </span>
-              <ChevronRight size={18} className="shrink-0 text-white/70" />
-            </m.a>
+              Koniec z internetem, który{" "}
+              <span className="text-teal-300">pada</span>{" "}
+              w najgorszym momencie.
+            </m.h1>
 
-            {/* CTA secondary — ta sama wielkość, styl obrysowany, żeby nie konkurował kolorem z primary */}
-            <m.a
-              href={`sms:+48887843260?body=${encodeURIComponent(
-                "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
-              )}`}
-              onClick={() => trackContact("hero_sms_button")}
-              whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-              whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-              className="flex min-h-[60px] items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-white outline-none transition-colors hover:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
+            <m.h2
+              initial={reduceMotion ? false : "hidden"}
+              animate="visible"
+              variants={fadeUp}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+              className="mx-auto mt-5 max-w-xl text-base font-normal leading-snug text-white/75 sm:text-lg lg:mx-0"
             >
-              <span className="flex items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">
-                  <MessageCircle size={16} />
-                </span>
-                <span className="text-sm font-bold">Wyślij SMS</span>
+              Instalacja w 3 dni. Stała cena przez całą umowę —{" "}
+              <span className="font-semibold text-teal-300">
+                bez podwyżek co pół roku
+              </span>{" "}
+              i bez czekania na infolinii.{" "}
+              <span className="italic text-teal-200/85">
+                Wideorozmowy bez zacięć, filmy bez buforowania —
+                internet, o którym w końcu przestajesz myśleć.
               </span>
-              <ChevronRight size={18} className="shrink-0 text-white/50" />
-            </m.a>
-          </m.div>
+            </m.h2>
 
-          <m.div
-            initial={reduceMotion ? false : "hidden"}
-            animate="visible"
-            variants={fadeUp}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.5 }}
-            className="mx-auto mt-4 flex w-fit items-center justify-center gap-1.5 sm:mx-0"
-          >
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal-300/80" />
-            <span className="text-xs font-medium text-white/50 sm:text-sm">
-              Oddzwonimy w 3 minuty bez czekania, bez przekierowań między działami 
-            </span>
-          </m.div>
+            {/* Social proof — card z awatarem zamiast płaskiego cytatu z myślnikiem */}
+            <m.div
+              initial={reduceMotion ? false : "hidden"}
+              animate="visible"
+              variants={fadeUp}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+              className="mx-auto mt-6 flex max-w-xl items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 lg:mx-0"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-teal-300/20 bg-gradient-to-br from-teal-400/25 to-teal-600/10">
+                <UserRound size={20} className="text-teal-200" />
+              </span>
+              <span className="text-left">
+                <span className="flex items-center gap-2">
+                  <span className="flex shrink-0 items-center gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} size={12} className="fill-amber-400 text-amber-400" />
+                    ))}
+                  </span>
+                  <span className="text-xs font-medium text-white/50">
+                    jeden z 2.4 mln klientów po zmianie dostawcy
+                  </span>
+                </span>
+                <p className="mt-1 text-sm italic leading-snug text-white/90 sm:text-base">
+                  „Nareszcie nie muszę myśleć o internecie”
+                </p>
+              </span>
+            </m.div>
+
+            {/* Trust badges + risk reversal — jeden spójny wiersz pigułek, ten sam styl */}
+            <m.div
+              initial={reduceMotion ? false : "hidden"}
+              animate="visible"
+              variants={fadeUp}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.3 }}
+              className="mt-5 flex flex-wrap items-center justify-center gap-2 lg:justify-start"
+            >
+              <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white/90 sm:text-sm">
+                <ShieldCheck size={14} className="shrink-0 text-teal-300" />
+                Umowa online w 5 minut
+              </span>
+              <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white/90 sm:text-sm">
+                <Zap size={14} className="shrink-0 text-teal-300" />
+                Serwisant w 24h
+              </span>
+              <span className="flex items-center gap-1.5 rounded-full border border-teal-400/30 bg-teal-400/10 px-3 py-1.5 text-xs font-semibold text-white/90 sm:text-sm">
+                <ShieldCheck size={14} className="shrink-0 text-teal-300" />
+                Rezygnacja bez kosztów w 14 dni
+              </span>
+            </m.div>
+          </div>
+
+          {/* Kolumna wizualna — zawsze w DOM, bez warunku JS. Na mobile
+              (grid-cols-1) ląduje pod kolumną tekstową dzięki order-2;
+              na desktopie (lg:grid-cols-[1.1fr_0.9fr]) staje się drugą
+              kolumną grida. */}
+          <div className="order-2 flex flex-col">
+            <m.div
+              initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.3 }}
+              className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40"
+            >
+              <Image
+                src="/images/MainHero.svg"
+                alt="Rodzina w salonie ogląda film bez przerywania dzięki stabilnemu połączeniu światłowodowemu"
+                width={1600}
+                height={900}
+                priority
+                fetchPriority="high"
+                className="h-auto w-full"
+              />
+            </m.div>
+
+            <m.div
+              initial={reduceMotion ? false : "hidden"}
+              animate="visible"
+              variants={fadeUp}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.42 }}
+              className="mt-10 flex flex-col items-stretch gap-4 sm:flex-row sm:justify-center lg:justify-start"
+            >
+              {/* CTA primary */}
+              <m.a
+                href="tel:+48887843260"
+                onClick={() => trackContact("hero_phone_button")}
+                whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+                whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                className="flex min-h-[60px] items-center justify-between gap-4 rounded-2xl bg-teal-500 px-5 py-3 text-white shadow-lg shadow-teal-500/20 outline-none transition-shadow hover:shadow-teal-400/30 focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
+                    <Phone size={16} />
+                  </span>
+                  <span className="text-left">
+                    <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
+                    <span className="block text-xs text-white/85">+48 887 843 260</span>
+                  </span>
+                </span>
+                <ChevronRight size={18} className="shrink-0 text-white/70" />
+              </m.a>
+
+              {/* CTA secondary — ta sama wielkość, styl obrysowany, żeby nie konkurował kolorem z primary */}
+              <m.a
+                href={`sms:+48887843260?body=${encodeURIComponent(
+                  "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
+                )}`}
+                onClick={() => trackContact("hero_sms_button")}
+                whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+                whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                className="flex min-h-[60px] items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-white outline-none transition-colors hover:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">
+                    <MessageCircle size={16} />
+                  </span>
+                  <span className="text-sm font-bold">Wyślij SMS</span>
+                </span>
+                <ChevronRight size={18} className="shrink-0 text-white/50" />
+              </m.a>
+            </m.div>
+
+            <m.div
+              initial={reduceMotion ? false : "hidden"}
+              animate="visible"
+              variants={fadeUp}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.5 }}
+              className="mx-auto mt-4 flex w-fit items-center justify-center gap-1.5 sm:mx-0"
+            >
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal-300/80" />
+              <span className="text-xs font-medium text-white/50 sm:text-sm">
+                Oddzwonimy w 3 minuty bez czekania, bez przekierowań między działami
+              </span>
+            </m.div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
     </LazyMotion>
   );
 }
