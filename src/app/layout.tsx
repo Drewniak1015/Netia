@@ -57,12 +57,12 @@ export default function RootLayout({
 
         {/* Baner zgody na cookies — musi być poza KonfiguratorProvider,
             żeby renderować się na każdej podstronie niezależnie */}
-        {/* <CookieConsent /> */}
+        <CookieConsent />
 
         {/* Meta Pixel — komponent nic nie renderuje (return null), sam
             decyduje czy załadować skrypt na podstawie zgody użytkownika.
             Pixel ID: Netia-Oferta-Pixel (Meta Business Suite). */}
-        {/* <MetaPixel pixelId="2143913536525465" /> */}
+        <MetaPixel pixelId="2143913536525465" />
       </body>
     </html>
   );
