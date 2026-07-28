@@ -18,12 +18,22 @@ const geistSans = Geist({
   // przy foncie zastępczym na cały ten load — zero ryzyka shiftu z fonta.
   // Font i tak trafia do cache, więc kolejne wizyty i tak go użyją od razu.
   display: "optional",
+  // FIX (Drzewo zależności sieciowych — 834ms na ścieżce krytycznej):
+  // next/font domyślnie dodaje <link rel="preload" fetchpriority="high">
+  // dla fontu, nawet przy display:"optional". To sprzeczne — "optional"
+  // już mówi przeglądarce, żeby nie czekała na font przy renderze tekstu,
+  // więc preload z wysokim priorytetem tylko zabiera pasmo ważniejszym
+  // zasobom (np. obrazkowi LCP w Hero) w tym samym pierwszym roundtripie.
+  // Bez preload font i tak się załaduje — po prostu z niższym priorytetem,
+  // gdy przeglądarka faktycznie napotka go w CSS, zamiast na starcie.
+  preload: false,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "optional",
+  preload: false,
 });
 
 export const metadata = {
