@@ -2,6 +2,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { KonfiguratorProvider } from '@/components/Konfigurator/konfigurator';
+import CookieConsent from '@/components/CookieConsent';
+import MetaPixel from '@/components/MetaPixel';
 import './globals.css';
 
 const geistSans = Geist({
@@ -33,10 +35,8 @@ export const metadata = {
   // domenę-bazę dla WSZYSTKICH stron w apce naraz (canonical, Open Graph
   // images, itd.) — nie trzeba tego powtarzać na każdej podstronie.
   //
-  // PODMIEŃ na docelową domenę produkcyjną, jeśli inna niż netia.vercel.app
-  // (np. po podpięciu własnej domeny netia.pl) — inaczej canonical i tak
-  // będzie wskazywał na adres Vercela zamiast na finalną domenę.
-  metadataBase: new URL("https://netia.vercel.app"),
+  // PODMIENIONO na docelową domenę produkcyjną (było: netia.vercel.app)
+  metadataBase: new URL("https://www.swiatlowod-netia-oferta.pl"),
   title: 'Netia - Internet Światłowodowy',
   description: '...',
 };
@@ -54,6 +54,15 @@ export default function RootLayout({
           {children}
           <Footer />
         </KonfiguratorProvider>
+
+        {/* Baner zgody na cookies — musi być poza KonfiguratorProvider,
+            żeby renderować się na każdej podstronie niezależnie */}
+        <CookieConsent />
+
+        {/* Meta Pixel — komponent nic nie renderuje (return null), sam
+            decyduje czy załadować skrypt na podstawie zgody użytkownika.
+            Pixel ID: Netia-Oferta-Pixel (Meta Business Suite). */}
+        <MetaPixel pixelId="2143913536525465" />
       </body>
     </html>
   );

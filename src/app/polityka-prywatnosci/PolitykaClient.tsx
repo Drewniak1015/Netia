@@ -9,21 +9,28 @@ import React, { useEffect, useRef, useState } from "react";
  * kolory zdefiniowane inline jako klasy arbitralne Tailwind (bg-[#...]),
  * więc nie wymaga rozszerzania tailwind.config.
  *
- * WERSJA 5 — przegląd designu pod kątem spójności z resztą serwisu
- * (strony Pomoc → Internet/Telewizja/Usługi Mobilne):
- *  - Hero zamieniony z gołego tekstu na kartę z gradientową obwódką +
- *    ikoną w kółku (ten sam wzorzec co hero na stronach Pomoc).
- *  - Dodany link powrotny ("← Wróć do strony głównej") nad hero —
- *    reszta serwisu ma tę nawigację wszędzie, tu jej brakowało.
- *  - Spis treści przeniesiony do własnej karty (border + tło), zamiast
- *    "pływać" bezpośrednio na kropkowanym tle.
- *  - Każda sekcja treści to teraz osobna karta (bg c.card, rounded-2xl,
- *    border) zamiast płaskiego tekstu oddzielonego cienką linią —
- *    znacznie łatwiej skanować wzrokiem długi tekst prawny.
- *  - Przycisk „do góry”: bg-teal-500 -> bg-teal-600, bo biały tekst na
- *    teal-500 to ok. 2.5:1 kontrastu (poniżej WCAG AA); teal-600 daje
- *    ~3.7:1, zgodne dla elementu UI/dużego tekstu.
- *  - Usunięty przypadkowy nadmiarowy spacja w className headera.
+ * WERSJA 6 — dodano sekcję cookies marketingowych (Meta Pixel / reklamy
+ * Facebook i Instagram), oznaczoną komentarzem [DODANO] w miejscach zmian:
+ *  - Sekcja 03: nowy blok "Narzędzia marketingowe" obok istniejących
+ *    "Narzędzi zewnętrznych dostawców" (analityka), z osobnym opisem
+ *    Meta Pixel, kategorii danych i mechanizmu zgody/wycofania zgody.
+ *  - Sekcja 04: dodana czwarta podstawa prawna — zgoda (art. 6 ust. 1
+ *    lit. a RODO) dla celów marketingowych, odrębna od dotychczasowego
+ *    uzasadnionego interesu (lit. f), bo marketing wymaga zgody, nie
+ *    tylko uzasadnionego interesu.
+ *  - Sekcja 05: dodany okres przechowywania danych z cookies
+ *    marketingowych (do 180 dni / do wycofania zgody).
+ *  - Sekcja 07: dodano Meta Platforms Ireland Limited jako odbiorcę
+ *    danych.
+ *  - Sekcja 08: dodany akapit o przekazywaniu danych do Meta Platforms,
+ *    Inc. (USA) i stosowanych zabezpieczeniach.
+ *
+ * UWAGA PRAWNA: to wersja robocza przygotowana jako punkt wyjścia —
+ * przed wdrożeniem na produkcję zalecana jest weryfikacja przez prawnika
+ * lub dział compliance (Claude nie jest prawnikiem). Sam ten dokument
+ * nie wystarczy: Meta Pixel musi być technicznie zablokowany do czasu,
+ * aż Użytkownik zaakceptuje kategorię "Marketing" w bannerze cookies
+ * (CookieYes lub inny CMP) — patrz TODO w sekcji 03.
  *
  * WAŻNE: `pt-26` na głównym wrapperze strony jest celowe — strona ma stały
  * (fixed) górny pasek nawigacji, który bez tego odstępu zachodziłby na
@@ -131,6 +138,17 @@ const SECTIONS: Section[] = [
             albo kilku usług czy funkcjonalności Serwisu.
           </dd>
         </div>
+        {/* [DODANO] — definicja partnera reklamowego, potrzebna do sekcji 03/07/08 */}
+        <div>
+          <dt className="font-semibold text-[15px] text-white">
+            Partner reklamowy
+          </dt>
+          <dd className="mt-1 text-[15px] text-white/65">
+            Podmiot, któremu Administrator powierza przetwarzanie danych w
+            celach marketingowych i analitycznych, w tym Meta Platforms
+            Ireland Limited (Facebook, Instagram).
+          </dd>
+        </div>
       </dl>
     ),
   },
@@ -217,6 +235,13 @@ const SECTIONS: Section[] = [
             personalizacji interfejsu oraz pliki monitorujące ruch na stronie
             (analityka danych).
           </li>
+          {/* [DODANO] — trzecia kategoria w tej samej liście, dla spójności z resztą */}
+          <li>
+            <strong className="text-white">Cookie marketingowe</strong>,
+            wykorzystywane do wyświetlania spersonalizowanych reklam oraz
+            pomiaru ich skuteczności — patrz „Narzędzia marketingowe”
+            poniżej. Instalowane wyłącznie po wyrażeniu zgody.
+          </li>
         </ul>
         <p className="mb-4 text-[15px] leading-relaxed text-white/65">
           Użytkownik może w każdej chwili zmienić ustawienia plików cookie
@@ -263,11 +288,37 @@ const SECTIONS: Section[] = [
             pliku kategorii „Niezbędne”.
           </li>
         </ul>
+
+        {/* [DODANO] — cały poniższy blok: narzędzia marketingowe (Meta Pixel) */}
+        <h3 className="mt-6 mb-3 text-[15px] font-bold text-teal-300">
+          Narzędzia marketingowe
+        </h3>
+        <p className="mb-4 text-[15px] leading-relaxed text-white/65">
+          W celach marketingowych Administrator korzysta z poniższych
+          narzędzi, uruchamianych wyłącznie po wyrażeniu zgody Użytkownika na
+          kategorię <strong className="text-white">„Marketing”</strong> w
+          panelu plików cookie:
+        </p>
+        <ul className="mb-4 list-disc space-y-2 pl-5 text-[15px] leading-relaxed text-white/65">
+          <li>
+            <strong className="text-white">Meta Pixel</strong> (Meta
+            Platforms Ireland Limited) — narzędzie wykorzystywane do pomiaru
+            skuteczności kampanii reklamowych prowadzonych na Facebooku i
+            Instagramie, tworzenia grup odbiorców podobnych (lookalike) oraz
+            remarketingu, tj. wyświetlania Użytkownikowi reklam dopasowanych
+            do jego wcześniejszej aktywności w Serwisie. Dane przekazywane w
+            ramach tego narzędzia mogą obejmować identyfikatory urządzenia,
+            adres IP oraz informacje o odwiedzonych podstronach i działaniach
+            podjętych w Serwisie (np. wypełnienie formularza kontaktowego).
+          </li>
+        </ul>
         <p className="text-[15px] leading-relaxed text-white/65">
-          Wycofanie zgody możliwe jest w dowolnym momencie poprzez ponowne
-          otwarcie panelu zgód (link „Zmień ustawienia cookies” w stopce
-          Serwisu) lub poprzez usunięcie plików cookie w ustawieniach
-          przeglądarki.
+          Cookie marketingowe są instalowane wyłącznie po uzyskaniu zgody
+          Użytkownika. Wycofanie zgody możliwe jest w dowolnym momencie
+          poprzez ponowne otwarcie panelu zgód (link „Zmień ustawienia
+          cookies” w stopce Serwisu) lub poprzez usunięcie plików cookie w
+          ustawieniach przeglądarki, co nie wpływa na zgodność z prawem
+          przetwarzania dokonanego przed wycofaniem zgody.
         </p>
       </>
     ),
@@ -296,6 +347,16 @@ const SECTIONS: Section[] = [
             świadczeniem usług i prowadzeniem działalności gospodarczej
             (dowodowe, analityczne, statystyczne).
           </li>
+          {/* [DODANO] */}
+          <li>
+            prowadzenia działań marketingowych, w tym wyświetlania
+            spersonalizowanych reklam za pośrednictwem Meta Pixel na
+            Facebooku i Instagramie oraz mierzenia ich skuteczności — art. 6
+            ust. 1 lit. a RODO, tj. na podstawie dobrowolnej zgody
+            Użytkownika wyrażonej poprzez baner cookies. Zgoda może zostać
+            wycofana w każdym czasie, co pozostaje bez wpływu na zgodność z
+            prawem przetwarzania dokonanego przed jej wycofaniem.
+          </li>
         </ul>
       </>
     ),
@@ -321,7 +382,14 @@ const SECTIONS: Section[] = [
             postępowań cywilnych, egzekucyjnych, administracyjnych i karnych
             wymagających przetwarzania danych, a w przypadku zgody — do
             czasu realizacji jej celu lub odwołania, w zależności co nastąpi
-            wcześniej.
+            wcześniej;
+          </li>
+          {/* [DODANO] */}
+          <li>
+            w przypadku danych przetwarzanych na podstawie zgody na cookie
+            marketingowe — przez okres wskazany w ustawieniach danego pliku
+            cookie (standardowo do 180 dni w przypadku Meta Pixel) lub do
+            czasu wycofania zgody przez Użytkownika.
           </li>
         </ul>
         <p className="text-[15px] leading-relaxed text-white/65">
@@ -352,14 +420,18 @@ const SECTIONS: Section[] = [
     number: "07",
     title: "Odbiorcy danych",
     body: (
+      // [DODANO] — fragment o Meta Platforms na końcu zdania
       <p className="text-[15px] leading-relaxed text-white/65">
         Dane osobowe Użytkowników mogą być przekazywane następującym
         kategoriom odbiorców: podmiotom świadczącym Administratorowi usługi
         niezbędne do realizacji celów przetwarzania, w tym dostawcom IT,
         podmiotom realizującym wsparcie techniczne, organizacyjne i doradcze,
         innym podwykonawcom w zakresie obsługi klienta, integratorom oraz
-        podmiotom uprawnionym na podstawie przepisów prawa, a także spółkom z
-        Grupy Polsat Plus.
+        podmiotom uprawnionym na podstawie przepisów prawa, spółkom z Grupy
+        Polsat Plus, a także — w zakresie danych przetwarzanych w związku z
+        cookies marketingowymi — Meta Platforms Ireland Limited, 4 Grand
+        Canal Square, Grand Canal Harbour, Dublin 2, Irlandia (Facebook,
+        Instagram).
       </p>
     ),
   },
@@ -368,17 +440,31 @@ const SECTIONS: Section[] = [
     number: "08",
     title: "Przekazywanie danych poza EOG",
     body: (
-      <p className="text-[15px] leading-relaxed text-white/65">
-        Dane osobowe Użytkownika mogą być przekazywane do państw lub
-        organizacji międzynarodowych poza Europejski Obszar Gospodarczy, gdy
-        zostały one uznane przez Komisję Europejską za zapewniające adekwatny
-        stopień ochrony danych, lub pod warunkiem zastosowania odpowiednich
-        zabezpieczeń — wiążących reguł korporacyjnych, standardowych klauzul
-        ochrony danych przyjętych przez Komisję Europejską bądź Prezesa
-        Urzędu Ochrony Danych Osobowych, lub innych klauzul umownych przez
-        niego dopuszczonych. Kopie zabezpieczeń można uzyskać na wniosek
-        złożony w sposób wskazany w punkcie 10.
-      </p>
+      <>
+        <p className="mb-4 text-[15px] leading-relaxed text-white/65">
+          Dane osobowe Użytkownika mogą być przekazywane do państw lub
+          organizacji międzynarodowych poza Europejski Obszar Gospodarczy, gdy
+          zostały one uznane przez Komisję Europejską za zapewniające adekwatny
+          stopień ochrony danych, lub pod warunkiem zastosowania odpowiednich
+          zabezpieczeń — wiążących reguł korporacyjnych, standardowych klauzul
+          ochrony danych przyjętych przez Komisję Europejską bądź Prezesa
+          Urzędu Ochrony Danych Osobowych, lub innych klauzul umownych przez
+          niego dopuszczonych. Kopie zabezpieczeń można uzyskać na wniosek
+          złożony w sposób wskazany w punkcie 10.
+        </p>
+        {/* [DODANO] */}
+        <p className="text-[15px] leading-relaxed text-white/65">
+          W związku z korzystaniem z narzędzia Meta Pixel dane Użytkowników
+          mogą być przekazywane do Meta Platforms, Inc. z siedzibą w USA.
+          Meta Platforms, Inc. stosuje odpowiednie zabezpieczenia prawne
+          przewidziane dla przekazywania danych poza EOG, w tym może
+          korzystać z mechanizmu certyfikacji w ramach programu EU-U.S. Data
+          Privacy Framework (o ile obowiązuje w danym okresie) lub
+          standardowych klauzul umownych zatwierdzonych przez Komisję
+          Europejską. Aktualne informacje na temat stosowanych zabezpieczeń
+          dostępne są w polityce prywatności Meta Platforms.
+        </p>
+      </>
     ),
   },
   {
@@ -454,10 +540,17 @@ const SECTIONS: Section[] = [
     number: "11",
     title: "Zmiany Polityki Prywatności",
     body: (
+      // [DODANO] — wzmianka o aktualizacji, data do potwierdzenia
       <p className="text-[15px] leading-relaxed text-white/65">
         Polityka Prywatności jest na bieżąco weryfikowana i w razie potrzeby
-        aktualizowana. Aktualna wersja Polityki Prywatności została przyjęta i
-        obowiązuje od <strong className="text-white">05.02.2021 r.</strong>
+        aktualizowana. Niniejsza wersja, uwzględniająca wykorzystanie cookies
+        marketingowych (Meta Pixel), stanowi aktualizację wersji przyjętej i
+        obowiązującej od{" "}
+        <strong className="text-white">05.02.2021 r.</strong>{" "}
+        <span className="text-white/40">
+          [data i numeracja aktualizacji do potwierdzenia przez
+          Administratora]
+        </span>
       </p>
     ),
   },
