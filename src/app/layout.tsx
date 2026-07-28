@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { KonfiguratorProvider } from '@/components/Konfigurator/konfigurator';
@@ -18,23 +18,21 @@ const geistSans = Geist({
   // przy foncie zastępczym na cały ten load — zero ryzyka shiftu z fonta.
   // Font i tak trafia do cache, więc kolejne wizyty i tak go użyją od razu.
   display: "optional",
-  // FIX (Drzewo zależności sieciowych — 834ms na ścieżce krytycznej):
-  // next/font domyślnie dodaje <link rel="preload" fetchpriority="high">
-  // dla fontu, nawet przy display:"optional". To sprzeczne — "optional"
-  // już mówi przeglądarce, żeby nie czekała na font przy renderze tekstu,
-  // więc preload z wysokim priorytetem tylko zabiera pasmo ważniejszym
-  // zasobom (np. obrazkowi LCP w Hero) w tym samym pierwszym roundtripie.
-  // Bez preload font i tak się załaduje — po prostu z niższym priorytetem,
-  // gdy przeglądarka faktycznie napotka go w CSS, zamiast na starcie.
+  // FIX (Drzewo zależności sieciowych): usunięty preload — z display:
+  // "optional" font i tak nie blokuje renderu tekstu, więc preload z
+  // wysokim priorytetem tylko zabierał pasmo ważniejszym zasobom (np.
+  // obrazkowi LCP w Hero) w tej samej pierwszej fazie ładowania.
   preload: false,
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "optional",
-  preload: false,
-});
+// FIX (29,18 KiB zbędnego fontu na ścieżce krytycznej): Geist_Mono był
+// zaimportowany i podpięty globalnie przez className na <html>, ale
+// nigdzie na stronie nie jest faktycznie używany (brak font-mono w
+// Tailwindzie / brak var(--font-geist-mono) w CSS). Przeglądarka i tak
+// go ściągała na każdej stronie, bo był zadeklarowany globalnie.
+// Usunięty całkowicie. Jeśli w przyszłości pojawi się realna potrzeba
+// (np. kod promocyjny, cena w monospace) — dodać z powrotem, ale
+// zaimportować LOKALNIE w tym jednym komponencie, nie globalnie w layout.
 
 export const metadata = {
   // FIX (SEO — "URL nie jest bezwzględny"): bez metadataBase Next.js nie
@@ -57,7 +55,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pl" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="pl" className={geistSans.variable}>
       <body>
         <KonfiguratorProvider>
           <Header />
