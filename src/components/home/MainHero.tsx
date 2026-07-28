@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 import {
@@ -15,20 +14,6 @@ import {
 import DottedBackground from "@/components/ui/DottedBackground";
 import { trackContact } from "@/lib/meta-track";
 
-function useIsDesktop() {
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
-    setIsDesktop(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-
-  return isDesktop;
-}
-
 /* Wspólny wariant fade-up, żeby nie powielać initial/animate w każdym elemencie */
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -37,87 +22,11 @@ const fadeUp = {
 
 /* ------------------------------------------------------------------ */
 /*  HERO — dwie kolumny: tekst + gwiazdki na górze / wizualizacja z CTA */
+/*  Układ mobile/desktop rozstrzyga wyłącznie CSS grid (bez JS-owego   */
+/*  matchMedia i bez duplikowania obrazka/CTA w DOM).                 */
 /* ------------------------------------------------------------------ */
 function Hero() {
   const reduceMotion = useReducedMotion();
-  const isDesktop = useIsDesktop();
-
-  const ctaButtons = (
-    <m.div
-      initial={reduceMotion ? false : "hidden"}
-      animate="visible"
-      variants={fadeUp}
-      transition={{ duration: 0.6, ease: "easeOut", delay: 0.42 }}
-      className="mt-10 flex flex-col items-stretch gap-4 sm:flex-row sm:justify-center lg:justify-start"
-    >
-      {/* CTA primary */}
-      <m.a
-        href="tel:+48887843260"
-        onClick={() => trackContact("hero_phone_button")}
-        whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-        whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-        className="flex min-h-[60px] items-center justify-between gap-4 rounded-2xl bg-teal-500 px-5 py-3 text-white shadow-lg shadow-teal-500/20 outline-none transition-shadow hover:shadow-teal-400/30 focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
-      >
-        <span className="flex items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
-            <Phone size={16} />
-          </span>
-          <span className="text-left">
-            <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
-            <span className="block text-xs text-white/85">+48 887 843 260</span>
-          </span>
-        </span>
-        <ChevronRight size={18} className="shrink-0 text-white/70" />
-      </m.a>
-
-      {/* CTA secondary — ta sama wielkość, styl obrysowany, żeby nie konkurował kolorem z primary */}
-      <m.a
-        href={`sms:+48887843260?body=${encodeURIComponent(
-          "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
-        )}`}
-        onClick={() => trackContact("hero_sms_button")}
-        whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-        whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-        className="flex min-h-[60px] items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-white outline-none transition-colors hover:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
-      >
-        <span className="flex items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">
-            <MessageCircle size={16} />
-          </span>
-          <span className="text-sm font-bold">Wyślij SMS</span>
-        </span>
-        <ChevronRight size={18} className="shrink-0 text-white/50" />
-      </m.a>
-    </m.div>
-  );
-
-  const ctaFooterNote = (
-    <m.div
-      initial={reduceMotion ? false : "hidden"}
-      animate="visible"
-      variants={fadeUp}
-      transition={{ duration: 0.6, ease: "easeOut", delay: 0.5 }}
-      className="mx-auto mt-4 flex w-fit items-center justify-center gap-1.5 sm:mx-0"
-    >
-      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal-300/80" />
-      <span className="text-xs font-medium text-white/50 sm:text-sm">
-        Oddzwonimy w 3 minuty bez czekania, bez przekierowań między działami 
-      </span>
-    </m.div>
-  );
-
-  const heroImage = (
-    <div className="overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40">
-      <Image
-        src="/images/MainHero.svg"
-        alt="Rodzina w salonie ogląda film bez przerywania dzięki stabilnemu połączeniu światłowodowemu"
-        width={1600}
-        height={900}
-        priority
-        className="h-auto w-full"
-      />
-    </div>
-  );
 
   return (
     <LazyMotion features={domAnimation} strict>
@@ -219,40 +128,91 @@ function Hero() {
               Rezygnacja bez kosztów w 14 dni
             </span>
           </m.div>
-
-          {/* Obraz na mobile — CTA zaraz pod obrazkiem */}
-          {!isDesktop && (
-            <>
-              <m.div
-                initial={reduceMotion ? false : "hidden"}
-                animate="visible"
-                variants={fadeUp}
-                transition={{ duration: 0.6, ease: "easeOut", delay: 0.38 }}
-                className="mt-8 px-2"
-              >
-                {heroImage}
-              </m.div>
-              {ctaButtons}
-              {ctaFooterNote}
-            </>
-          )}
         </div>
 
-        {/* Kolumna wizualna — dowód: pain point kontra obietnica, CTA pod obrazkiem */}
-        {isDesktop && (
-          <div className="flex flex-col">
-            <m.div
-              initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, ease: "easeOut", delay: 0.3 }}
-              className="relative"
+        {/* Kolumna wizualna — jedyna instancja w DOM.
+            Na mobile (grid-cols-1) po prostu "spada" pod kolumnę tekstową,
+            na desktopie (lg:grid-cols-[...]) staje obok niej jako druga kolumna.
+            Dzięki temu nie renderujemy dwa razy obrazka ani CTA i nie ma
+            zależności od JS-owego matchMedia (brak hydration mismatch / CLS). */}
+        <div className="flex flex-col">
+          <m.div
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, ease: "easeOut", delay: 0.3 }}
+            className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40"
+          >
+            <Image
+              src="/images/MainHero.svg"
+              alt="Rodzina w salonie ogląda film bez przerywania dzięki stabilnemu połączeniu światłowodowemu"
+              width={1600}
+              height={900}
+              priority
+              sizes="(min-width: 1024px) 45vw, 100vw"
+              className="h-auto w-full"
+            />
+          </m.div>
+
+          <m.div
+            initial={reduceMotion ? false : "hidden"}
+            animate="visible"
+            variants={fadeUp}
+            transition={{ duration: 0.6, ease: "easeOut", delay: 0.42 }}
+            className="mt-10 flex flex-col items-stretch gap-4 sm:flex-row sm:justify-center lg:justify-start"
+          >
+            {/* CTA primary */}
+            <m.a
+              href="tel:+48887843260"
+              onClick={() => trackContact("hero_phone_button")}
+              whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+              whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+              className="flex min-h-[60px] items-center justify-between gap-4 rounded-2xl bg-teal-500 px-5 py-3 text-white shadow-lg shadow-teal-500/20 outline-none transition-shadow hover:shadow-teal-400/30 focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
             >
-              {heroImage}
-            </m.div>
-            {ctaButtons}
-            {ctaFooterNote}
-          </div>
-        )}
+              <span className="flex items-center gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
+                  <Phone size={16} />
+                </span>
+                <span className="text-left">
+                  <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
+                  <span className="block text-xs text-white/85">+48 887 843 260</span>
+                </span>
+              </span>
+              <ChevronRight size={18} className="shrink-0 text-white/70" />
+            </m.a>
+
+            {/* CTA secondary — ta sama wielkość, styl obrysowany, żeby nie konkurował kolorem z primary */}
+            <m.a
+              href={`sms:+48887843260?body=${encodeURIComponent(
+                "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
+              )}`}
+              onClick={() => trackContact("hero_sms_button")}
+              whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+              whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+              className="flex min-h-[60px] items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-white outline-none transition-colors hover:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
+            >
+              <span className="flex items-center gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">
+                  <MessageCircle size={16} />
+                </span>
+                <span className="text-sm font-bold">Wyślij SMS</span>
+              </span>
+              <ChevronRight size={18} className="shrink-0 text-white/50" />
+            </m.a>
+          </m.div>
+
+          <m.div
+            initial={reduceMotion ? false : "hidden"}
+            animate="visible"
+            variants={fadeUp}
+            transition={{ duration: 0.6, ease: "easeOut", delay: 0.5 }}
+            className="mx-auto mt-4 flex w-fit items-center justify-center gap-1.5 sm:mx-0"
+          >
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal-300/80" />
+            <span className="text-xs font-medium text-white/50 sm:text-sm">
+              Oddzwonimy w 3 minuty bez czekania, bez przekierowań między działami 
+            </span>
+          </m.div>
+        </div>
       </div>
     </section>
     </LazyMotion>

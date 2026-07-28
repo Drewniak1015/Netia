@@ -1,6 +1,7 @@
 "use client";
 
-import { memo, useEffect, useState, type ReactNode } from "react";
+import { memo, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import Image from "next/image";
 import {
   LazyMotion,
   domAnimation,
@@ -484,7 +485,7 @@ const maxOffers: MaxOffer[] = [
     price: "140 zł/mies.",
     monthsPill: "Abonament 12 miesięcy za 0 zł po rabatach",
     features: [
-      { label: "Telewizja L 4K z Dekoderem"},
+      { label: "Telewizja L 4K z Dekoderem" },
       { label: "Bezpieczny Internet Ultra" },
     ],
   },
@@ -495,13 +496,14 @@ const maxOffers: MaxOffer[] = [
     monthsPill: "Abonament 12 miesięcy za 0 zł po rabatach",
     featured: true,
     features: [
-      { label: "Telewizja L 4K z Dekoderem"},
+      { label: "Telewizja L 4K z Dekoderem" },
       { label: "Bezpieczny Internet Ultra" },
     ],
   },
 ];
 
 const PHONE = "+48 887 843 260";
+const PHONE_HREF = PHONE.replace(/\s/g, "");
 
 /* [DODANO] Helper do odpalania zdarzenia Meta Pixel "Contact" — ten sam
    wzorzec co w Hero.tsx. content_name mówi z której konkretnie karty
@@ -561,16 +563,23 @@ const HOVER_SPRING = { type: "spring", stiffness: 350, damping: 22, mass: 0.6 } 
 const TAP_SPRING = { type: "spring", stiffness: 500, damping: 25, mass: 0.5 } as const;
 
 /* ---------------------------------------------------------------------- */
-/*  Zdjęcie produktu na białym tle (routery) — pomijane, gdy brak `zdjecie` */
+/*  Zdjęcie produktu na białym tle (routery) — pomijane, gdy brak `zdjecie`.
+    next/image zamiast <img>: automatyczna optymalizacja/kompresja,
+    leniwe ładowanie (obraz i tak renderuje się dopiero po otwarciu
+    modala) i brak layout shiftu dzięki `fill` + rodzicowi o stałej
+    wysokości. */
 /* ---------------------------------------------------------------------- */
 function IkonaProduktu({ zdjecie, model }: { zdjecie: string; model: string }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={zdjecie}
-      alt={model}
-      className="h-40 w-full rounded-xl border border-white/10 bg-white object-contain p-4 sm:h-48"
-    />
+    <div className="relative h-40 w-full overflow-hidden rounded-xl border border-white/10 bg-white p-4 sm:h-48">
+      <Image
+        src={zdjecie}
+        alt={model}
+        fill
+        sizes="(min-width: 640px) 42rem, 100vw"
+        className="object-contain"
+      />
+    </div>
   );
 }
 
@@ -925,12 +934,24 @@ const OfferCard = memo(function OfferCard({
   reduceMotion: boolean;
   onPokazInfo: (infoId: string) => void;
 }) {
-  // [DODANO] Treść SMS-a — konkretna oferta zamiast generycznego "INTERNET",
-  // np. "Interesuje mnie oferta: Internet 1000 Mb/s + TV M. Oddzwońcie."
-  const smsBody = encodeURIComponent(
-    `Interesuje mnie oferta: Internet ${offer.speed} + ${offer.pkg}. Oddzwońcie do mnie.`
+  // [DODANO] Treść SMS-a i content_name liczone raz na zmianę `offer`
+  // (useMemo), a nie przy każdym renderze karty.
+  const { smsBody, contentName } = useMemo(() => {
+    const body = encodeURIComponent(
+      `Interesuje mnie oferta: Internet ${offer.speed} + ${offer.pkg}. Oddzwońcie do mnie.`
+    );
+    const name = `oferta_podstawa_${slugify(offer.speed)}_${slugify(offer.pkg)}`;
+    return { smsBody: body, contentName: name };
+  }, [offer.speed, offer.pkg]);
+
+  const handlePhoneClick = useCallback(
+    () => trackContact(`${contentName}_tel`),
+    [contentName]
   );
-  const contentName = `oferta_podstawa_${slugify(offer.speed)}_${slugify(offer.pkg)}`;
+  const handleSmsClick = useCallback(
+    () => trackContact(`${contentName}_sms`),
+    [contentName]
+  );
 
   return (
     <m.article
@@ -963,32 +984,32 @@ const OfferCard = memo(function OfferCard({
       />
 
       <div className="mt-4 flex flex-1 flex-col justify-center">
-      <ul className="space-y-3">
-        {offer.features.map((f) => (
-          <li key={f.label} className="flex items-center gap-2.5 text-sm text-slate-200">
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-400/15">
-              <Check className="h-3 w-3 text-teal-400" strokeWidth={3} />
-            </span>
-            {f.infoId ? (
-              <button
-                type="button"
-                onClick={() => onPokazInfo(f.infoId!)}
-                className="inline-flex items-center gap-1 cursor-pointer text-left underline decoration-dotted decoration-slate-500 underline-offset-4 transition-colors hover:text-teal-300 hover:decoration-teal-300"
-              >
-                {f.label}
-                <Info size={12} className="shrink-0 opacity-60" />
-              </button>
-            ) : (
-              <span>{f.label}</span>
-            )}
-          </li>
-        ))}
-      </ul>
+        <ul className="space-y-3">
+          {offer.features.map((f) => (
+            <li key={f.label} className="flex items-center gap-2.5 text-sm text-slate-200">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-400/15">
+                <Check className="h-3 w-3 text-teal-400" strokeWidth={3} />
+              </span>
+              {f.infoId ? (
+                <button
+                  type="button"
+                  onClick={() => onPokazInfo(f.infoId!)}
+                  className="inline-flex items-center gap-1 cursor-pointer text-left underline decoration-dotted decoration-slate-500 underline-offset-4 transition-colors hover:text-teal-300 hover:decoration-teal-300"
+                >
+                  {f.label}
+                  <Info size={12} className="shrink-0 opacity-60" />
+                </button>
+              ) : (
+                <span>{f.label}</span>
+              )}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <m.a
-        href={`tel:${PHONE.replace(/\s/g, "")}`}
-        onClick={() => trackContact(`${contentName}_tel`)}
+        href={`tel:${PHONE_HREF}`}
+        onClick={handlePhoneClick}
         whileHover={reduceMotion ? undefined : { scale: 1.03 }}
         whileTap={reduceMotion ? undefined : { scale: 0.97 }}
         transition={TAP_SPRING}
@@ -999,8 +1020,8 @@ const OfferCard = memo(function OfferCard({
       </m.a>
 
       <m.a
-        href={`sms:${PHONE.replace(/\s/g, "")}?body=${smsBody}`}
-        onClick={() => trackContact(`${contentName}_sms`)}
+        href={`sms:${PHONE_HREF}?body=${smsBody}`}
+        onClick={handleSmsClick}
         whileHover={reduceMotion ? undefined : { scale: 1.03 }}
         whileTap={reduceMotion ? undefined : { scale: 0.97 }}
         transition={TAP_SPRING}
@@ -1025,11 +1046,24 @@ const MaxOfferCard = memo(function MaxOfferCard({
   reduceMotion: boolean;
   onPokazInfo: (infoId: string) => void;
 }) {
-  // [DODANO] Treść SMS-a z nazwą konkretnej oferty MAX (np. "MAX 2000")
-  const smsBody = encodeURIComponent(
-    `Interesuje mnie oferta: ${offer.name} (${offer.speed}). Oddzwońcie do mnie.`
+  // [DODANO] Treść SMS-a z nazwą konkretnej oferty MAX (np. "MAX 2000"),
+  // liczona raz na zmianę `offer` zamiast przy każdym renderze.
+  const { smsBody, contentName } = useMemo(() => {
+    const body = encodeURIComponent(
+      `Interesuje mnie oferta: ${offer.name} (${offer.speed}). Oddzwońcie do mnie.`
+    );
+    const name = `oferta_max_${slugify(offer.name)}`;
+    return { smsBody: body, contentName: name };
+  }, [offer.name, offer.speed]);
+
+  const handlePhoneClick = useCallback(
+    () => trackContact(`${contentName}_tel`),
+    [contentName]
   );
-  const contentName = `oferta_max_${slugify(offer.name)}`;
+  const handleSmsClick = useCallback(
+    () => trackContact(`${contentName}_sms`),
+    [contentName]
+  );
 
   return (
     <m.article
@@ -1061,46 +1095,46 @@ const MaxOfferCard = memo(function MaxOfferCard({
       />
 
       <div className="mt-4 flex flex-1 flex-col justify-center">
-      <ul className="space-y-3">
-        <li className="flex items-center gap-2.5 text-sm text-white">
-          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pink-400/10 text-pink-400">
-            <Check size={12} strokeWidth={3} />
-          </span>
-          Internet do <b className="font-bold">{offer.speed}</b>
-        </li>
-        {offer.features.map((f) => (
-          <li key={f.label} className="flex items-start gap-2.5 text-sm text-white">
-            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pink-400/10 text-pink-400">
+        <ul className="space-y-3">
+          <li className="flex items-center gap-2.5 text-sm text-white">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pink-400/10 text-pink-400">
               <Check size={12} strokeWidth={3} />
             </span>
-            {f.infoId ? (
-              <button
-                type="button"
-                onClick={() => onPokazInfo(f.infoId!)}
-                className="inline-flex items-center gap-1 cursor-pointer text-left underline decoration-dotted decoration-pink-300/40 underline-offset-4 transition-colors hover:text-pink-300"
-              >
-                {f.label}
-                <Info size={12} className="shrink-0 opacity-60" />
-              </button>
-            ) : f.label === "Bezpieczny Internet Ultra" ? (
-              <span>
-                {f.label}
-                <span className="mt-0.5 flex items-center gap-1 text-[11px] text-white/55">
-                  <Shield size={11} className="text-pink-300" />
-                  Ochrona 5 urządzeń + CyberEkspert
-                </span>
-              </span>
-            ) : (
-              <span>{f.label}</span>
-            )}
+            Internet do <b className="font-bold">{offer.speed}</b>
           </li>
-        ))}
-      </ul>
+          {offer.features.map((f) => (
+            <li key={f.label} className="flex items-start gap-2.5 text-sm text-white">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pink-400/10 text-pink-400">
+                <Check size={12} strokeWidth={3} />
+              </span>
+              {f.infoId ? (
+                <button
+                  type="button"
+                  onClick={() => onPokazInfo(f.infoId!)}
+                  className="inline-flex items-center gap-1 cursor-pointer text-left underline decoration-dotted decoration-pink-300/40 underline-offset-4 transition-colors hover:text-pink-300"
+                >
+                  {f.label}
+                  <Info size={12} className="shrink-0 opacity-60" />
+                </button>
+              ) : f.label === "Bezpieczny Internet Ultra" ? (
+                <span>
+                  {f.label}
+                  <span className="mt-0.5 flex items-center gap-1 text-[11px] text-white/55">
+                    <Shield size={11} className="text-pink-300" />
+                    Ochrona 5 urządzeń + CyberEkspert
+                  </span>
+                </span>
+              ) : (
+                <span>{f.label}</span>
+              )}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <m.a
-        href={`tel:${PHONE.replace(/\s/g, "")}`}
-        onClick={() => trackContact(`${contentName}_tel`)}
+        href={`tel:${PHONE_HREF}`}
+        onClick={handlePhoneClick}
         whileHover={reduceMotion ? undefined : { scale: 1.03 }}
         whileTap={reduceMotion ? undefined : { scale: 0.97 }}
         transition={TAP_SPRING}
@@ -1111,8 +1145,8 @@ const MaxOfferCard = memo(function MaxOfferCard({
       </m.a>
 
       <m.a
-        href={`sms:${PHONE.replace(/\s/g, "")}?body=${smsBody}`}
-        onClick={() => trackContact(`${contentName}_sms`)}
+        href={`sms:${PHONE_HREF}?body=${smsBody}`}
+        onClick={handleSmsClick}
         whileHover={reduceMotion ? undefined : { scale: 1.03 }}
         whileTap={reduceMotion ? undefined : { scale: 0.97 }}
         transition={TAP_SPRING}
@@ -1134,6 +1168,15 @@ export default function Oferty({ cityLocative, defaultOferta = "max" }: OfertyPr
   const reduceMotion = useReducedMotion();
   const [aktywnyInfoId, setAktywnyInfoId] = useState<string | null>(null);
   const [tryb, setTryb] = useState<"podstawa" | "max">(defaultOferta);
+
+  // Stabilne referencje callbacków przekazywanych w dół do kart —
+  // useState setter jest już referencyjnie stabilny, ale opakowanie w
+  // useCallback dokumentuje intencję i chroni przed przyszłą zmianą
+  // implementacji, która mogłaby to zepsuć.
+  const handlePokazInfo = useCallback((infoId: string) => setAktywnyInfoId(infoId), []);
+  const handleCloseModal = useCallback(() => setAktywnyInfoId(null), []);
+  const handleWybierzPodstawa = useCallback(() => setTryb("podstawa"), []);
+  const handleWybierzMax = useCallback(() => setTryb("max"), []);
 
   return (
     <LazyMotion features={domAnimation} strict>
@@ -1212,7 +1255,7 @@ export default function Oferty({ cityLocative, defaultOferta = "max" }: OfertyPr
                 type="button"
                 role="tab"
                 aria-selected={tryb === "podstawa"}
-                onClick={() => setTryb("podstawa")}
+                onClick={handleWybierzPodstawa}
                 className={`relative z-10 flex-1 rounded-full px-6 py-2.5 text-center text-sm font-bold transition-colors ${
                   tryb === "podstawa" ? "text-[#0B2A3D]" : "text-white/70 hover:text-white"
                 }`}
@@ -1223,7 +1266,7 @@ export default function Oferty({ cityLocative, defaultOferta = "max" }: OfertyPr
                 type="button"
                 role="tab"
                 aria-selected={tryb === "max"}
-                onClick={() => setTryb("max")}
+                onClick={handleWybierzMax}
                 className={`relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-full px-6 py-2.5 text-sm font-bold transition-colors ${
                   tryb === "max" ? "text-white" : "text-white/70 hover:text-white"
                 }`}
@@ -1232,7 +1275,6 @@ export default function Oferty({ cityLocative, defaultOferta = "max" }: OfertyPr
                 MAX
               </button>
             </m.div>
-
           </m.div>
 
           <AnimatePresence mode="wait">
@@ -1255,7 +1297,7 @@ export default function Oferty({ cityLocative, defaultOferta = "max" }: OfertyPr
                       key={`${offer.speed}-${offer.pkg}`}
                       offer={offer}
                       reduceMotion={!!reduceMotion}
-                      onPokazInfo={setAktywnyInfoId}
+                      onPokazInfo={handlePokazInfo}
                     />
                   ))}
                 </m.div>
@@ -1296,11 +1338,10 @@ export default function Oferty({ cityLocative, defaultOferta = "max" }: OfertyPr
                       key={offer.name}
                       offer={offer}
                       reduceMotion={!!reduceMotion}
-                      onPokazInfo={setAktywnyInfoId}
+                      onPokazInfo={handlePokazInfo}
                     />
                   ))}
                 </m.div>
-
 
                 <SzczegolyOferty>
                   Prezentowana oferta Netii S.A.: „Wybierz rabat 12 miesięcy” (PON, HFC, ETTH) obowiązuje przy
@@ -1321,7 +1362,7 @@ export default function Oferty({ cityLocative, defaultOferta = "max" }: OfertyPr
           </AnimatePresence>
         </div>
 
-        <InfoModal infoId={aktywnyInfoId} onClose={() => setAktywnyInfoId(null)} />
+        <InfoModal infoId={aktywnyInfoId} onClose={handleCloseModal} />
       </section>
     </LazyMotion>
   );
