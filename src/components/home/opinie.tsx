@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, type RefObject } from "react";
-import Image from "next/image";
 import {
   RotateCcw,
   Headset,
@@ -190,12 +189,9 @@ export default function NetiaSocialProof({
                 >
                   {/* Kolumna ze zdjęciem — na mobile zdjęcie po lewej, opis po prawej; od sm: zdjęcie na górze, opis wyśrodkowany pod spodem; od lg: wyrównanie do góry */}
                   <div className="flex flex-row items-center gap-4 w-full sm:w-28 md:w-32 sm:flex-col sm:items-center shrink-0">
-                    <Image
+                    <img
                       src={r.photoUrl ?? FALLBACK_PHOTOS[i % FALLBACK_PHOTOS.length]}
                       alt={r.name}
-                      width={96}
-                      height={96}
-                      loading="lazy"
                       className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 rounded-xl object-cover border border-white/15 shrink-0"
                     />
                     <div className="flex flex-col items-start text-left sm:items-center sm:text-center">
@@ -268,12 +264,9 @@ export default function NetiaSocialProof({
 
             {/* Mini-profil doradcy — przejęty z dawnej ContactSection, teraz z krótkim bio zaufania */}
             <div className="flex items-center gap-4 pt-5 mb-5 border-t border-white/10">
-              <Image
+              <img
                 src={advisorPhotoUrl}
                 alt={advisorName}
-                width={64}
-                height={64}
-                loading="lazy"
                 className="h-16 w-16 shrink-0 rounded-xl object-cover border border-white/15"
               />
               <div>

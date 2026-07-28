@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { Phone, MessageCircle, ChevronRight } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
 type ContactSectionProps = {
@@ -189,13 +188,10 @@ export default function ContactSection({
                 {/* zdjęcie */}
                 <div className="relative aspect-4/5 w-full overflow-hidden rounded-xl bg-white/5">
                   {advisorPhotoUrl ? (
-                    <Image
+                    <img
                       src={advisorPhotoUrl}
                       alt={advisorName}
-                      fill
-                      loading="lazy"
-                      sizes="280px"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-sm text-white/40">

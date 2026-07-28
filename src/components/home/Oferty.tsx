@@ -1,7 +1,6 @@
 "use client";
 
 import { memo, useEffect, useState, type ReactNode } from "react";
-import Image from "next/image";
 import {
   LazyMotion,
   domAnimation,
@@ -566,12 +565,10 @@ const TAP_SPRING = { type: "spring", stiffness: 500, damping: 25, mass: 0.5 } as
 /* ---------------------------------------------------------------------- */
 function IkonaProduktu({ zdjecie, model }: { zdjecie: string; model: string }) {
   return (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       src={zdjecie}
       alt={model}
-      width={400}
-      height={192}
-      loading="lazy"
       className="h-40 w-full rounded-xl border border-white/10 bg-white object-contain p-4 sm:h-48"
     />
   );
