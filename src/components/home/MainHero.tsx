@@ -13,6 +13,7 @@ import {
   UserRound,
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
+import { trackContact } from "@/lib/meta-track";
 
 function useIsDesktop() {
   const [isDesktop, setIsDesktop] = useState(false);
@@ -26,17 +27,6 @@ function useIsDesktop() {
   }, []);
 
   return isDesktop;
-}
-
-/* [DODANO] Mały helper do odpalania zdarzeń Meta Pixel — rzutujemy window
-   na `any` celowo (patrz komentarz w MetaPixel.tsx o unikaniu konfliktów
-   typów). content_name pomaga później rozróżnić w Meta, z którego dokładnie
-   przycisku/miejsca na stronie przyszło kliknięcie (Hero, stopka, itd.),
-   jeśli kiedyś dodasz więcej takich przycisków w innych miejscach. */
-function trackContact(contentName: string) {
-  if (typeof window !== "undefined" && (window as any).fbq) {
-    (window as any).fbq("track", "Contact", { content_name: contentName });
-  }
 }
 
 /* Wspólny wariant fade-up, żeby nie powielać initial/animate w każdym elemencie */
