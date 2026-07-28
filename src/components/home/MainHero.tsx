@@ -114,6 +114,7 @@ function Hero() {
         width={1600}
         height={900}
         priority
+        fetchPriority="high"
         className="h-auto w-full"
       />
     </div>
