@@ -57,7 +57,7 @@ export default function HomePage() {
       {/* <Oferty /> */}
       {/* <Instrukcja /> */}
       {/* <OfertyInternet /> */}
-      {/* <Benefity /> */}
+      <Benefity />
       <Opinie />
       <PoradnikTechnologie />
       {/* <CTA /> */}
