@@ -4,6 +4,18 @@ import { useEffect, useRef, useState } from "react";
 import { Phone, MessageCircle, ChevronRight, Plus } from "lucide-react";
 import { FAQ_ITEMS } from "@/components/SpecjalneOferty/FaqData";
 
+/* [DODANO] Ten sam wzorzec trackingu co w pozostałych komponentach —
+   odpalanie zdarzenia Meta Pixel "Contact" przy kliknięciu w telefon/SMS. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
+
+const DEFAULT_SMS_BODY = encodeURIComponent(
+  "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
+);
+
 export default function NetiaFAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [inView, setInView] = useState(false);
@@ -171,15 +183,16 @@ export default function NetiaFAQ() {
           style={{ animationDelay: `${240 + FAQ_ITEMS.length * 90 + 80}ms` }}
         >
           <h3 className="font-bold text-white text-xl sm:text-2xl mb-2">
-            Wciąż masz pytania?
+            Gotowy/a do zamówienia?
           </h3>
           <p className="mb-6 text-sm sm:text-[0.9375rem] text-white/65">
-            Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
+            ~3 minuty rozmowy i internet jest zamówiony. Doradca odbierze od razu.
           </p>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <a 
-              href="tel:+48883334124"
+            <a
+              href="tel:+48887843260"
+              onClick={() => trackContact("specjalne_oferty_faq_closing_phone")}
               className="faq-cta-pulse flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] sm:min-w-60">
      
               <span className="flex items-center gap-3">
@@ -188,14 +201,15 @@ export default function NetiaFAQ() {
                 </span>
                 <span className="text-left">
                   <span className="block text-sm font-bold leading-tight">ZADZWOŃ</span>
-                  <span className="block text-xs text-white/85">+48 883 334 124</span>
+                  <span className="block text-xs text-white/85">+48 887 843 260</span>
                 </span>
               </span>
               <ChevronRight size={18} className="text-white/70" />
             </a>
 
             <a
-              href="sms:+48883334124?body=INTERNET"
+              href={`sms:+48887843260?body=${DEFAULT_SMS_BODY}`}
+              onClick={() => trackContact("specjalne_oferty_faq_closing_sms")}
               className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] sm:min-w-60"
             >
               <span className="flex items-center gap-3">

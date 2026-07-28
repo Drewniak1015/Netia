@@ -31,8 +31,6 @@ import {
   type Channel,
 } from "@/lib/channels";
 
-/* ---------- design tokens ----------
-   Same palette as the Internet help page so both read as one product. */
 const c = {
   bg: "rgb(11, 42, 61)",
   bgDeep: "rgb(7, 28, 41)",
@@ -48,10 +46,12 @@ const c = {
   faint: "#71879a",
 };
 
-/* ---------- scroll-reveal system ----------
-   IntersectionObserver-based, NOT on-load. Each <Reveal> only animates
-   the first time it crosses into the viewport while scrolling, then
-   stops observing. Respects prefers-reduced-motion. */
+/* [DODANO] Ten sam wzorzec trackingu co w pozostałych komponentach. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
 
 const prefersReducedMotion =
   typeof window !== "undefined" &&
@@ -59,8 +59,6 @@ const prefersReducedMotion =
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function useRevealOnScroll(threshold = 0.12) {
-  // FIX (a11y): typ zawężony do HTMLElement (nie tylko HTMLDivElement),
-  // bo Reveal może się teraz renderować jako <li> zamiast <div>.
   const ref = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -93,20 +91,10 @@ function useRevealOnScroll(threshold = 0.12) {
 
 type RevealProps = {
   children: ReactNode;
-  /** stagger, in seconds */
   delay?: number;
-  /** subtle vertical rise on entry (px) */
   y?: number;
   className?: string;
   style?: React.CSSProperties;
-  /**
-   * FIX (a11y — "Elementy list (<li>) nie znajdują się wewnątrz [...]"):
-   * Reveal domyślnie renderuje <div>. Gdy owija element listy, musi
-   * renderować się jako <li> SAM W SOBIE (zamiast owijać <li> divem),
-   * inaczej <li> przestaje być bezpośrednim dzieckiem <ul>/<ol> i
-   * czytniki ekranu nie rozpoznają struktury listy. Animacja (opacity/
-   * transform) jest identyczna niezależnie od tagu.
-   */
   as?: "div" | "li";
 };
 
@@ -130,9 +118,6 @@ function Reveal({ children, delay = 0, y = 18, className, style, as = "div" }: R
   );
 }
 
-/* Wraps a list of children, giving each a small incremental stagger.
-   Used for groups of cards/pills so they cascade in rather than
-   popping together. */
 function RevealGroup({
   children,
   step = 0.06,
@@ -153,10 +138,6 @@ function RevealGroup({
   );
 }
 
-/* ---------- copy that isn't in the data layer ----------
-   Package/add-on numbers, logos, and tiers come straight from
-   lib/channels.ts. Only the marketing blurbs live here, since that
-   text doesn't belong in a data file. */
 const TIER_DESCRIPTIONS: Record<Tier, string> = {
   xs: "Najmniejszy zestaw kanałów obejmujący kluczowe stacje ogólnotematyczne oraz komplet kanałów regionalnych TVP. Dobry wybór jako baza do dalszej rozbudowy pakietu.",
   s: "Podstawowy zestaw kanałów telewizyjnych obejmujący najpopularniejsze polskie stacje ogólnotematyczne, informacyjne i rozrywkowe. Doskonały wybór dla osób, które chcą mieć dostęp do sprawdzonych programów bez rozbudowanej oferty tematycznej.",
@@ -196,12 +177,7 @@ ukraina:
   "Zestaw kanałów ukraińskich: informacyjnych, rozrywkowych, filmowych i muzycznych. Dedykowany osobom posługującym się językiem ukraińskim lub chcącym śledzić wydarzenia i kulturę regionu.",
 };
 
-/* ---------- small reusable pieces ---------- */
-
-/* Pills can now optionally act as in-page anchor links. Passing a
-   `targetId` makes the pill smooth-scroll to that section's id,
-   offset for the sticky header height (see SCROLL_OFFSET below). */
-const SCROLL_OFFSET = 140; // px – tweak if the fixed header height changes
+const SCROLL_OFFSET = 140;
 
 function scrollToSection(id: string) {
   const el = document.getElementById(id);
@@ -280,7 +256,6 @@ function AdvantagesBox({ items }: { items: string[] }) {
         <div className="text-[13px] font-bold mb-2" style={{ color: c.text }}>
           Zalety:
         </div>
-        {/* FIX (a11y): Reveal renderuje się jako <li> zamiast owijać osobny <li> w <div>. */}
         <ul>
           {items.map((a, i) => (
             <Reveal
@@ -315,7 +290,6 @@ function BulletBox({ items }: { items: { icon: ReactNode; label: string; text: s
   return (
     <Reveal y={16}>
       <div className="rounded-xl px-5 py-2 my-4" style={{ background: c.card, border: `1px solid ${c.border}` }}>
-        {/* FIX (a11y): Reveal jako <li> zamiast owijania go w <div>. */}
         <ul>
           {items.map((item, i) => (
             <Reveal
@@ -353,7 +327,6 @@ function PlainList({ items }: { items: string[] }) {
   return (
     <Reveal y={16}>
       <div className="rounded-xl px-5 py-2 my-4" style={{ background: c.card, border: `1px solid ${c.border}` }}>
-        {/* FIX (a11y): Reveal jako <li> zamiast owijania go w <div>. */}
         <ul>
           {items.map((item, i) => (
             <Reveal
@@ -388,10 +361,6 @@ function SpecRow({ label, value, last = false }: { label: string; value: string;
   );
 }
 
-/* Placeholder shown until real device photos are pasted into the
-   `image` prop of each DecoderDetailCard. Renders in the same slots
-   (header thumbnail + large expanded photo) as on the Internet page,
-   so nothing shifts when the photo lands. */
 function ImagePlaceholder({ alt, large = false }: { alt: string; large?: boolean }) {
   return (
     <div
@@ -406,12 +375,6 @@ function ImagePlaceholder({ alt, large = false }: { alt: string; large?: boolean
   );
 }
 
-/* Full decoder card — photo (or placeholder), description, spec table
-   and manual link. Collapsible so the page stays scannable, matching
-   the accordion pattern on Netia's own Pomoc → Telewizja page. The
-   outer card fades/rises in on scroll; the expanded inner content is
-   an instant toggle (no re-animation), since it's user-triggered, not
-   scroll-triggered. */
 function DecoderDetailCard({
   eyebrow,
   name,
@@ -427,7 +390,7 @@ function DecoderDetailCard({
   eyebrow: string;
   name: string;
   subtitle: string;
-  image?: string; // ścieżka / URL zdjęcia dekodera
+  image?: string;
   imageAlt: string;
   description: string[];
   specs: { label: string; value: string }[];
@@ -488,9 +451,6 @@ function DecoderDetailCard({
           />
         </button>
 
-        {/* grid-rows trick: animates smoothly between 0fr (collapsed)
-            and 1fr (natural content height), avoiding an instant
-            show/hide while still supporting "auto" height content. */}
         <div
           style={{
             display: "grid",
@@ -570,8 +530,6 @@ function DecoderDetailCard({
   );
 }
 
-/* ---------- channel chip (used inside expanded package cards) ---------- */
-
 function ChannelChip({ channel }: { channel: Channel }) {
   const initials = channel.name.replace(/HD|4K/g, "").trim().slice(0, 2).toUpperCase();
   return (
@@ -608,13 +566,6 @@ function ChannelChip({ channel }: { channel: Channel }) {
   );
 }
 
-/* ---------- collapsible package / add-on card ----------
-   Accordion behaviour: this component no longer owns its own open/closed
-   state. Instead it's fully controlled by the parent (`isOpen` + `onToggle`),
-   so the page can guarantee only one package/add-on is expanded at a time.
-   The expand/collapse itself animates via the CSS grid-template-rows
-   0fr → 1fr trick, which is the only reliable way to transition to/from
-   an "auto" height smoothly. */
 function CollapsibleCard({
   id,
   name,
@@ -679,9 +630,6 @@ function CollapsibleCard({
           />
         </button>
 
-        {/* grid-rows trick: animates smoothly between 0fr (collapsed,
-            zero real height) and 1fr (collapsed to content's natural
-            height), which lets us transition to "auto" height. */}
         <div
           style={{
             display: "grid",
@@ -716,11 +664,6 @@ function CollapsibleCard({
   );
 }
 
-/* ---------- helpers: deep-linking do konkretnego pakietu/dodatku ----------
-   Inne strony (np. OfferMaxSection) mogą linkować bezpośrednio do konkretnego
-   pakietu/dodatku, np. href="/pomoc/telewizja#pakiet-addon-hbo". Format kotwicy
-   to zawsze "pakiet-" + klucz z dwukropkiem zamienionym na myślnik
-   ("tier:xs" -> "pakiet-tier-xs", "addon:hbo" -> "pakiet-addon-hbo"). */
 function anchorIdForPackageKey(key: string): string {
   return `pakiet-${key.replace(":", "-")}`;
 }
@@ -728,16 +671,13 @@ function anchorIdForPackageKey(key: string): string {
 function packageKeyFromAnchorId(anchor: string): string | null {
   const prefiks = "pakiet-";
   if (!anchor.startsWith(prefiks)) return null;
-  const reszta = anchor.slice(prefiks.length); // np. "addon-hbo" albo "tier-xs"
+  const reszta = anchor.slice(prefiks.length);
   const [rodzaj, ...idParts] = reszta.split("-");
   if (rodzaj !== "tier" && rodzaj !== "addon") return null;
   return `${rodzaj}:${idParts.join("-")}`;
 }
 
-/* ---------- back-to-configurator CTA ----------
-   Closing nudge, same "ZADZWOŃ / KONFIGURUJ" two-button layout as the
-   Zgłaszanie Awarii help page — identical card so all "one product"
-   pages close the same way. */
+/* [ZMIENIONO] Numer telefonu + dodany tracking. */
 function BackToConfiguratorCta() {
   return (
     <Reveal y={20} className="mt-14">
@@ -746,15 +686,16 @@ function BackToConfiguratorCta() {
         style={{ background: "#173547", border: `1px solid ${c.border}` }}
       >
         <h3 className="text-[22px] font-extrabold" style={{ color: c.text }}>
-          Wciąż masz pytania?
+          Gotowy/a do zamówienia?
         </h3>
         <p className="mt-2 text-[14.5px]" style={{ color: c.muted }}>
-          Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
+          ~3 minuty rozmowy i internet jest zamówiony. Doradca odbierze od razu.
         </p>
 
         <div className="mx-auto mt-6 flex max-w-[560px] flex-col gap-3 sm:flex-row">
           <a
-            href="tel:+48883334124"
+            href="tel:+48887843260"
+            onClick={() => trackContact("telewizja_faq_closing_phone")}
             className="flex flex-1 items-center gap-3 rounded-2xl bg-teal-500 px-5 py-3.5 text-left transition-transform duration-200 hover:scale-[1.02]"
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 text-white">
@@ -762,7 +703,7 @@ function BackToConfiguratorCta() {
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-[13.5px] font-extrabold text-white">ZADZWOŃ</span>
-              <span className="block text-[12.5px] text-white/85">+48 883 334 124</span>
+              <span className="block text-[12.5px] text-white/85">+48 887 843 260</span>
             </span>
             <ArrowRight size={16} className="shrink-0 text-white/70" />
           </a>
@@ -794,31 +735,21 @@ function BackToConfiguratorCta() {
   );
 }
 
-/* ---------- page ---------- */
-
 export default function NetiaTelewizjaPomocPage() {
   const tiers: Tier[] = ["xs", "s", "m", "l"];
 
-  // Accordion state shared across BOTH the base tiers and the add-ons,
-  // so opening any one package/add-on channel list closes whichever
-  // other one was open — only one can be expanded at a time.
   const [openPackageKey, setOpenPackageKey] = useState<string | null>(null);
 
   const togglePackage = (key: string) => {
     setOpenPackageKey((current) => (current === key ? null : key));
   };
 
-  // Same accordion pattern for the decoder cards — a separate state
-  // since decoders and packages are unrelated sections of the page.
   const [openDecoderKey, setOpenDecoderKey] = useState<string | null>(null);
 
   const toggleDecoder = (key: string) => {
     setOpenDecoderKey((current) => (current === key ? null : key));
   };
 
-  // Deep-linking: jeśli ktoś wchodzi na stronę z kotwicą wskazującą na
-  // konkretny pakiet/dodatek (np. z OfferMaxSection -> #pakiet-addon-hbo),
-  // automatycznie rozwiń tę pozycję i przewiń do niej po zamontowaniu strony.
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, "");
     if (!hash) return;
@@ -826,7 +757,6 @@ export default function NetiaTelewizjaPomocPage() {
     if (!key) return;
 
     setOpenPackageKey(key);
-    // Poczekaj aż akordeon zdąży się wyrenderować, zanim przewiniemy do niego.
 const DEEP_LINK_EXTRA_OFFSET = 50;
 
 const id = requestAnimationFrame(() => {
@@ -876,7 +806,6 @@ const id = requestAnimationFrame(() => {
       className="font-sans leading-relaxed"
     >
       <div className="max-w-[820px] mx-auto px-6 py-10 pt-36">
-        {/* HERO CARD — reveals as a whole, pills cascade in slightly after */}
         <Reveal y={24}>
           <div
             className="rounded-[22px] px-8 md:px-10 py-9"
@@ -910,7 +839,6 @@ const id = requestAnimationFrame(() => {
           </div>
         </Reveal>
 
-        {/* CONTENT */}
         <div className="mt-2">
           <Paragraph>
             <span className="block mt-8">
@@ -920,8 +848,6 @@ const id = requestAnimationFrame(() => {
             </span>
           </Paragraph>
 
-          {/* FAQ — placeholder anchor target; podmień na docelową sekcję FAQ,
-              jeśli powstanie osobny komponent z pytaniami i odpowiedziami. */}
           <div id="faq" style={{ scrollMarginTop: SCROLL_OFFSET }} />
 
           <div id="iptv" style={{ scrollMarginTop: SCROLL_OFFSET }}>
@@ -1032,7 +958,6 @@ const id = requestAnimationFrame(() => {
             onToggle={() => toggleDecoder("evobox-hd")}
           />
 
-          {/* PAKIETY TELEWIZYJNE — dane z lib/channels.ts */}
           <div id="pakiety" style={{ scrollMarginTop: SCROLL_OFFSET }}>
             <SectionHeading>Pakiety telewizyjne</SectionHeading>
             <Paragraph>
@@ -1088,7 +1013,6 @@ const id = requestAnimationFrame(() => {
             </Note>
           </div>
 
-          {/* FUNKCJE */}
           <div id="funkcje" style={{ scrollMarginTop: SCROLL_OFFSET }}>
             <SectionHeading>Funkcje telewizji IPTV Netii</SectionHeading>
             <Paragraph>Telewizja Netii udostępnia szereg dodatkowych funkcji:</Paragraph>
@@ -1103,7 +1027,6 @@ const id = requestAnimationFrame(() => {
             />
           </div>
 
-          {/* MULTIROOM */}
           <div id="multiroom" style={{ scrollMarginTop: SCROLL_OFFSET }}>
             <SectionHeading>Multiroom w Netii – do 3 dodatkowych dekoderów</SectionHeading>
             <Paragraph>

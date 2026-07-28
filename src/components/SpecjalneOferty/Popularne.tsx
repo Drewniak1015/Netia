@@ -37,6 +37,19 @@ const fadeUp = {
   visible: { opacity: 1, y: 0 },
 };
 
+/* [DODANO] Ten sam wzorzec trackingu co w pozostałych komponentach —
+   odpalanie zdarzenia Meta Pixel "Contact" przy kliknięciu w telefon/SMS. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
+
+/* [DODANO] Domyślna treść SMS-a — pełne zdanie zamiast "INTERNET" */
+const DEFAULT_SMS_BODY = encodeURIComponent(
+  "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
+);
+
 /* ======================================================================
    PASEK ZAUFANIA — ten sam wzorzec co w OfferQuizSection / OfferMaxSection
    (Gauge / RotateCcw / Headset).
@@ -143,8 +156,6 @@ function LegalDisclosure({
 
 /* ---------------------------------------------------------------------- */
 /*  Popupy "Szczegóły" — routery, dekoder, Netia GO, Giganagrywarka       */
-/*  Klikalna jest KAŻDA pozycja w liście cech karty ofertowej, która ma   */
-/*  przypisany `infoId` wskazujący na wpis w INFO_ITEMS poniżej.          */
 /* ---------------------------------------------------------------------- */
 type SectionContent =
   | { type: "paragraphs"; items: string[] }
@@ -974,16 +985,18 @@ export default function PopularneOferty() {
               className="relative z-10 mt-4 flex flex-col gap-2.5 sm:flex-row"
             >
               <m.a
-                href="tel:+48883334124"
+                href="tel:+48887843260"
+                onClick={() => trackContact("popularne_hero_phone")}
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                 className="flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-5 py-3 text-sm font-bold text-white"
               >
                 <Phone size={15} />
-                ZADZWOŃ +48 883 334 124
+                ZADZWOŃ +48 887 843 260
               </m.a>
               <m.a
-                href="sms:+48883334124?body=INTERNET"
+                href={`sms:+48887843260?body=${DEFAULT_SMS_BODY}`}
+                onClick={() => trackContact("popularne_hero_sms")}
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                 className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white"
@@ -994,12 +1007,7 @@ export default function PopularneOferty() {
             </m.div>
           </m.div>
 
-          {/* PACKAGE CARDS — id="pakiety" + scroll-mt-[140px], analogicznie do
-              id="pakiety-max" w OfferMaxSection.tsx. Link "6 Miesięcy za 0 zł"
-              w NetiaHeader.tsx prowadzi na "/oferty/popularne#pakiety", więc po
-              kliknięciu strona ląduje bezpośrednio przy kartach ofertowych,
-              a nie na samej górze (hero banner) — scroll-mt kompensuje
-              wysokość fixed headera. */}
+          {/* PACKAGE CARDS */}
           <div id="pakiety" className="relative mt-14 scroll-mt-[140px]">
             <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
               <DottedBackground variant="dots" size={22} />
@@ -1093,15 +1101,17 @@ export default function PopularneOferty() {
 
                   <div className="mt-auto flex flex-col gap-2.5 pt-6">
                     <m.a
-                      href="tel:+48883334124"
+                      href="tel:+48887843260"
+                      onClick={() => trackContact(`popularne_offer_${offer.id}_tel`)}
                       whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                       whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                       className="flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-4 py-2.5 text-sm font-bold text-white"
                     >
-                      <Phone size={14} /> ZADZWOŃ +48 883 334 124
+                      <Phone size={14} /> ZADZWOŃ +48 887 843 260
                     </m.a>
                     <m.a
-                      href="sms:+48883334124?body=INTERNET"
+                      href={`sms:+48887843260?body=${DEFAULT_SMS_BODY}`}
+                      onClick={() => trackContact(`popularne_offer_${offer.id}_sms`)}
                       whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                       whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                       className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white"
@@ -1117,8 +1127,7 @@ export default function PopularneOferty() {
           {/* PASEK ZAUFANIA */}
           <TrustBar reduceMotion={reduceMotion} />
 
-          {/* SZCZEGÓŁY OFERTY — zwinięte domyślnie, rozwijane przyciskiem
-              "Zobacz szczegóły oferty" */}
+          {/* SZCZEGÓŁY OFERTY */}
           <LegalDisclosure
             reduceMotion={reduceMotion}
             paragraphs={[
@@ -1241,15 +1250,16 @@ export default function PopularneOferty() {
             className="mx-auto mt-16 max-w-2xl rounded-3xl border border-white/10 bg-white/5 px-6 py-8 text-center sm:px-10 sm:py-10"
           >
             <h4 className="text-xl font-bold text-white sm:text-2xl">
-              Wciąż masz pytania?
+              Gotowy/a do zamówienia?
             </h4>
             <p className="mt-2 mb-6 text-sm text-white/65 sm:text-[0.9375rem]">
-              Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
+              ~3 minuty rozmowy i internet jest zamówiony. Doradca odbierze od razu.
             </p>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
               <m.a
-                href="tel:+48883334124"
+                href="tel:+48887843260"
+                onClick={() => trackContact("popularne_faq_closing_phone")}
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                 className="popularne-oferty-faq-cta-pulse flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white sm:min-w-60"
@@ -1263,7 +1273,7 @@ export default function PopularneOferty() {
                       ZADZWOŃ
                     </span>
                     <span className="block text-xs text-white/85">
-                      +48 883 334 124
+                      +48 887 843 260
                     </span>
                   </span>
                 </span>
@@ -1271,7 +1281,8 @@ export default function PopularneOferty() {
               </m.a>
 
               <m.a
-                href="sms:+48883334124?body=INTERNET"
+                href={`sms:+48887843260?body=${DEFAULT_SMS_BODY}`}
+                onClick={() => trackContact("popularne_faq_closing_sms")}
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                 className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white sm:min-w-60"

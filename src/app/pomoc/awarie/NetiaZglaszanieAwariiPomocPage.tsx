@@ -17,9 +17,6 @@ import {
 import { motion } from "framer-motion";
 import { type ReactNode, type MouseEvent, useState } from "react";
 
-/* ---------- design tokens ----------
-   Same palette as the Internet / Telewizja / Telefon help pages so
-   all four read as one product. */
 const c = {
   bg: "rgb(11, 42, 61)",
   bgDeep: "rgb(7, 28, 41)",
@@ -36,13 +33,14 @@ const c = {
   amber: "#f0b429",
 };
 
-/* Same ease-out-expo-ish curve used on the Internet and Usługi Mobilne
-   help pages — kept as one constant so all "one product" pages move
-   the same way instead of each reaching for framer-motion's generic
-   "easeOut". */
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-/* ---------- motion presets ---------- */
+/* [DODANO] Ten sam wzorzec trackingu co w pozostałych komponentach. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
 
 const fadeUp = {
   hidden: { opacity: 0, y: 22 },
@@ -61,8 +59,6 @@ const stagger = {
   },
 };
 
-/* RevealGroup: wraps a block of children in the stagger variant so
-   they cascade in on scroll, once, instead of appearing together. */
 function RevealGroup({
   children,
   as = "div",
@@ -90,8 +86,6 @@ function RevealGroup({
   );
 }
 
-/* Single-item reveal for content that doesn't sit inside a
-   RevealGroup (e.g. a standalone card lower on the page). */
 function Reveal({
   children,
   variant = fadeUp,
@@ -116,8 +110,6 @@ function Reveal({
     </motion.div>
   );
 }
-
-/* ---------- small reusable pieces ---------- */
 
 function Pill({
   icon,
@@ -209,11 +201,6 @@ function Note({ children }: { children: ReactNode }) {
   );
 }
 
-/* ---------- copyable phone number ----------
-   The number is the single most useful piece of data on this page —
-   letting people grab it without a long-press-and-select on desktop
-   is a real usability win, not decoration. */
-
 function CopyableNumber({
   number,
   href,
@@ -262,14 +249,6 @@ function CopyableNumber({
   );
 }
 
-/* ---------- alternating timeline ----------
-   A centered vertical line with steps alternating left/right of it —
-   odd steps (1, 3, 5) sit on the right, even steps (2, 4, 6) on the
-   left, each with a dot centered on the line, a badge ("KROK 01")
-   above the title, then a bold title and description. Built as a
-   three-column grid (content / dot / content) per row so only one
-   side is ever populated and the dot always lands dead-center. */
-
 function TimelineList({ children }: { children: ReactNode }) {
   return (
     <RevealGroup as="ol" delay={0.05} className="relative my-6">
@@ -292,7 +271,7 @@ function TimelineStep({
   title: string;
   children: ReactNode;
 }) {
-  const isRight = number % 2 === 1; // 1, 3, 5 -> right · 2, 4, 6 -> left
+  const isRight = number % 2 === 1;
 
   const content = (
     <div className={`min-w-0 ${isRight ? "sm:text-left" : "sm:text-right"}`}>
@@ -320,24 +299,17 @@ function TimelineStep({
       transition={{ duration: 0.5, ease: EASE }}
       className="relative grid grid-cols-[auto_1fr] sm:grid-cols-[1fr_auto_1fr] gap-x-5 sm:gap-x-8 items-start pb-9 last:pb-0"
     >
-      {/* left slot (desktop only) */}
       <div className="hidden sm:block">{!isRight && content}</div>
-
-      {/* dot, centered on the line */}
       <span
         className="relative z-10 flex-shrink-0 mt-[6px] h-[11px] w-[11px] rounded-full"
         style={{ background: c.teal, boxShadow: `0 0 0 4px ${c.tealDim}` }}
         aria-hidden="true"
       />
-
-      {/* right slot on desktop; on mobile everything collapses into this single column */}
       <div className="sm:hidden">{content}</div>
       <div className="hidden sm:block">{isRight && content}</div>
     </motion.li>
   );
 }
-
-/* ---------- quick-call button ---------- */
 
 function CallButton({
   label,
@@ -366,6 +338,7 @@ function CallButton({
       <div className="flex items-center gap-3.5">
         <a
           href={href}
+          onClick={() => trackContact(`awaria_hotline_${label.toLowerCase().replace(/\s+/g, "_")}`)}
           aria-label={`${label}: zadzwoń pod ${number}`}
           className="w-10 h-10 flex items-center justify-center flex-shrink-0"
           style={{ color: c.teal }}
@@ -382,11 +355,6 @@ function CallButton({
     </motion.div>
   );
 }
-
-/* ---------- hotline detail card ----------
-   Two cards up top side by side, third one centered below on its own
-   row so it reads as "the extra option" rather than competing for
-   equal weight in a 3-column grid. */
 
 function HotlineCard({
   title,
@@ -437,8 +405,6 @@ function HotlineCard({
   );
 }
 
-/* ---------- reason to call row ---------- */
-
 function ReasonRow({ title, desc }: { title: string; desc: string }) {
   return (
     <motion.li
@@ -458,13 +424,7 @@ function ReasonRow({ title, desc }: { title: string; desc: string }) {
   );
 }
 
-/* ---------- back-to-configurator CTA ----------
-   Closing nudge for people who came here just to resolve a doubt
-   (koszt połączeń, kiedy dzwonić, itd.) and are now ready to pick up
-   configuring their offer again — same teal-glow hero treatment as
-   the page header, so it reads as a deliberate closing card rather
-   than a stray footer link. */
-
+/* [ZMIENIONO] Numer telefonu + dodany tracking. */
 function BackToConfiguratorCta() {
   return (
     <Reveal className="mt-14">
@@ -473,15 +433,16 @@ function BackToConfiguratorCta() {
         style={{ background: "#173547", border: `1px solid ${c.border}` }}
       >
         <h3 className="text-[22px] font-extrabold" style={{ color: c.text }}>
-          Wciąż masz pytania?
+          Gotowy/a do zamówienia?
         </h3>
         <p className="mt-2 text-[14.5px]" style={{ color: c.muted }}>
-          Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
+          ~3 minuty rozmowy i internet jest zamówiony. Doradca odbierze od razu.
         </p>
 
         <div className="mx-auto mt-6 flex max-w-[560px] flex-col gap-3 sm:flex-row">
           <a
-            href="tel:+48883334124"
+            href="tel:+48887843260"
+            onClick={() => trackContact("awaria_faq_closing_phone")}
             className="flex flex-1 items-center gap-3 rounded-2xl bg-teal-500 px-5 py-3.5 text-left transition-transform duration-200 hover:scale-[1.02]"
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 text-white">
@@ -489,7 +450,7 @@ function BackToConfiguratorCta() {
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-[13.5px] font-extrabold text-white">ZADZWOŃ</span>
-              <span className="block text-[12.5px] text-white/85">+48 883 334 124</span>
+              <span className="block text-[12.5px] text-white/85">+48 887 843 260</span>
             </span>
             <ArrowRight size={16} className="shrink-0 text-white/70" />
           </a>
@@ -521,8 +482,6 @@ function BackToConfiguratorCta() {
   );
 }
 
-/* ---------- page ---------- */
-
 export default function NetiaZglaszanieAwariiPomocPage() {
   return (
     <div
@@ -535,7 +494,6 @@ export default function NetiaZglaszanieAwariiPomocPage() {
       className="font-sans leading-relaxed"
     >
       <div className="max-w-[820px] mx-auto px-6 py-10 pt-36">
-        {/* HERO CARD */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -578,7 +536,6 @@ export default function NetiaZglaszanieAwariiPomocPage() {
           </motion.div>
         </motion.div>
 
-        {/* CONTENT */}
         <div className="mt-2">
           <div id="steps">
             <SectionHeading>Co zrobić w przypadku awarii</SectionHeading>
@@ -652,8 +609,8 @@ export default function NetiaZglaszanieAwariiPomocPage() {
 
               <HotlineCard
                 title="Kontakt z przedstawicielem Netii (zamawianie nowych usług internetu i TV)"
-                number="+48 883 334 124"
-                href="tel:+48883334124"
+                number="+48 887 843 260"
+                href="tel:+48887843260"
                 hours="Pn–Ndz: 8:00–21:00"
                 description="Doradztwo handlowe — nowa umowa, zmiana pakietu, dopasowanie taryfy. Dostępne języki: polski, angielski, ukraiński. Skierowane do nowych i obecnych klientów Netii."
               />
@@ -711,7 +668,7 @@ export default function NetiaZglaszanieAwariiPomocPage() {
               >
                 <Wallet size={18} style={{ color: c.teal, flexShrink: 0, marginTop: 2 }} />
                 <p className="text-[13.5px] leading-relaxed" style={{ color: c.muted }}>
-                  Wszystkie numery infolinii Netii (793 800 300, 22 711 11 11, 883 334 124) są
+                  Wszystkie numery infolinii Netii (793 800 300, 22 711 11 11, 887 843 260) są
                   bezpłatne z polskich sieci komórkowych i stacjonarnych — opłata zgodna z taryfą
                   Twojego operatora. Z zagranicy obowiązują standardowe stawki roamingowe.
                   Konsultanci nie pobierają dodatkowych opłat za rozmowę.

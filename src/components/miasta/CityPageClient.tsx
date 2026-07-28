@@ -20,15 +20,23 @@ import type { FaqItem } from "@/lib/cityHelpers";
 import Oferty from "@/components/home/Oferty";
 import CityFaq from "@/components/miasta/CityFaq";
 
-const PHONE = "+48 883 334 124";
-const PHONE_HREF = "tel:+48883334124";
-const SMS_HREF = "sms:+48883334124?body=INTERNET";
+const PHONE = "+48 887 843 260";
+const PHONE_HREF = "tel:+48887843260";
+const SMS_HREF = `sms:+48887843260?body=${encodeURIComponent(
+  "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
+)}`;
+
+/* [DODANO] Ten sam wzorzec trackingu co w pozostałych komponentach
+   (Hero.tsx, Oferty.tsx, HowToOrderSection.tsx, NetiaSocialProof.tsx,
+   NetiaFAQ.tsx) — odpalanie zdarzenia Meta Pixel "Contact". */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
 
 /* ---------------------------------------------------------------------- */
 /*  Warianty animacji onScroll — jedno miejsce dla całej strony.           */
-/*  whileInView + viewport once:true = animacja odpala się tylko          */
-/*  przy wjechaniu w widok, nie przy załadowaniu strony (poza hero,        */
-/*  które i tak jest w viewport od startu).                                */
 /* ---------------------------------------------------------------------- */
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -44,11 +52,6 @@ const fadeUpContainer = {
 
 const viewportOnce = { once: true, amount: 0.25 } as const;
 
-/* ---------------------------------------------------------------------- */
-/*  Dane ofert — wspólne dla wszystkich miast (ta sama kampania krajowa).  */
-/*  Jeśli kiedyś ceny zaczną się różnić między miastami, przenieś to do   */
-/*  City (np. City.offers) i podawaj z zewnątrz zamiast trzymać na sztywno.*/
-/* ---------------------------------------------------------------------- */
 const HERO_STATS = [
   { label: "Internet + TV", price: "40 zł", note: "miesięcznie", highlighted: false },
   { label: "Internet 1 Gb/s", price: "65 zł", note: "miesięcznie", highlighted: false },
@@ -148,7 +151,6 @@ function Hero({ city }: { city: City }) {
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
       >
-        {/* Chmura — sama obwódka, bez wypełnienia */}
         <g transform="translate(85,15) scale(4.4)" opacity="0.55">
           <path
             d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"
@@ -159,13 +161,11 @@ function Hero({ city }: { city: City }) {
             strokeLinejoin="round"
           />
         </g>
-        {/* Duża gwiazdka (sparkle) */}
         <path
           d="M55 100 L61 114 L75 120 L61 126 L55 140 L49 126 L35 120 L49 114 Z"
           fill="#2DD4BF"
           opacity="0.75"
         />
-        {/* Mniejsze gwiazdki */}
         <path
           d="M155 110 L158.5 118 L166.5 121.5 L158.5 125 L155 133 L151.5 125 L143.5 121.5 L151.5 118 Z"
           fill="#99F6E4"
@@ -176,7 +176,6 @@ function Hero({ city }: { city: City }) {
           fill="#99F6E4"
           opacity="0.5"
         />
-        {/* Kropki-gwiazdki */}
         <circle cx="170" cy="70" r="2.5" fill="#2DD4BF" opacity="0.6" />
         <circle cx="45" cy="150" r="2" fill="#99F6E4" opacity="0.55" />
         <circle cx="105" cy="160" r="2" fill="#2DD4BF" opacity="0.5" />
@@ -190,7 +189,6 @@ function Hero({ city }: { city: City }) {
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
       >
-        {/* Mniejsza chmura — sama obwódka */}
         <g transform="translate(20,120) scale(3.3)" opacity="0.55">
           <path
             d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"
@@ -201,13 +199,11 @@ function Hero({ city }: { city: City }) {
             strokeLinejoin="round"
           />
         </g>
-        {/* Duża gwiazdka (sparkle) */}
         <path
           d="M140 45 L145 57 L157 62 L145 67 L140 79 L135 67 L123 62 L135 57 Z"
           fill="#2DD4BF"
           opacity="0.75"
         />
-        {/* Mniejsze gwiazdki */}
         <path
           d="M170 100 L172.5 106 L178.5 108.5 L172.5 111 L170 117 L167.5 111 L161.5 108.5 L167.5 106 Z"
           fill="#99F6E4"
@@ -218,7 +214,6 @@ function Hero({ city }: { city: City }) {
           fill="#99F6E4"
           opacity="0.5"
         />
-        {/* Kropki-gwiazdki */}
         <circle cx="100" cy="30" r="2.5" fill="#2DD4BF" opacity="0.6" />
         <circle cx="160" cy="150" r="2" fill="#99F6E4" opacity="0.55" />
         <circle cx="30" cy="50" r="2" fill="#2DD4BF" opacity="0.5" />
@@ -285,13 +280,17 @@ function Hero({ city }: { city: City }) {
       <div className="mx-auto mt-8 flex max-w-130 flex-col gap-3 sm:flex-row">
         <a
           href={PHONE_HREF}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-500 px-5 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02]"
+          onClick={() => trackContact("city_hero_phone_button")}
+          className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-teal-500 px-5 py-3.5 text-sm font-bold text-white transition-transform hover:scale-[1.02]"
         >
           <Phone size={15} />
-          ZADZWOŃ {PHONE}
+          <span className="text-center leading-snug">
+            ZADZWOŃ<br />{PHONE}
+          </span>
         </a>
         <a
           href={SMS_HREF}
+          onClick={() => trackContact("city_hero_sms_button")}
           className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
         >
           <MessageCircle size={15} />
@@ -346,14 +345,6 @@ export default function CityPageClient({ city, districts, nearbyCities, faq }: C
         <Hero city={city} />
       </div>
 
-      {/* Główne oferty pakietowe — komponent współdzielony z home/Oferty.tsx,
-          z tytułem spersonalizowanym pod aktualne miasto. Renderowany
-          CAŁKOWICIE POZA otoczką px-5/6/8 tej strony i BEZ dodatkowego
-          wrappera max-w — Oferty ma własny wewnętrzny padding (px-8) i
-          własny max-w-305, zaprojektowane do pełnowymiarowej sekcji (tak
-          jak na stronie głównej). Zagnieżdżenie jej wcześniej w kolejnym
-          px-5/6/8 + max-w-310 dawało podwójny padding boczny i węższy
-          efektywny max-width niż reszta sekcji na tej stronie. */}
       <Oferty cityLocative={city.locative} />
 
       <div className="px-5 sm:px-6 lg:px-8">

@@ -42,38 +42,32 @@ import {
   type OfferFeature,
 } from "./internet-tv-data";
 
-/**
- * OfferInternetTvSection
- * Sekcja "Internet + Telewizja XS": baner promo + siatka 2x2 kart.
- *
- * NOWOŚĆ: benefity kart (prędkość, router, Netia GO) są teraz klikalne —
- * otwierają ten sam modal "Szczegóły" co w OfferQuizSection (routery,
- * Netia GO, oraz nowe wpisy tłumaczące gwarancję prędkości per wariant).
- * Cechy bez `infoId` (np. "Telewizja XS w pakiecie") zostają zwykłym,
- * nieklikalnym tekstem.
- *
- * DANE: `plans` i `faqItems` (razem z typami Plan/FaqItem/AccentKey/
- * OfferFeature) mieszkają teraz w ./internet-tv-data.ts — plik BEZ
- * "use client", żeby komponent schema.org (OfferInternetTvSchema.tsx)
- * mógł je zaimportować w serwerowym page.tsx jako zwykłe tablice, a nie
- * nieprzezroczyste referencje klienckiego modułu.
- *
- * FIX (kotwica z headera — ten sam wzorzec co OfferMaxSection.tsx /
- * PopularneOferty.tsx): kontener "SECTION TITLE" (tytuł + siatka kart)
- * dostał id="pakiety-internet-tv" + scroll-mt-[160px], żeby link z kotwicą
- * "#pakiety-internet-tv" lądował bezpośrednio przy kartach ofertowych,
- * z pominięciem hero-bannera, i żeby fixed header (~header height + zapas)
- * nie zasłaniał tytułu sekcji po scrollu.
- */
-
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
 };
 
-const PHONE_DISPLAY = "+48 883 334 124";
-const PHONE_HREF = "tel:+48883334124";
-const SMS_HREF = "sms:+48883334124?body=INTERNET";
+const PHONE_DISPLAY = "+48 887 843 260";
+const PHONE_HREF = "tel:+48887843260";
+
+/* [DODANO] Ten sam wzorzec trackingu co w pozostałych komponentach —
+   odpalanie zdarzenia Meta Pixel "Contact" przy kliknięciu w telefon/SMS. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
+
+function smsHrefFor(planSpeed: string) {
+  const body = encodeURIComponent(
+    `Interesuje mnie oferta Internet + TV ${planSpeed}. Proszę o kontakt.`
+  );
+  return `sms:+48887843260?body=${body}`;
+}
+
+const HERO_SMS_HREF = `sms:+48887843260?body=${encodeURIComponent(
+  "Interesuje mnie oferta Internet + Telewizja. Proszę o kontakt."
+)}`;
 
 /** Poprawna polska odmiana słowa "miesiąc" dla liczb używanych w promocjach. */
 function polishMonthsWord(n: number): string {
@@ -85,8 +79,6 @@ function polishMonthsWord(n: number): string {
   return "miesięcy";
 }
 
-/** Literalne klasy Tailwind per akcent — celowo nie budowane dynamicznym
- * template stringiem, żeby JIT poprawnie je wykrył i nie wyciął przy buildzie. */
 const ACCENT_STYLES: Record<
   AccentKey,
   {
@@ -150,11 +142,6 @@ const ACCENT_STYLES: Record<
   },
 };
 
-/* ======================================================================
-   SYSTEM "SZCZEGÓŁY" (routery, Netia GO, prędkość) — 1:1 wzorzec z
-   OfferQuizSection: cecha z `infoId` jest klikalna i otwiera modal.
-   ====================================================================== */
-
 type SectionContent =
   | { type: "paragraphs"; items: string[] }
   | { type: "bullets"; items: string[] }
@@ -180,9 +167,6 @@ interface InfoItem {
   instrukcjaUrl?: string;
 }
 
-/** Generuje wpis "Szczegóły" dla danego wariantu prędkości — ten sam poziom
- * konkretu co przy routerach (gwarancja prawna + technologia), zamiast
- * marketingowego ogólnika w karcie. */
 function createSpeedInfo(speedLabel: string, id: string): InfoItem {
   return {
     id,
@@ -522,7 +506,6 @@ const BANNER_AKCENTY: Record<
   },
 };
 
-/** Kolor podkreślenia klikalnej cechy: teal domyślnie, limonkowy dla Netia GO. */
 function klasaCechy(infoId: string | undefined, aktywnyInfoId: string | null): string {
   const jestAktywna = !!infoId && infoId === aktywnyInfoId;
 
@@ -813,7 +796,6 @@ function PlanCard({ plan, index, reduceMotion, onFeatureClick, aktywnyInfoId }: 
       )}
 
       <div className="mb-3.5 flex items-center justify-between gap-3">
-        {/* Prędkość — zwykły tekst, nieklikalny (info o gwarancji jest dostępne przez benefit "Internet do X Mb/s" niżej) */}
         <span className={`text-3xl font-black tracking-tight sm:text-4xl ${accent.speedText}`}>
           {plan.speed}
         </span>
@@ -872,6 +854,7 @@ function PlanCard({ plan, index, reduceMotion, onFeatureClick, aktywnyInfoId }: 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <m.a
           href={PHONE_HREF}
+          onClick={() => trackContact(`internet_tv_${plan.speed.toLowerCase().replace(/\s+/g, "_")}_tel`)}
           whileHover={reduceMotion ? undefined : { scale: 1.02 }}
           whileTap={reduceMotion ? undefined : { scale: 0.98 }}
           className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center justify-between gap-3 rounded-2xl border border-transparent bg-teal-500 px-4 py-3 text-white shadow-[0_8px_20px_-8px_rgba(20,184,166,0.6)]"
@@ -892,7 +875,8 @@ function PlanCard({ plan, index, reduceMotion, onFeatureClick, aktywnyInfoId }: 
           <ChevronRight size={16} className="shrink-0 text-white/70" />
         </m.a>
         <m.a
-          href={SMS_HREF}
+          href={smsHrefFor(plan.speed)}
+          onClick={() => trackContact(`internet_tv_${plan.speed.toLowerCase().replace(/\s+/g, "_")}_sms`)}
           whileHover={reduceMotion ? undefined : { scale: 1.02 }}
           whileTap={reduceMotion ? undefined : { scale: 0.98 }}
           className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-white"
@@ -916,9 +900,6 @@ interface TrustItem {
   desc: string;
 }
 
-/** Uniwersalny pasek zaufania — 3 gwarancje prawnie ugruntowane, wspólne dla
- * całej oferty (nie tylko tej sekcji), zgodnie z rekomendacją z badania:
- * konkretne, weryfikowalne fakty budują zaufanie mocniej niż obietnice. */
 const trustItems: TrustItem[] = [
   {
     icon: Gauge,
@@ -936,12 +917,6 @@ const trustItems: TrustItem[] = [
     desc: "Infolinia i serwis techniczny gotowe pomóc.",
   },
 ];
-
-/* ======================================================================
-   SZCZEGÓŁY UMOWY (PRAWNE) — domyślnie zwinięte, rozwijane przyciskiem
-   "Zobacz szczegóły oferty" (ta sama technika grid-template-rows co
-   akordeon FAQ poniżej oraz w OfferMaxSection / PopularneOferty).
-   ====================================================================== */
 
 function LegalDisclosure({
   paragraphs,
@@ -993,8 +968,6 @@ export default function OfferInternetTvSection() {
     <LazyMotion features={domAnimation} strict>
       <div className="overflow-x-hidden bg-[#0B2A3D] font-sans text-white sm:pt-20 pt-16">
         <div className="mx-auto max-w-[1140px] px-4 sm:px-6">
-          {/* HERO PROMO BANNER — styl przeniesiony z Konfiguratora: wyśrodkowany,
-              plakietka z ikonami Flame po obu stronach, dekoracyjne SVG w rogu */}
           <m.section
             initial={reduceMotion ? false : { opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -1080,6 +1053,7 @@ export default function OfferInternetTvSection() {
             >
               <m.a
                 href={PHONE_HREF}
+                onClick={() => trackContact("internet_tv_hero_phone")}
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                 className="flex items-center justify-between gap-3 rounded-2xl bg-teal-500 px-5 py-3 text-white shadow-[0_8px_20px_-8px_rgba(20,184,166,0.6)] sm:w-64"
@@ -1100,7 +1074,8 @@ export default function OfferInternetTvSection() {
                 <ChevronRight size={16} className="shrink-0 text-white/70" />
               </m.a>
               <m.a
-                href={SMS_HREF}
+                href={HERO_SMS_HREF}
+                onClick={() => trackContact("internet_tv_hero_sms")}
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                 className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-white sm:w-64"
@@ -1116,13 +1091,6 @@ export default function OfferInternetTvSection() {
             </m.div>
           </m.section>
 
-          {/* SECTION TITLE — id="pakiety-internet-tv" + scroll-mt-[160px]:
-              ten sam wzorzec kotwicy co w OfferMaxSection.tsx (#pakiety-max)
-              i PopularneOferty.tsx. Cel dla ewentualnego linku z kotwicą
-              "/oferty/...#pakiety-internet-tv" w NetiaHeader.tsx — po
-              kliknięciu strona ląduje bezpośrednio przy kartach planów,
-              z pominięciem hero-bannera, a scroll-mt kompensuje wysokość
-              fixed headera (spójne 160px, tak jak w pozostałych sekcjach). */}
           <m.div
             id="pakiety-internet-tv"
             initial={reduceMotion ? false : "hidden"}
@@ -1139,7 +1107,6 @@ export default function OfferInternetTvSection() {
             <span className="mx-auto mt-3 block h-1 w-14 rounded-full bg-gradient-to-r from-teal-500 to-teal-300" />
           </m.div>
 
-          {/* CARDS — full-bleed kropkowane tło pod siatką, jak w OfferMaxSection */}
           <div className="relative">
             <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
               <DottedBackground variant="dots" size={22} />
@@ -1159,8 +1126,6 @@ export default function OfferInternetTvSection() {
             </div>
           </div>
 
-          {/* PASEK ZAUFANIA — uniwersalny, prawnie ugruntowany, ten sam pod
-              każdą sekcją ofertową na stronie */}
           <m.div
             initial={reduceMotion ? false : "hidden"}
             whileInView="visible"
@@ -1185,8 +1150,6 @@ export default function OfferInternetTvSection() {
             })}
           </m.div>
 
-          {/* SZCZEGÓŁY UMOWY — bezpośrednio pod paskiem zaufania, zwinięte
-              domyślnie, rozwijane przyciskiem "Zobacz szczegóły umowy" */}
           <LegalDisclosure
             reduceMotion={reduceMotion}
             paragraphs={[
@@ -1194,10 +1157,6 @@ export default function OfferInternetTvSection() {
             ]}
           />
 
-          {/* FAQ — 6 najczęstszych obiekcji klientów, rozwiane z wyprzedzeniem
-              (treść oparta na badaniu głosu klienta: umowa, opłaty, prędkość,
-              proces przejścia, zasięg, serwis). Dane (faqItems) pochodzą z
-              ./internet-tv-data. */}
           <m.div
             initial={reduceMotion ? false : "hidden"}
             whileInView="visible"
@@ -1290,6 +1249,64 @@ export default function OfferInternetTvSection() {
               );
             })}
           </div>
+
+          {/* [DODANO] Zamykające CTA po FAQ — ten sam wzorzec co w
+              NetiaFAQ.tsx / PopularneOferty.tsx / OfferQuizSection.tsx. */}
+          <m.div
+            initial={reduceMotion ? false : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.5 }}
+            variants={fadeUp}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="mx-auto mt-14 mb-16 max-w-2xl rounded-3xl border border-white/10 bg-white/5 px-6 py-8 text-center sm:px-10 sm:py-10"
+          >
+            <h4 className="text-xl font-bold text-white sm:text-2xl">
+              Gotowy/a do zamówienia?
+            </h4>
+            <p className="mt-2 mb-6 text-sm text-white/65 sm:text-[0.9375rem]">
+              ~3 minuty rozmowy i internet jest zamówiony. Doradca odbierze od razu.
+            </p>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <m.a
+                href={PHONE_HREF}
+                onClick={() => trackContact("internet_tv_faq_closing_phone")}
+                whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+                whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                className="flex items-center justify-between gap-4 rounded-2xl bg-teal-500 px-5 py-3.5 text-white shadow-[0_8px_20px_-8px_rgba(20,184,166,0.6)] sm:min-w-60"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
+                    <Phone size={16} />
+                  </span>
+                  <span className="text-left">
+                    <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
+                    <span className="block text-xs text-white/85">{PHONE_DISPLAY}</span>
+                  </span>
+                </span>
+                <ChevronRight size={18} className="text-white/70" />
+              </m.a>
+
+              <m.a
+                href={HERO_SMS_HREF}
+                onClick={() => trackContact("internet_tv_faq_closing_sms")}
+                whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+                whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                className="flex items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/5 px-5 py-3.5 text-white sm:min-w-60"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
+                    <MessageCircle size={16} />
+                  </span>
+                  <span className="text-left">
+                    <span className="block text-sm font-bold leading-tight">Wyślij SMS</span>
+                    <span className="block text-xs text-white/70">Oddzwonimy w kilka minut</span>
+                  </span>
+                </span>
+                <ChevronRight size={18} className="text-white/50" />
+              </m.a>
+            </div>
+          </m.div>
         </div>
       </div>
 

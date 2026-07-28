@@ -5,46 +5,21 @@ import { useState } from "react";
 import { Phone, MessageCircle, Pencil, Wifi, Tv, Smartphone, Gift, ArrowLeft, Check, X, Sparkles } from "lucide-react";
 import { useKonfigurator } from "@/components/Konfigurator/konfigurator";
 
-// Subtelne kropkowane tło całej strony — ten sam wzorzec co na stronach
-// Pomocy (Awaria/Internet/TV/Mobilne).
 const dottedPageStyle = {
   backgroundColor: "#0B2A3D",
   backgroundImage: "radial-gradient(rgba(255,255,255,.12) 1px, transparent 1px)",
   backgroundSize: "26px 26px",
 } as const;
 
-/* ======================================================================
-   OPTYMALIZACJA WYDAJNOŚCI (Lighthouse 66 -> cel: znacznie wyżej)
-   ====================================================================== */
-// Ta strona to checkout — ludzie tu przychodzą, żeby SZYBKO dokończyć
-// zamówienie, a nie oglądać animacje wejścia. Poprzednia wersja owijała
-// KAŻDY element (nagłówek, opis, plakietkę, każdą pozycję, CTA) w
-// framer-motion z `layout` + stagger reveal + AnimatePresence. To
-// oznaczało:
-//   1. Cały bundle framer-motion (nawet z domAnimation) musi się pobrać,
-//      sparsować i wykonać zanim strona stanie się w pełni interaktywna
-//      -> bezpośrednio podbija Total Blocking Time (TBT), jeden z
-//      najcięższych czynników w Lighthouse Performance.
-//   2. Animacje `layout` wymuszają dodatkowe przeliczenia geometrii przy
-//      KAŻDYM renderze (nawet tam, gdzie nic nie zmienia rozmiaru) -> co
-//      podbija Total Blocking Time i czasem CLS.
-//   3. Stagger na starcie (kontener/wiersz) opóźnia moment, w którym
-//      treść wygląda na "gotową".
-//
-// Rozwiązanie: usunięcie framer-motion z tej strony całkowicie.
-//   - Wejście elementów: zwykłe CSS keyframes (`@keyframes podsumowanie-in`)
-//     z opóźnieniami przez inline `animationDelay` — brak JS w ogóle.
-//   - Usuwanie pozycji (X): zamiast AnimatePresence + layout, prosta
-//     tranzycja CSS (opacity + max-height) sterowana lokalnym stanem
-//     "znika" przed faktycznym wywołaniem onUsun (setTimeout na czas
-//     trwania animacji).
-//   - Hover/tap na przyciskach: czyste klasy Tailwind (hover:scale-*,
-//     active:scale-*), zero JS.
-//   - Podświetlenie sumy przy zmianie: CSS animation retriggerowana przez
-//     `key` (ten sam trik co poprzednio, ale bez frameworka animacji).
-//
-// Efekt: ta trasa nie importuje już w ogóle framer-motion, więc jej JS
-// bundle jest dużo mniejszy, a strona jest interaktywna szybciej.
+/* [DODANO] Ten sam wzorzec trackingu co w pozostałych komponentach —
+   odpalanie zdarzenia Meta Pixel "Contact" przy kliknięciu w telefon/SMS.
+   Na tej stronie (checkout/podsumowanie) to szczególnie ważny sygnał —
+   to najbliższy krok do faktycznej konwersji w całym serwisie. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
 
 export default function PodsumowaniePage() {
   const { pakiet, tv, uslugi5g, dodatki, suma, maWybor, setTv, setUslugi5g, toggleDodatek } =
@@ -139,7 +114,6 @@ export default function PodsumowaniePage() {
           Sprawdź szczegóły wybranej oferty przed kontaktem z konsultantem.
         </p>
 
-        {/* Plakietka promocyjna — 3 miesiące gratis */}
         <div
           className="ps-in mt-4 inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-400/10 px-4 py-2 text-xs font-bold text-orange-300"
           style={{ animationDelay: "120ms" }}
@@ -148,7 +122,6 @@ export default function PodsumowaniePage() {
           Promocja: 3 miesiące gratis na internet{tv ? " i telewizję" : ""}
         </div>
 
-        {/* Rozbicie na pozycje */}
         <div className="ps-in mt-8 overflow-hidden rounded-2xl border border-white/10" style={{ animationDelay: "160ms" }}>
           {pozycje.map((pozycja) => (
             <PozycjaRow
@@ -176,7 +149,6 @@ export default function PodsumowaniePage() {
             </div>
           )}
 
-          {/* Stała pozycja — jednorazowa opłata aktywacyjna internetu */}
           <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-4 last:border-none sm:grid sm:grid-cols-[11rem_1fr_6.5rem] sm:items-center sm:gap-3 sm:px-5 md:grid-cols-[13rem_1fr_6.5rem]">
             <div className="flex min-w-0 items-center gap-3">
               <div className="hidden h-4 w-4 shrink-0 sm:block" aria-hidden="true" />
@@ -192,7 +164,6 @@ export default function PodsumowaniePage() {
             </div>
           </div>
 
-          {/* Aktywacja telewizji — tylko gdy TV jest w konfiguracji */}
           {tv && (
             <div className="border-b border-white/10 px-4 py-4 last:border-none sm:grid sm:grid-cols-[11rem_1fr_6.5rem] sm:items-center sm:gap-3 sm:px-5 md:grid-cols-[13rem_1fr_6.5rem]">
               <div className="flex min-w-0 items-center gap-3">
@@ -223,7 +194,6 @@ export default function PodsumowaniePage() {
           </div>
         </div>
 
-        {/* Zaufanie / co dalej */}
         <div className="ps-in mt-6 space-y-2 rounded-xl border border-white/10 bg-white/[0.02] p-4" style={{ animationDelay: "200ms" }}>
           {[
             `Pierwsze 3 miesiące ${tv ? "internetu i telewizji" : "internetu"} bez opłat`,
@@ -238,17 +208,19 @@ export default function PodsumowaniePage() {
           ))}
         </div>
 
-        {/* CTA finalne */}
+        {/* CTA finalne — najważniejszy moment konwersji w całym serwisie */}
         <div className="ps-in mt-8 flex flex-col gap-3 sm:flex-row" style={{ animationDelay: "240ms" }}>
           <a
-            href="tel:+48883334124"
+            href="tel:+48887843260"
+            onClick={() => trackContact("podsumowanie_final_phone")}
             className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-500 px-5 py-4 text-sm font-bold text-white transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] hover:bg-teal-400"
           >
             <Phone size={17} />
             Zadzwoń i dokończ zamówienie
           </a>
           <a
-            href={`sms:+48883334124?body=${smsBody}`}
+            href={`sms:+48887843260?body=${smsBody}`}
+            onClick={() => trackContact("podsumowanie_final_sms")}
             className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-4 text-sm font-bold text-white transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] hover:bg-white/10"
           >
             <MessageCircle size={17} />
@@ -269,14 +241,6 @@ export default function PodsumowaniePage() {
     </section>
   );
 }
-
-/* ======================================================================
-   Wiersz pozycji (Internet / Telewizja / 5G) z opcjonalnym usuwaniem.
-   Usuwanie: zamiast framer-motion AnimatePresence + layout, prosta
-   dwuetapowa animacja CSS — ustawiamy stan "znika", odczekujemy czas
-   trwania tranzycji (250ms), dopiero wtedy wywołujemy realny onUsun,
-   który usuwa element z danych rodzica.
-   ====================================================================== */
 
 function PozycjaRow({
   etykieta,

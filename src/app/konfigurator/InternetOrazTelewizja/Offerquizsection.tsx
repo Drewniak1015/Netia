@@ -53,36 +53,30 @@ import {
   type TvSize,
 } from "@/app/konfigurator/InternetOrazTelewizja/offer-data";
 
-/* ======================================================================
-   STAŁE — numer kontaktowy i wspólne stałe animacji, zgodnie z resztą
-   serwisu (te same wartości co w OfferQuizSection / Oferty / PlanCard).
-   ====================================================================== */
+const PHONE_DISPLAY = "+48 887 843 260";
+const PHONE_HREF = "tel:+48887843260";
+const DEFAULT_SMS_BODY = encodeURIComponent(
+  "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
+);
+const SMS_HREF = `sms:+48887843260?body=${DEFAULT_SMS_BODY}`;
 
-const PHONE_DISPLAY = "+48 883 334 124";
-const PHONE_HREF = "tel:+48883334124";
-const SMS_HREF = "sms:+48883334124?body=OFERTA";
+/* [DODANO] Ten sam wzorzec trackingu co w pozostałych komponentach —
+   odpalanie zdarzenia Meta Pixel "Contact" przy kliknięciu w telefon/SMS. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
 };
 
-// easeOutExpo-podobny cubic-bezier — ten sam "ciężki start, miękkie
-// wyhamowanie", którego używamy wszędzie zamiast wbudowanego "easeOut".
 const SMOOTH_EASE = [0.16, 1, 0.3, 1] as const;
 
-// Sprężyny współdzielone przez hover kart i przyciski CTA w całym serwisie.
 const HOVER_SPRING = { type: "spring", stiffness: 350, damping: 22, mass: 0.6 } as const;
 const TAP_SPRING = { type: "spring", stiffness: 500, damping: 25, mass: 0.5 } as const;
-
-/* ======================================================================
-   TYPY LOKALNE
-   Typy współdzielone z danymi (SectionKey, AccentKey, TvSize, OfferCardData,
-   OfferSectionData, OfferFeature, QuizFaqItem) mieszkają teraz w
-   ./offer-data.ts razem z OFFER_SECTIONS i QUIZ_FAQ_ITEMS — stąd import
-   powyżej zamiast lokalnej definicji. Poniżej zostają tylko typy
-   specyficzne dla UI tej sekcji (popup, kwiz).
-   ====================================================================== */
 
 type Stage = "start" | "q1" | "q2" | "success";
 
@@ -91,12 +85,6 @@ interface QuizOption {
   value: string;
   icon: LucideIcon;
 }
-
-/* ======================================================================
-   PALETA AKCENTÓW — literalne klasy Tailwind per akcent (celowo nie
-   budowane dynamicznym template stringiem, żeby JIT poprawnie je
-   wykrył i nie wyciął przy buildzie).
-   ====================================================================== */
 
 const ACCENT_STYLES: Record<
   AccentKey,
@@ -157,65 +145,20 @@ const ACCENT_STYLES: Record<
   },
 };
 
-/* ======================================================================
-   DANE — pytania kwizu (PLACEHOLDERY — do podmiany), pasek zaufania.
-   Oferty (OFFER_SECTIONS) i FAQ (QUIZ_FAQ_ITEMS) są teraz w ./offer-data.
-   ====================================================================== */
-
-// Pytanie 1 — sposób korzystania z internetu -> rekomendowana prędkość.
-// Tiery rosną logicznie: pojedyncza osoba/lekkie użycie -> streaming ->
-// praca i granie równolegle -> duże gospodarstwo domowe z wieloma urządzeniami.
 const Q1_OPTIONS: QuizOption[] = [
-  {
-    label: "Przeglądanie stron",
-    value: "web_only",
-    icon: Globe,
-  },
-  {
-    label: "Filmy i seriale",
-    value: "movies_series",
-    icon: Tv,
-  },
-  {
-    label: "Praca i granie",
-    value: "work_gaming",
-    icon: Gamepad2,
-  },
-  {
-    label: "Bardzo dużo osób i urządzeń",
-    value: "everything_max",
-    icon: Rocket,
-  },
+  { label: "Przeglądanie stron", value: "web_only", icon: Globe },
+  { label: "Filmy i seriale", value: "movies_series", icon: Tv },
+  { label: "Praca i granie", value: "work_gaming", icon: Gamepad2 },
+  { label: "Bardzo dużo osób i urządzeń", value: "everything_max", icon: Rocket },
 ];
 
-// Pytanie 2 — liczba kanałów TV -> rekomendowany rozmiar pakietu (M lub L).
-// Nazwy tierów są teraz samodzielnie opisowe (bez sublabeli) — każda mówi
-// wprost, co w niej jest, zamiast ogólnikowego "trochę więcej".
 const Q2_OPTIONS: QuizOption[] = [
-  {
-    label: "Podstawowe kanały",
-    value: "basic",
-    icon: Tv,
-  },
-  {
-    label: "Kanały filmowe i rozrywkowe",
-    value: "movies_extra",
-    icon: Film,
-  },
-  {
-    label: "Sport, filmy i bajki dla dzieci",
-    value: "lots_channels",
-    icon: Sparkles,
-  },
-  {
-    label: "Pełny wybór kanałów",
-    value: "all_channels",
-    icon: Crown,
-  },
+  { label: "Podstawowe kanały", value: "basic", icon: Tv },
+  { label: "Kanały filmowe i rozrywkowe", value: "movies_extra", icon: Film },
+  { label: "Sport, filmy i bajki dla dzieci", value: "lots_channels", icon: Sparkles },
+  { label: "Pełny wybór kanałów", value: "all_channels", icon: Crown },
 ];
 
-// Mapowania odpowiedzi na prędkość internetu i rozmiar pakietu TV — używane
-// razem przez decideSection() do wskazania konkretnej, dopasowanej oferty.
 const SPEED_MAP: Record<string, SectionKey> = {
   web_only: "internet600",
   movies_series: "internet600",
@@ -229,12 +172,6 @@ const TV_SIZE_MAP: Record<string, TvSize> = {
   lots_channels: "L",
   all_channels: "L",
 };
-
-/* ======================================================================
-   POPUP "SZCZEGÓŁY" — routery, dekoder, Netia GO, GigaNagrywarka.
-   Klikalna jest każda cecha karty ofertowej, która ma przypisany `infoId`
-   wskazujący na wpis w INFO_ITEMS poniżej. Wzorzec 1:1 z PopularneOferty.
-   ====================================================================== */
 
 type SectionContent =
   | { type: "paragraphs"; items: string[] }
@@ -1007,13 +944,6 @@ const TRUST_ITEMS: TrustItem[] = [
   },
 ];
 
-/* ======================================================================
-   LOGIKA DOPASOWANIA — odpowiedzi -> konkretna oferta
-   Q1 wskazuje prędkość (sekcję), Q2 wskazuje rozmiar pakietu TV (M/L)
-   wewnątrz tej sekcji. Zwracamy obie informacje: klucz sekcji do otwarcia
-   w akordeonie oraz nazwę oferty do podświetlenia jako "Dla Ciebie".
-   ====================================================================== */
-
 interface QuizRecommendation {
   section: SectionKey;
   offerName: string | null;
@@ -1027,16 +957,29 @@ function decideSection(q1: string, q2: string): QuizRecommendation {
   return { section, offerName: matchedOffer?.name ?? null };
 }
 
-/* ======================================================================
-   WSPÓLNY CTA — Zadzwoń / SMS, dokładnie w konwencji reszty serwisu
-   ====================================================================== */
+/* [ZMIENIONO] CtaButtons przyjmuje teraz też `contentName`, żeby oznaczyć
+   z której karty/oferty przyszło kliknięcie, oraz generuje pełną treść SMS
+   zamiast samej nazwy oferty bez spacji. */
+function CtaButtons({
+  reduceMotion,
+  offerName,
+  contentName,
+}: {
+  reduceMotion: boolean | null;
+  offerName?: string;
+  contentName: string;
+}) {
+  const smsHref = offerName
+    ? `sms:+48887843260?body=${encodeURIComponent(
+        `Interesuje mnie oferta ${offerName}. Proszę o kontakt.`
+      )}`
+    : SMS_HREF;
 
-function CtaButtons({ reduceMotion, smsBody }: { reduceMotion: boolean | null; smsBody?: string }) {
-  const smsHref = smsBody ? `sms:+48883334124?body=${smsBody}` : SMS_HREF;
   return (
     <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
       <m.a
         href={PHONE_HREF}
+        onClick={() => trackContact(`${contentName}_tel`)}
         whileHover={reduceMotion ? undefined : { scale: 1.02 }}
         whileTap={reduceMotion ? undefined : { scale: 0.98 }}
         transition={TAP_SPRING}
@@ -1055,6 +998,7 @@ function CtaButtons({ reduceMotion, smsBody }: { reduceMotion: boolean | null; s
       </m.a>
       <m.a
         href={smsHref}
+        onClick={() => trackContact(`${contentName}_sms`)}
         whileHover={reduceMotion ? undefined : { scale: 1.02 }}
         whileTap={reduceMotion ? undefined : { scale: 0.98 }}
         transition={TAP_SPRING}
@@ -1071,18 +1015,6 @@ function CtaButtons({ reduceMotion, smsBody }: { reduceMotion: boolean | null; s
     </div>
   );
 }
-
-/* ======================================================================
-   BANER PROMO + KWIZ — wszystko w jednym kontenerze: nagłówek "Dwa
-   pytania i gotowe", a bezpośrednio pod nim aktualny krok kwizu
-   (start -> pytanie 1/2 -> pytanie 2/2 -> sukces), bez oddzielnej
-   karty poniżej.
-
-   MOBILE: sekcja jest teraz zauważalnie niższa na telefonach — mniejsze
-   paddingi, mniejszy nagłówek (clamp startuje niżej), a siatka odpowiedzi
-   w kwizie jest zawsze 2 kolumny (układ 2x2 dla 4 opcji zamiast jednej
-   kolumny na mobile).
-   ====================================================================== */
 
 function PromoBanner({ onComplete }: { onComplete: (rec: QuizRecommendation) => void }) {
   const reduceMotion = useReducedMotion();
@@ -1183,7 +1115,6 @@ function PromoBanner({ onComplete }: { onComplete: (rec: QuizRecommendation) => 
         </span>
       </m.h1>
 
-      {/* Pasek postępu — pojawia się dopiero, gdy kwiz jest w toku */}
       {progress > 0 && (
         <div className="relative z-10 mt-1 w-full max-w-sm sm:mt-2">
           <div className="mb-1.5 flex justify-between text-[11px] font-bold uppercase tracking-[0.06em] text-white/40 sm:mb-2">
@@ -1205,7 +1136,6 @@ function PromoBanner({ onComplete }: { onComplete: (rec: QuizRecommendation) => 
         </div>
       )}
 
-      {/* Krok kwizu — bezpośrednio pod nagłówkiem, bez oddzielnego kontenera */}
       <div className="relative z-10 mt-2 w-full max-w-xl text-left sm:mt-4">
         <AnimatePresence mode="wait" initial={false}>
           {stage === "q1" && (
@@ -1305,8 +1235,6 @@ function QuestionStage({
         <p className="mt-1 text-xs text-white/50 sm:text-sm">{subtitle}</p>
       </div>
 
-      {/* Zawsze 2 kolumny — na telefonach daje to układ 2x2 dla 4 opcji
-          zamiast jednej długiej kolumny (główna oszczędność wysokości). */}
       <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
         {options.map((opt) => {
           const isSelected = selected === opt.value;
@@ -1351,23 +1279,6 @@ function QuestionStage({
     </m.div>
   );
 }
-
-/* ======================================================================
-   KARTA OFERTY — anatomia 1:1 z PlanCard/OfferCard reszty serwisu:
-   spine bar po lewej, plakietka "Najczęściej wybierana" nad kartą,
-   cena z podkreśleniem, checklista cech, para CTA Zadzwoń / SMS.
-
-   FIX (wyrównanie wysokości kart w wierszu): grid domyślnie rozciąga
-   (align-items: stretch) BEZPOŚREDNI element grida do wysokości wiersza
-   — ale bez jawnego "h-full" na tym elemencie i na jego dziecku ta
-   wysokość nie "spływa" w dół, więc każda karta i tak przyjmowała tylko
-   wysokość własnej treści (różna liczba cech / obecność badge'a =
-   różne wysokości w tym samym rzędzie). Dodanie h-full tutaj + na
-   wrapperze w OfferAccordionSections zamyka ten łańcuch: grid → wrapper
-   → karta, więc wszystkie trzy karty w wierszu są odtąd zawsze tej
-   samej wysokości, a `flex-1` na liście cech (już wcześniej w kodzie)
-   konsekwentnie doksuwa przyciski CTA do wspólnej, dolnej krawędzi.
-   ====================================================================== */
 
 function OfferCard({
   offer,
@@ -1478,15 +1389,14 @@ function OfferCard({
         ))}
       </ul>
 
-      <CtaButtons reduceMotion={reduceMotion} smsBody={offer.name.replace(/\s+/g, "")} />
+      <CtaButtons
+        reduceMotion={reduceMotion}
+        offerName={offer.name}
+        contentName={`quiz_offer_${offer.name.toLowerCase().replace(/\s+/g, "_")}`}
+      />
     </m.div>
   );
 }
-
-/* ======================================================================
-   AKORDEON Z SEKCJAMI OFERT — otwieranie/zamykanie przez grid-template-rows,
-   dokładnie ta sama technika co w akordeonach FAQ reszty serwisu.
-   ====================================================================== */
 
 function OfferAccordionSections({
   recommendedKey,
@@ -1510,10 +1420,6 @@ function OfferAccordionSections({
     setOpenKey(recommendedKey);
 
     const t1 = window.setTimeout(() => {
-      // Na telefonie skacz od razu do konkretnej, rekomendowanej karty
-      // ("Dla Ciebie"), a nie tylko do nagłówka całej sekcji — na wąskim
-      // ekranie karty są jedna pod drugą, więc sam nagłówek sekcji nie
-      // pokazuje jeszcze wybranej oferty.
       const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
       const target =
         (isMobile && recommendedOfferName && cardRefs.current[recommendedOfferName]) ||
@@ -1617,11 +1523,6 @@ function OfferAccordionSections({
   );
 }
 
-/* ======================================================================
-   PASEK ZAUFANIA — uniwersalny, ten sam wzorzec co pod każdą sekcją
-   ofertową w serwisie (Gauge / RotateCcw / Headset).
-   ====================================================================== */
-
 function TrustBar({ reduceMotion }: { reduceMotion: boolean | null }) {
   return (
     <m.div
@@ -1650,13 +1551,6 @@ function TrustBar({ reduceMotion }: { reduceMotion: boolean | null }) {
   );
 }
 
-/* ======================================================================
-   FAQ — 6 odbić najważniejszych obiekcji, dokładnie w formacie NetiaFAQ
-   (dwie kolumny, akordeon framer-motion, zamykające CTA Zadzwoń/SMS).
-   Bez tierów i "pokaż więcej" — tu ma być tylko 6 najsilniejszych pytań.
-   Dane (QUIZ_FAQ_ITEMS) pochodzą z ./offer-data.
-   ====================================================================== */
-
 function QuizFaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
@@ -1666,7 +1560,6 @@ function QuizFaqSection() {
       className="w-full py-16 px-6 font-sans overflow-hidden"
     >
       <div className="max-w-305 mx-auto">
-        {/* Eyebrow */}
         <m.div
           className="flex justify-center mb-5"
           initial={{ opacity: 0, y: 14 }}
@@ -1700,7 +1593,6 @@ function QuizFaqSection() {
           niejasne? Doradca odpowie w 3 minuty przez telefon.
         </m.p>
 
-        {/* Accordion — dwie kolumny od sm w górę, jedna na mobile */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-14 items-start">
           {QUIZ_FAQ_ITEMS.map((item, i) => {
             const isOpen = openIndex === i;
@@ -1795,7 +1687,6 @@ function QuizFaqSection() {
           })}
         </div>
 
-        {/* Closing CTA — call or SMS only, styled like Hero buttons */}
         <m.div
           className="max-w-2xl mx-auto rounded-3xl border border-white/10 bg-white/5 px-6 py-8 sm:px-10 sm:py-10 text-center"
           initial={{ opacity: 0, y: 14 }}
@@ -1803,14 +1694,17 @@ function QuizFaqSection() {
           viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h3 className="font-bold text-white text-xl sm:text-2xl mb-2">Wciąż masz pytania?</h3>
+          <h3 className="font-bold text-white text-xl sm:text-2xl mb-2">
+            Gotowy/a do zamówienia?
+          </h3>
           <p className="mb-6 text-sm sm:text-[0.9375rem] text-white/65">
-            Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
+            ~3 minuty rozmowy i internet jest zamówiony. Doradca odbierze od razu.
           </p>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
             <m.a
               href={PHONE_HREF}
+              onClick={() => trackContact("quiz_faq_closing_phone")}
               animate={{
                 boxShadow: [
                   "0 0 0 0 rgba(45, 212, 191, 0.45)",
@@ -1837,6 +1731,7 @@ function QuizFaqSection() {
 
             <m.a
               href={SMS_HREF}
+              onClick={() => trackContact("quiz_faq_closing_sms")}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white sm:min-w-60"
@@ -1858,10 +1753,6 @@ function QuizFaqSection() {
     </section>
   );
 }
-
-/* ======================================================================
-   EKSPORT GŁÓWNY — baner (z kwizem w środku) + akordeon + pasek zaufania.
-   ====================================================================== */
 
 export default function OfferQuizSection() {
   const reduceMotion = useReducedMotion();

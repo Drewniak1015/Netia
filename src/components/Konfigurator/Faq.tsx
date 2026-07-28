@@ -22,6 +22,18 @@ type FaqItem = {
   icon: ElementType;
 };
 
+/* [DODANO] Ten sam wzorzec trackingu co w pozostałych komponentach —
+   odpalanie zdarzenia Meta Pixel "Contact" przy kliknięciu w telefon/SMS. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
+
+const DEFAULT_SMS_BODY = encodeURIComponent(
+  "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
+);
+
 const FAQ_ITEMS: FaqItem[] = [
   {
     icon: Gauge,
@@ -55,9 +67,6 @@ const FAQ_ITEMS: FaqItem[] = [
   },
 ];
 
-/* Ten sam wzorzec animacji co w Footer.tsx/Header.tsx — whileInView +
-   stagger przez custom index. Tylko opacity (bez translateY), żeby żaden
-   element nigdy nie zmieniał swojej pozycji w viewporcie podczas wejścia. */
 const fadeIn: Variants = {
   hidden: { opacity: 0 },
   visible: (i: number = 0) => ({
@@ -76,21 +85,6 @@ export default function KonfiguratorFAQ() {
         style={{ backgroundColor: "#0B2A3D" }}
         className="w-full py-6 px-6 font-sans overflow-hidden"
       >
-        {/*
-          FIX (CLS): sekcja wcześniej używała ręcznego IntersectionObserver +
-          wstrzykniętego <style>{`@keyframes ...`}</style> do animacji wejścia
-          (jedyny komponent na stronie zrobiony w ten sposób — Header, Footer
-          i Konfigurator używają framer-motion). Przepisane na dokładnie ten
-          sam wzorzec co reszta strony: m.div + whileInView + warianty, tylko
-          opacity (bez translateY) — element się pojawia, ale nigdy nie
-          zmienia swojej pozycji w viewporcie, więc nie ma czego liczyć jako
-          layout shift.
-
-          .faq-cta-pulse (pulsujący pierścień na przycisku ZADZWOŃ) zostaje
-          jako czyste CSS — to osobna, ciągła animacja na pseudo-elemencie
-          ::before, absolutnie pozycjonowanym, więc nie wpływa na layout
-          niczego dookoła.
-        */}
         <style>{`
           .faq-cta-pulse {
             position: relative;
@@ -119,7 +113,6 @@ export default function KonfiguratorFAQ() {
         `}</style>
 
         <div className="max-w-6xl mx-auto">
-          {/* Eyebrow */}
           <m.div
             initial={reduceMotion ? false : "hidden"}
             whileInView="visible"
@@ -159,7 +152,6 @@ export default function KonfiguratorFAQ() {
             Masz dodatkowe pytanie? Doradca pomoże w 3 minuty przez telefon.
           </m.p>
 
-          {/* Accordion — dwie kolumny od sm w górę, jedna na mobile */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-14 items-start">
             {FAQ_ITEMS.map((item, i) => {
               const isOpen = openIndex === i;
@@ -229,7 +221,7 @@ export default function KonfiguratorFAQ() {
             })}
           </div>
 
-          {/* Closing CTA — call or SMS only, styled like Hero buttons */}
+          {/* Closing CTA */}
           <m.div
             initial={reduceMotion ? false : "hidden"}
             whileInView="visible"
@@ -239,14 +231,15 @@ export default function KonfiguratorFAQ() {
             className="max-w-2xl mx-auto rounded-3xl border border-white/10 bg-white/5 px-6 py-8 sm:px-10 sm:py-10 text-center"
           >
             <h3 className="font-bold text-white text-xl sm:text-2xl mb-2">
-              Wciąż masz pytania?
+              Gotowy/a do zamówienia?
             </h3>
             <p className="mb-6 text-sm sm:text-[0.9375rem] text-white/65">
-              Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
+              ~3 minuty rozmowy i internet jest zamówiony. Doradca odbierze od razu.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
               <a
-                href="tel:+48883334124"
+                href="tel:+48887843260"
+                onClick={() => trackContact("konfigurator_faq_closing_phone")}
                 className="faq-cta-pulse flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] sm:min-w-60"
               >
                 <span className="flex items-center gap-3">
@@ -255,13 +248,14 @@ export default function KonfiguratorFAQ() {
                   </span>
                   <span className="text-left">
                     <span className="block text-sm font-bold leading-tight">ZADZWOŃ</span>
-                    <span className="block text-xs text-white/85">+48 883 334 124</span>
+                    <span className="block text-xs text-white/85">+48 887 843 260</span>
                   </span>
                 </span>
                 <ChevronRight size={18} className="text-white/70" />
               </a>
               <a
-                href="sms:+48883334124?body=INTERNET"
+                href={`sms:+48887843260?body=${DEFAULT_SMS_BODY}`}
+                onClick={() => trackContact("konfigurator_faq_closing_sms")}
                 className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] sm:min-w-60"
               >
                 <span className="flex items-center gap-3">

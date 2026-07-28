@@ -34,6 +34,14 @@ const steps: Step[] = [
   },
 ];
 
+/* [DODANO] Ten sam wzorzec trackingu co w Hero.tsx / Oferty.tsx —
+   odpalanie zdarzenia Meta Pixel "Contact" przy kliknięciu w link telefonu. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
+
 // Nagłówek: prosty fade + slide-up, dwa elementy w kolejności (stagger).
 const headerVariants: Variants = {
   hidden: {},
@@ -151,7 +159,8 @@ export default function HowToOrderSection() {
             className="mt-14 flex flex-col justify-center gap-3 sm:flex-row"
           >
             <m.a
-              href="tel:+48883334124"
+              href="tel:+48887843260"
+              onClick={() => trackContact("how_to_order_phone_button")}
               whileHover={reduceMotion ? undefined : { scale: 1.02 }}
               whileTap={reduceMotion ? undefined : { scale: 0.98 }}
               transition={{ duration: 0.15 }}

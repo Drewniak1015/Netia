@@ -6,45 +6,13 @@ import {
   Search,
   ChevronDown,
   ArrowRight,  
-  Wifi,
-  Antenna,
-  MonitorPlay,
-  Layers,
-  Users,
-  MapPin,
-  FileX,
-  ShieldCheck,
-  Clock,
-  Wrench,
-  Banknote,
-  Router,
-  Tag,
-  Home,
-  Tv,
-  Database,
-  Smartphone,
-  Lock,
-  Baby,
-  Gauge,
-  Package,
-  FileCheck,
-  Wallet,
-  TrendingUp,
-  FileText,
-  XCircle,
-  CreditCard,
-  CalendarClock,
   Sliders,
   PhoneCall,
   type LucideIcon,
 } from "lucide-react";
 import { CATEGORIES, FAQ_ITEMS, type Category, type FaqItem } from "./faqPomocData";
-/* ---------- design tokens ----------
-   Układ „ciemny hero + jasna lista" — jak na inspiracji.
-   Hero zostaje w palecie strony Pomocy (navy + teal),
-   lista FAQ przechodzi na jasne karty dla lepszej czytelności. */
+
 const c = {
-  // hero (ciemna strefa)
   heroBg: "rgb(9, 33, 50)",
   heroDeep: "rgb(6, 24, 38)",
   heroInner: "rgb(17, 51, 74)",
@@ -53,52 +21,38 @@ const c = {
   heroMuted: "#a7b9c6",
   heroFaint: "#6f8798",
 
-  // body (jasna strefa)
   pageBg: "#eef2f5",
   card: "#ffffff",
   cardBorder: "rgba(13, 45, 66, .08)",
-  text: "#10344c", // pytania
-  muted: "#54697a", // odpowiedzi
-  faint: "#93a6b3", // chevrony nieaktywne
+  text: "#10344c",
+  muted: "#54697a",
+  faint: "#93a6b3",
 
-  // akcent
   accent: "#2dd9c4",
-  accentDark: "#0fae9c", // teal na jasnym tle (kontrast)
+  accentDark: "#0fae9c",
   accentDim: "rgba(45,217,196,.14)",
   accentDimLight: "rgba(15,174,156,.1)",
   accentBorder: "rgba(45,217,196,.32)",
 };
 
-/* ---------- data ----------
-   Wszystkie 35 pytań bez zmian.
-   Uwaga: "Czy Bezpieczny Internet obejmuje kontrolę rodzicielską?"
-   nadal ma placeholder — uzupełnij przed publikacją. */
-
-
-
-
-
-
-
-
-/* ---------- animations (global keyframes) ---------- */
+/* [DODANO] Ten sam wzorzec trackingu co w pozostałych komponentach —
+   odpalanie zdarzenia Meta Pixel "Contact" przy kliknięciu w telefon. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
 
 const ANIM_CSS = `
 @keyframes faqFadeUp {
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
-
 .faq-fade-up  { animation: faqFadeUp .55s cubic-bezier(.22,.8,.32,1) both; }
-
-
 .faq-card { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
 .faq-card:hover { transform: translateY(-2px); }
-
 .faq-pill { transition: filter .15s ease; }
 .faq-pill:hover { filter: brightness(1.18); }
-
 .faq-collapse {
   display: grid;
   grid-template-rows: 0fr;
@@ -108,19 +62,12 @@ const ANIM_CSS = `
 .faq-collapse > div { overflow: hidden; min-height: 0; }
 .faq-collapse .faq-answer { opacity: 0; transition: opacity .25s ease .05s; }
 .faq-collapse.open .faq-answer { opacity: 1; }
-
 @media (prefers-reduced-motion: reduce) {
 .faq-fade-up { animation: none; }
   .faq-card, .faq-pill, .faq-collapse, .faq-collapse .faq-answer { transition: none; }
   .faq-card:hover { transform: none; }
 }
 `;
-
-/* ---------- illustration ----------
-   Dymki „pytanie + Wi-Fi" — odchudzony SVG:
-   bez filtrów feDropShadow (ciężkie w renderze),
-   cień jako jedna elipsa, po jednym gradiencie na dymek,
-   do tego delikatne pływanie (CSS, wyłączane przy reduced motion). */
 
 function HeroBubbles() {
   return (
@@ -139,16 +86,12 @@ function HeroBubbles() {
           <stop offset="100%" stopColor="#0c2c44" />
         </linearGradient>
       </defs>
-
-      {/* cień pod całością — jedna elipsa zamiast filtrów */}
       <ellipse cx="165" cy="224" rx="105" ry="11" fill="#02121d" opacity=".35" />
-
-      <g >
+      <g>
         <path
           d="M138 18c-58 0-104 38-104 86 0 47 46 85 104 85 10 0 20-1 29-3l34 22-6-34c29-16 47-42 47-70 0-48-46-86-104-86z"
           fill="url(#fbTeal)"
         />
-        {/* delikatny błysk — jedna półprzezroczysta ścieżka */}
         <path
           d="M70 62c18-25 46-38 74-38 20 0 38 6 53 16-38-13-85-4-112 27-8 9-13 19-16 30-2-12-1-24 1-35z"
           fill="rgba(255,255,255,.2)"
@@ -166,8 +109,6 @@ function HeroBubbles() {
           ?
         </text>
       </g>
-
-      {/* dymek drugi — Wi-Fi */}
       <g>
         <path
           d="M228 78c-38 0-68 25-68 56 0 31 30 56 68 56 7 0 13-1 19-2l24 16-4-24c18-11 29-27 29-46 0-31-30-56-68-56z"
@@ -182,8 +123,6 @@ function HeroBubbles() {
     </svg>
   );
 }
-
-/* ---------- pieces ---------- */
 
 function CategoryPill({
   label,
@@ -280,7 +219,6 @@ function FaqRow({
         />
       </button>
 
-      {/* płynne rozwijanie: grid 0fr → 1fr */}
       <div className={`faq-collapse${open ? " open" : ""}`}>
         <div>
           <div className="faq-answer px-5 pb-5 pl-[4.4rem]">
@@ -304,11 +242,7 @@ function FaqRow({
   );
 }
 
-/* ---------- back-to-configurator CTA ----------
-   Ta sama ciemna karta co na pozostałych stronach Pomocy (Awaria,
-   Internet, Usługi Mobilne, Telewizja) — celowo NIE w jasnej palecie
-   tej strony, tylko identyczny, kontrastowy blok, żeby CTA wyglądało
-   tak samo wszędzie. */
+/* [ZMIENIONO] Numer telefonu + dodany tracking. */
 function BackToConfiguratorCta() {
   return (
     <div
@@ -316,15 +250,16 @@ function BackToConfiguratorCta() {
       style={{ background: "#173547", border: "1px solid rgba(255,255,255,.12)" }}
     >
       <h3 className="text-[22px] font-extrabold" style={{ color: "#eef5f7" }}>
-        Wciąż masz pytania?
+        Gotowy/a do zamówienia?
       </h3>
       <p className="mt-2 text-[14.5px]" style={{ color: "#a7b9c6" }}>
-        Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
+        ~3 minuty rozmowy i internet jest zamówiony. Doradca odbierze od razu.
       </p>
 
       <div className="mx-auto mt-6 flex max-w-[560px] flex-col gap-3 sm:flex-row">
         <a
-          href="tel:+48883334124"
+          href="tel:+48887843260"
+          onClick={() => trackContact("pomoc_faq_closing_phone")}
           className="flex flex-1 items-center gap-3 rounded-2xl bg-teal-500 px-5 py-3.5 text-left transition-transform duration-200 hover:scale-[1.02]"
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 text-white">
@@ -332,7 +267,7 @@ function BackToConfiguratorCta() {
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-[13.5px] font-extrabold text-white">ZADZWOŃ</span>
-            <span className="block text-[12.5px] text-white/85">+48 883 334 124</span>
+            <span className="block text-[12.5px] text-white/85">+48 887 843 260</span>
           </span>
           <ArrowRight size={16} className="shrink-0 text-white/70" />
         </a>
@@ -363,8 +298,6 @@ function BackToConfiguratorCta() {
   );
 }
 
-/* ---------- page ---------- */
-
 export default function FaqPage() {
   const [active, setActive] = useState<Category | "Wszystkie">("Wszystkie");
   const [query, setQuery] = useState("");
@@ -392,7 +325,6 @@ export default function FaqPage() {
     <div style={{ background: c.pageBg }} className="font-sans min-h-screen">
       <style dangerouslySetInnerHTML={{ __html: ANIM_CSS }} />
 
-      {/* ===== HERO — ciemna strefa na pełną szerokość ===== */}
       <div
         style={{
           background: `radial-gradient(140% 180% at 85% -30%, ${c.heroInner} 0%, ${c.heroBg} 45%, ${c.heroDeep} 100%)`,
@@ -401,7 +333,6 @@ export default function FaqPage() {
       >
         <div className="max-w-[920px] mx-auto px-5 pt-32 pb-10 md:pb-12">
           <div className="flex items-center justify-between gap-8">
-            {/* lewa kolumna: tytuł + search */}
             <div className="flex-1 max-w-[560px]">
               <h1
                 className="faq-fade-up text-[28px] md:text-[34px] font-extrabold tracking-tight"
@@ -416,7 +347,6 @@ export default function FaqPage() {
                 Szybkie odpowiedzi na pytania o Internet, telewizję i usługi Netii.
               </p>
 
-              {/* SEARCH */}
               <div
                 className="faq-fade-up flex items-center gap-3 rounded-full px-5 py-3 mt-6 transition-colors focus-within:border-[rgba(45,217,196,.5)]"
                 style={{
@@ -436,7 +366,6 @@ export default function FaqPage() {
               </div>
             </div>
 
-            {/* prawa kolumna: ilustracja */}
             <div
               className="faq-fade-up hidden md:block flex-shrink-0 -mb-6"
               style={{ animationDelay: "200ms" }}
@@ -445,7 +374,6 @@ export default function FaqPage() {
             </div>
           </div>
 
-          {/* CATEGORY PILLS */}
           <div
             className="faq-fade-up flex gap-2.5 mt-7 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"
             style={{ scrollbarWidth: "none", animationDelay: "240ms" }}
@@ -469,7 +397,6 @@ export default function FaqPage() {
         </div>
       </div>
 
-      {/* ===== FAQ LIST — jasna strefa ===== */}
       <main className="max-w-310 mx-auto px-5 py-8 pb-16">
         <div className="max-w-[885px] mx-auto flex flex-col gap-3">
           {filtered.length === 0 ? (

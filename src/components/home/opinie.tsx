@@ -28,6 +28,15 @@ const FALLBACK_STATS = [
   "Umowa podpisana w 6 minut",
 ];
 
+/* [DODANO] Ten sam wzorzec trackingu co w Hero.tsx / Oferty.tsx /
+   HowToOrderSection.tsx — odpalanie zdarzenia Meta Pixel "Contact" przy
+   kliknięciu w telefon/SMS. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
+
 type Review = {
   initials: string;
   name: string;
@@ -105,9 +114,15 @@ export default function NetiaSocialProof({
   advisorBio = "Pomagam klientom bezstresowo zmienić dostawcę internetu.",
   // TODO: podmień ścieżkę, jeśli plik leży gdzie indziej niż /public.
   advisorPhotoUrl = "/images/Jaroslaw.webp",
-  phoneNumber = "+48 883 334 124",
+  phoneNumber = "+48 887 843 260",
 }: AdvisorInfo) {
   const [sectionRef, sectionInView] = useInView();
+
+  // [DODANO] Treść SMS-a — pełne zdanie zamiast samego "INTERNET",
+  // poprawnie zakodowane dla polskich znaków.
+  const smsBody = encodeURIComponent(
+    "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
+  );
 
   return (
     <section
@@ -269,6 +284,7 @@ export default function NetiaSocialProof({
             <div className="mt-auto flex flex-col sm:flex-row gap-2.5">
               <a
                 href={`tel:${phoneNumber.replace(/\s+/g, "")}`}
+                onClick={() => trackContact("social_proof_phone_button")}
                 className="group flex-1 flex items-center justify-between gap-3 rounded-xl bg-teal-500 px-4 py-3 text-white transition-transform duration-150 hover:scale-[1.02]"
               >
                 <span className="flex items-center gap-2.5">
@@ -287,7 +303,8 @@ export default function NetiaSocialProof({
               </a>
 
               <a
-                href={`sms:${phoneNumber.replace(/\s+/g, "")}?body=INTERNET`}
+                href={`sms:${phoneNumber.replace(/\s+/g, "")}?body=${smsBody}`}
+                onClick={() => trackContact("social_proof_sms_button")}
                 className="group flex-1 flex items-center justify-between gap-3 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white transition-transform duration-150 hover:scale-[1.02]"
               >
                 <span className="flex items-center gap-2.5">

@@ -28,24 +28,23 @@ import {
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
 
-/* Wspólny wariant fade-up — zgodnie z Hero.tsx */
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
 };
 
-/* ---------------------------------------------------------------------- */
-/*  FIX (responsywność na tablety — 26.07.2026):                          */
-/*  Zewnętrzna siatka kart (2 oferty) przełączała się na 2 kolumny już od */
-/*  sm (640px) — DOKŁADNIE w tym samym momencie, w którym WEWNĘTRZNA      */
-/*  lista cech w środku karty też przechodzi na 2 kolumny (sm:grid-cols-2).*/
-/*  Na tablecie w portrecie (768px) karta ma wtedy ~360px szerokości, a   */
-/*  lista cech w środku próbuje zmieścić 2 kolumny w tej wąskiej karcie — */
-/*  teksty typu "Netia Player/Evobox 4K" łamały się nieczytelnie.         */
-/*  Przesunięto próg zewnętrznej siatki kart do `lg` (1024px), więc karty */
-/*  zostają w pełnej szerokości przez cały zakres tabletów, a wewnętrzna  */
-/*  lista cech ma zawsze wystarczająco miejsca na 2 kolumny.              */
-/* ---------------------------------------------------------------------- */
+/* [DODANO] Ten sam wzorzec trackingu co w pozostałych komponentach —
+   odpalanie zdarzenia Meta Pixel "Contact" przy kliknięciu w telefon/SMS. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
+
+const DEFAULT_SMS_BODY = encodeURIComponent(
+  "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
+);
+
 interface OfferFeature {
   label: string;
   infoId?: string;
@@ -813,7 +812,8 @@ export default function NajlepszaCenaOferty() {
               className="relative z-10 mt-4 flex flex-col items-stretch gap-3 sm:flex-row"
             >
               <m.a
-                href="tel:+48883334124"
+                href="tel:+48887843260"
+                onClick={() => trackContact("najlepsza_cena_hero_phone")}
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                 className="flex items-center justify-between gap-3 rounded-2xl bg-teal-500 px-5 py-3 text-white shadow-[0_8px_20px_-8px_rgba(45,212,191,0.6)] sm:w-64"
@@ -824,13 +824,14 @@ export default function NajlepszaCenaOferty() {
                   </span>
                   <span className="text-left">
                     <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
-                    <span className="block text-xs font-normal text-white/85">+48 883 334 124</span>
+                    <span className="block text-xs font-normal text-white/85">+48 887 843 260</span>
                   </span>
                 </span>
                 <ChevronRight size={16} className="shrink-0 text-white/70" />
               </m.a>
               <m.a
-                href="sms:+48883334124?body=INTERNET"
+                href={`sms:+48887843260?body=${DEFAULT_SMS_BODY}`}
+                onClick={() => trackContact("najlepsza_cena_hero_sms")}
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                 className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-white sm:w-64"
@@ -866,12 +867,6 @@ export default function NajlepszaCenaOferty() {
               <DottedBackground variant="dots" size={22} />
             </div>
 
-            {/* FIX (responsywność na tablety): karty zostają w 1 kolumnie
-                (pełna szerokość) aż do `lg` (1024px) — wcześniej przełączały
-                się na 2 kolumny już od `sm` (640px), dokładnie w tym samym
-                momencie co WEWNĘTRZNA lista cech w środku każdej karty
-                (patrz niżej), co na tablecie w portrecie ściskało cechy
-                (np. "Netia Player/Evobox 4K") w ~170px szerokiej kolumnie. */}
             <div className="relative mx-auto grid w-full max-w-[1140px] grid-cols-1 items-stretch gap-6 px-4 sm:px-6 lg:grid-cols-2">
               {offers.map((offer, i) => (
                 <m.div
@@ -955,7 +950,8 @@ export default function NajlepszaCenaOferty() {
 
                   <div className="mt-5 flex flex-wrap gap-3 sm:flex-row sm:flex-wrap">
                     <m.a
-                      href="tel:+48883334124"
+                      href="tel:+48887843260"
+                      onClick={() => trackContact(`najlepsza_cena_offer_${offer.id}_tel`)}
                       whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                       whileTap={reduceMotion ? undefined : { scale: 0.98 }}
 className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center justify-between gap-3 rounded-2xl border border-transparent bg-teal-500 px-4 py-3 text-white shadow-[0_8px_20px_-8px_rgba(45,212,191,0.6)]"
@@ -966,13 +962,14 @@ className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center jus
                         </span>
                         <span className="text-left">
                           <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
-                          <span className="block text-xs font-normal text-white/85">+48 883 334 124</span>
+                          <span className="block text-xs font-normal text-white/85">+48 887 843 260</span>
                         </span>
                       </span>
                       <ChevronRight size={16} className="shrink-0 text-white/70" />
                     </m.a>
                     <m.a
-                      href="sms:+48883334124?body=INTERNET"
+                      href={`sms:+48887843260?body=${DEFAULT_SMS_BODY}`}
+                      onClick={() => trackContact(`najlepsza_cena_offer_${offer.id}_sms`)}
                       whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                       whileTap={reduceMotion ? undefined : { scale: 0.98 }}
  className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-white"
@@ -1142,15 +1139,16 @@ className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center jus
             className="mx-auto mt-16 max-w-2xl rounded-3xl border border-white/10 bg-white/5 px-6 py-8 text-center sm:px-10 sm:py-10"
           >
             <h4 className="text-xl font-bold text-white sm:text-2xl">
-              Wciąż masz pytania?
+              Gotowy/a do zamówienia?
             </h4>
             <p className="mt-2 mb-6 text-sm text-white/65 sm:text-[0.9375rem]">
-              Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
+              ~3 minuty rozmowy i internet jest zamówiony. Doradca odbierze od razu.
             </p>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
               <m.a
-                href="tel:+48883334124"
+                href="tel:+48887843260"
+                onClick={() => trackContact("najlepsza_cena_faq_closing_phone")}
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                 className="najlepsza-cena-faq-cta-pulse flex items-center justify-between gap-4 rounded-2xl bg-teal-500 px-5 py-3.5 text-white shadow-[0_8px_20px_-8px_rgba(45,212,191,0.6)] sm:min-w-60"
@@ -1164,7 +1162,7 @@ className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center jus
                       Zadzwoń
                     </span>
                     <span className="block text-xs text-white/85">
-                      +48 883 334 124
+                      +48 887 843 260
                     </span>
                   </span>
                 </span>
@@ -1172,7 +1170,8 @@ className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center jus
               </m.a>
 
               <m.a
-                href="sms:+48883334124?body=INTERNET"
+                href={`sms:+48887843260?body=${DEFAULT_SMS_BODY}`}
+                onClick={() => trackContact("najlepsza_cena_faq_closing_sms")}
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                 className="flex items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/5 px-5 py-3.5 text-white sm:min-w-60"

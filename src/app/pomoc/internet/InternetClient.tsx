@@ -15,11 +15,6 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect, type ReactNode, type ElementType } from "react";
 
-/* ---------- design tokens ----------
-   bg matches the earlier request: rgb(11, 42, 61).
-   Everything else (card / cardAlt / borders) is a tint or line of
-   that same navy so the page reads as one material. Same palette as
-   the TV help page so both read as one product. */
 const c = {
   bg: "rgb(11, 42, 61)",
   bgDeep: "rgb(7, 28, 41)",
@@ -35,10 +30,12 @@ const c = {
   faint: "#71879a",
 };
 
-/* ---------- scroll-reveal system ----------
-   IntersectionObserver-based, NOT on-load. Each <Reveal> only animates
-   the first time it crosses into the viewport while scrolling, then
-   stops observing. Respects prefers-reduced-motion. */
+/* [DODANO] Ten sam wzorzec trackingu co w pozostałych komponentach. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
 
 const prefersReducedMotion =
   typeof window !== "undefined" &&
@@ -46,8 +43,6 @@ const prefersReducedMotion =
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function useRevealOnScroll(threshold = 0.12) {
-  // FIX (a11y): typ zawężony do HTMLElement (nie tylko HTMLDivElement),
-  // bo Reveal może się teraz renderować jako <li> zamiast <div>.
   const ref = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -80,20 +75,10 @@ function useRevealOnScroll(threshold = 0.12) {
 
 type RevealProps = {
   children: ReactNode;
-  /** stagger, in seconds */
   delay?: number;
-  /** subtle vertical rise on entry (px) */
   y?: number;
   className?: string;
   style?: React.CSSProperties;
-  /**
-   * FIX (a11y — "Elementy list (<li>) nie znajdują się wewnątrz [...]"):
-   * Reveal domyślnie renderuje <div>. Gdy owija element listy, musi
-   * renderować się jako <li> SAM W SOBIE (zamiast owijać <li> divem),
-   * inaczej <li> przestaje być bezpośrednim dzieckiem <ul>/<ol> i
-   * czytniki ekranu nie rozpoznają struktury listy. Animacja (opacity/
-   * transform) jest identyczna niezależnie od tagu.
-   */
   as?: "div" | "li";
 };
 
@@ -117,9 +102,6 @@ function Reveal({ children, delay = 0, y = 18, className, style, as = "div" }: R
   );
 }
 
-/* Wraps a list of children, giving each a small incremental stagger.
-   Used for groups of pills so they cascade in rather than popping
-   together. */
 function RevealGroup({
   children,
   step = 0.06,
@@ -140,12 +122,7 @@ function RevealGroup({
   );
 }
 
-/* ---------- small reusable pieces ---------- */
-
-/* Pills can act as in-page anchor links. Passing a `targetId` makes
-   the pill smooth-scroll to that section's id, offset for the sticky
-   header height (see SCROLL_OFFSET below). */
-const SCROLL_OFFSET = 140; // px – tweak if the fixed header height changes
+const SCROLL_OFFSET = 140;
 
 function scrollToSection(id: string) {
   const el = document.getElementById(id);
@@ -229,11 +206,6 @@ function AdvantagesBox({ items }: { items: string[] }) {
         <div className="text-[13px] font-bold mb-2" style={{ color: c.text }}>
           Zalety:
         </div>
-        {/*
-          FIX (a11y): Reveal renderuje się teraz JAKO <li> (as="li"),
-          zamiast owijać osobny <li> w <div>. <li> zostaje bezpośrednim
-          dzieckiem <ul>, tak jak wymaga tego poprawna struktura listy.
-        */}
         <ul>
           {items.map((a, i) => (
             <Reveal
@@ -301,17 +273,6 @@ function SpecRow({ label, value, last = false }: { label: string; value: string;
   );
 }
 
-/* Full device card — photo, description, spec table, Wi-Fi tech bullets,
-   supported speeds, cost line and manual link. Collapsible so the
-   page stays scannable, matching the accordion pattern on Netia's
-   own Pomoc → Internet page.
-
-   Controlled (isOpen/onToggle) rather than owning its own state, so
-   the parent page can guarantee only one router card is expanded at
-   a time — opening one closes whichever other one was open. The
-   expand/collapse itself animates via the CSS grid-template-rows
-   0fr → 1fr trick, the only reliable way to transition to/from an
-   "auto" height smoothly. */
 function DeviceDetailCard({
   eyebrow,
   name,
@@ -389,9 +350,6 @@ function DeviceDetailCard({
           />
         </button>
 
-        {/* grid-rows trick: animates smoothly between 0fr (collapsed)
-            and 1fr (natural content height), avoiding an instant
-            show/hide while still supporting "auto" height content. */}
         <div
           style={{
             display: "grid",
@@ -451,7 +409,6 @@ function DeviceDetailCard({
                 <div className="font-bold text-[14px] mb-2" style={{ color: c.text }}>
                   {techTitle}
                 </div>
-                {/* FIX (a11y): jak w AdvantagesBox — Reveal jako <li> zamiast owijania go w <div>. */}
                 <ul>
                   {techPoints.map((t, i) => (
                     <Reveal
@@ -511,10 +468,7 @@ function DeviceDetailCard({
   );
 }
 
-/* ---------- back-to-configurator CTA ----------
-   Closing nudge, same "ZADZWOŃ / KONFIGURUJ" two-button layout as the
-   Zgłaszanie Awarii help page — identical card so all "one product"
-   pages close the same way. */
+/* [ZMIENIONO] Numer telefonu + dodany tracking. */
 function BackToConfiguratorCta() {
   return (
     <Reveal y={20} className="mt-14">
@@ -523,15 +477,16 @@ function BackToConfiguratorCta() {
         style={{ background: "#173547", border: `1px solid ${c.border}` }}
       >
         <h3 className="text-[22px] font-extrabold" style={{ color: c.text }}>
-          Wciąż masz pytania?
+          Gotowy/a do zamówienia?
         </h3>
         <p className="mt-2 text-[14.5px]" style={{ color: c.muted }}>
-          Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
+          ~3 minuty rozmowy i internet jest zamówiony. Doradca odbierze od razu.
         </p>
 
         <div className="mx-auto mt-6 flex max-w-[560px] flex-col gap-3 sm:flex-row">
           <a
-            href="tel:+48883334124"
+            href="tel:+48887843260"
+            onClick={() => trackContact("internet_faq_closing_phone")}
             className="flex flex-1 items-center gap-3 rounded-2xl bg-teal-500 px-5 py-3.5 text-left transition-transform duration-200 hover:scale-[1.02]"
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 text-white">
@@ -539,7 +494,7 @@ function BackToConfiguratorCta() {
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-[13.5px] font-extrabold text-white">ZADZWOŃ</span>
-              <span className="block text-[12.5px] text-white/85">+48 883 334 124</span>
+              <span className="block text-[12.5px] text-white/85">+48 887 843 260</span>
             </span>
             <ArrowRight size={16} className="shrink-0 text-white/70" />
           </a>
@@ -571,12 +526,7 @@ function BackToConfiguratorCta() {
   );
 }
 
-/* ---------- page ---------- */
-
 export default function NetiaInternetPomocPage() {
-  // Accordion state shared across the three router cards, so opening
-  // one automatically closes whichever other one was open — only one
-  // can be expanded at a time.
   const [openDeviceKey, setOpenDeviceKey] = useState<string | null>(null);
 
   const toggleDevice = (key: string) => {
@@ -612,7 +562,6 @@ export default function NetiaInternetPomocPage() {
       className="font-sans leading-relaxed"
     >
       <div className="max-w-[820px] mx-auto px-6 py-10 pt-36">
-        {/* HERO CARD — reveals as a whole, pills cascade in slightly after */}
         <Reveal y={24}>
           <div
             className="rounded-[22px] px-8 md:px-10 py-9"
@@ -646,7 +595,6 @@ export default function NetiaInternetPomocPage() {
           </div>
         </Reveal>
 
-        {/* CONTENT */}
         <div className="mt-2">
           <Paragraph>
             <span className="block mt-8">

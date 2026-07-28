@@ -17,9 +17,6 @@ import {
 import { useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 
-/* ---------- design tokens ----------
-   Same palette as the Internet / Telewizja help pages so all three
-   read as one product. */
 const c = {
   bg: "rgb(11, 42, 61)",
   bgDeep: "rgb(7, 28, 41)",
@@ -39,9 +36,14 @@ const c = {
   lime: "#a4e94a",
 };
 
-const EASE = [0.16, 1, 0.3, 1] as const; // shared ease-out-expo-ish curve, same as Internet page
+const EASE = [0.16, 1, 0.3, 1] as const;
 
-/* ---------- scroll helpers ---------- */
+/* [DODANO] Ten sam wzorzec trackingu co w pozostałych komponentach. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
 
 function scrollToId(id: string) {
   const el = document.getElementById(id);
@@ -50,16 +52,6 @@ function scrollToId(id: string) {
   }
 }
 
-/* Reveal: fades + slides content up into view once, on scroll.
-   Kept subtle and consistent so it reads as one motion language
-   across the page rather than scattered effects.
-
-   FIX (a11y — "Elementy list (<li>) nie znajdują się wewnątrz [...]"):
-   dodany prop `as` ("div" | "li") i `style`. Kiedy Reveal owija element
-   listy, musi renderować się JAKO <li> (motion.li), nie owijać osobny
-   <li> w <motion.div> — inaczej <li> przestaje być bezpośrednim
-   dzieckiem <ul>/<ol> i czytniki ekranu nie rozpoznają struktury listy.
-   Animacja jest identyczna niezależnie od tagu. */
 function Reveal({
   children,
   delay = 0,
@@ -90,9 +82,6 @@ function Reveal({
   );
 }
 
-/* Wraps a list of children, giving each a small incremental stagger —
-   used for the hero pills and the advantage-list bullets so they
-   cascade in rather than popping together all at once. */
 function RevealGroup({
   children,
   step = 0.06,
@@ -112,8 +101,6 @@ function RevealGroup({
     </>
   );
 }
-
-/* ---------- small reusable pieces ---------- */
 
 function Pill({
   icon,
@@ -169,11 +156,6 @@ function AdvantagesBox({ items }: { items: string[] }) {
         <div className="text-[13px] font-bold mb-2" style={{ color: c.text }}>
           Zalety:
         </div>
-        {/*
-          FIX (a11y): każdy Reveal renderuje się teraz JAKO <li>
-          (as="li") zamiast owijać osobny <li> w <motion.div> przez
-          RevealGroup. <li> zostaje bezpośrednim dzieckiem <ul>.
-        */}
         <ul>
           {items.map((a, i) => (
             <Reveal
@@ -204,15 +186,6 @@ function Note({ children }: { children: ReactNode }) {
   );
 }
 
-/* ---------- plan card (now an accordion, like the router cards on the
-   Internet help page) ----------
-   Collapsed, it's a compact price/name summary. Expanded, it reveals
-   the full data/roaming/voice breakdown and description. Controlled
-   from the parent so only one plan can be open at a time — opening
-   one closes whichever other one was open, exactly like the router
-   cards. The open/close itself animates via the CSS grid-template-rows
-   0fr -> 1fr trick, the only reliable way to transition to/from an
-   "auto" height smoothly. */
 function PlanCard({
   name,
   price,
@@ -253,7 +226,6 @@ function PlanCard({
           transition: "border-color .35s ease",
         }}
       >
-        {/* header — always visible, doubles as the toggle button */}
         <button
           type="button"
           onClick={onToggle}
@@ -298,9 +270,6 @@ function PlanCard({
           </div>
         </button>
 
-        {/* grid-rows trick: animates smoothly between 0fr (collapsed)
-            and 1fr (natural content height), avoiding an instant
-            show/hide while still supporting "auto" height content. */}
         <div
           style={{
             display: "grid",
@@ -343,8 +312,6 @@ function PlanCard({
   );
 }
 
-/* ---------- numbered step ---------- */
-
 function Step({ number, children }: { number: number; children: ReactNode }) {
   return (
     <Reveal y={10} delay={number * 0.05}>
@@ -362,8 +329,6 @@ function Step({ number, children }: { number: number; children: ReactNode }) {
     </Reveal>
   );
 }
-
-/* ---------- comparison table ---------- */
 
 function ComparisonTable() {
   const rows: { label: string; values: [string, string, string] }[] = [
@@ -419,10 +384,7 @@ function ComparisonTable() {
   );
 }
 
-/* ---------- back-to-configurator CTA ----------
-   Closing nudge, same "ZADZWOŃ / KONFIGURUJ" two-button layout as the
-   Zgłaszanie Awarii help page — identical card so all "one product"
-   pages close the same way. */
+/* [ZMIENIONO] Numer telefonu + dodany tracking. */
 function BackToConfiguratorCta() {
   return (
     <Reveal y={20} className="mt-14">
@@ -431,15 +393,16 @@ function BackToConfiguratorCta() {
         style={{ background: "#173547", border: `1px solid ${c.border}` }}
       >
         <h3 className="text-[22px] font-extrabold" style={{ color: c.text }}>
-          Wciąż masz pytania?
+          Gotowy/a do zamówienia?
         </h3>
         <p className="mt-2 text-[14.5px]" style={{ color: c.muted }}>
-          Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
+          ~3 minuty rozmowy i internet jest zamówiony. Doradca odbierze od razu.
         </p>
 
         <div className="mx-auto mt-6 flex max-w-[560px] flex-col gap-3 sm:flex-row">
           <a
-            href="tel:+48883334124"
+            href="tel:+48887843260"
+            onClick={() => trackContact("mobilne_faq_closing_phone")}
             className="flex flex-1 items-center gap-3 rounded-2xl bg-teal-500 px-5 py-3.5 text-left transition-transform duration-200 hover:scale-[1.02]"
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 text-white">
@@ -447,7 +410,7 @@ function BackToConfiguratorCta() {
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-[13.5px] font-extrabold text-white">ZADZWOŃ</span>
-              <span className="block text-[12.5px] text-white/85">+48 883 334 124</span>
+              <span className="block text-[12.5px] text-white/85">+48 887 843 260</span>
             </span>
             <ArrowRight size={16} className="shrink-0 text-white/70" />
           </a>
@@ -479,13 +442,7 @@ function BackToConfiguratorCta() {
   );
 }
 
-/* ---------- page ---------- */
-
 export default function NetiaUslugiMobilnePomocPage() {
-  // Accordion state shared across the three plan cards, so opening
-  // one automatically closes whichever other one was open — only one
-  // can be expanded at a time. Mirrors the router-card behavior on
-  // the Internet help page.
   const [openPlanKey, setOpenPlanKey] = useState<string | null>(null);
 
   const togglePlan = (key: string) => {
@@ -525,7 +482,6 @@ export default function NetiaUslugiMobilnePomocPage() {
       className="font-sans leading-relaxed"
     >
       <div className="max-w-[820px] mx-auto px-6 py-10 pt-36">
-        {/* HERO CARD — reveals as a whole, pills cascade in slightly after */}
         <Reveal y={24}>
           <div
             className="rounded-[22px] px-8 md:px-10 py-9"
@@ -558,7 +514,6 @@ export default function NetiaUslugiMobilnePomocPage() {
           </div>
         </Reveal>
 
-        {/* CONTENT */}
         <div className="mt-2">
           <Paragraph>
             <span className="block mt-8">

@@ -30,6 +30,15 @@ type FaqItem = {
   icon: ElementType;
 };
 
+/* [DODANO] Ten sam wzorzec trackingu co w Hero.tsx / Oferty.tsx /
+   HowToOrderSection.tsx / NetiaSocialProof.tsx — odpalanie zdarzenia Meta
+   Pixel "Contact" przy kliknięciu w telefon/SMS. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
+
 // Tier 1 — najsilniejsze objection-killery, zawsze widoczne domyślnie
 const TIER_1: FaqItem[] = [
   {
@@ -124,6 +133,11 @@ export default function NetiaFAQ() {
   const [showAll, setShowAll] = useState(false);
 
   const visibleItems = showAll ? [...TIER_1, ...EXTRA_ITEMS] : TIER_1;
+
+  // [DODANO] Treść SMS-a — pełne zdanie zamiast samego "INTERNET"
+  const smsBody = encodeURIComponent(
+    "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
+  );
 
   return (
     <section
@@ -296,16 +310,20 @@ export default function NetiaFAQ() {
           viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
+          {/* [ZMIENIONO] Nagłówek i opis — z trybu "masz pytania?" na tryb
+              domykający sprzedaż: "gotowy do zamówienia?" zamiast pytania
+              o wątpliwości. */}
           <h3 className="font-bold text-white text-xl sm:text-2xl mb-2">
-            Wciąż masz pytania?
+            Gotowy/a do zamówienia?
           </h3>
           <p className="mb-6 text-sm sm:text-[0.9375rem] text-white/65">
-            Rozmowa zajmuje ~3 minuty, bez zobowiązań. Doradca odpowie od razu.
+            ~3 minuty rozmowy i internet jest zamówiony. Doradca odbierze od razu.
           </p>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
             <motion.a
-              href="tel:+48883334124"
+              href="tel:+48887843260"
+              onClick={() => trackContact("faq_closing_phone_button")}
               animate={{
                 boxShadow: [
                   "0 0 0 0 rgba(45, 212, 191, 0.45)",
@@ -324,14 +342,15 @@ export default function NetiaFAQ() {
                 </span>
                 <span className="text-left">
                   <span className="block text-sm font-bold leading-tight">ZADZWOŃ</span>
-                  <span className="block text-xs text-white/85">+48 883 334 124</span>
+                  <span className="block text-xs text-white/85">+48 887 843 260</span>
                 </span>
               </span>
               <ChevronRight size={18} className="text-white/70" />
             </motion.a>
 
             <motion.a
-              href="sms:+48883334124?body=INTERNET"
+              href={`sms:+48887843260?body=${smsBody}`}
+              onClick={() => trackContact("faq_closing_sms_button")}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white sm:min-w-60"

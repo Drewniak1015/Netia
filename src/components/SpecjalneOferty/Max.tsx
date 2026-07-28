@@ -27,71 +27,33 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
-/**
- * OfferMaxSection
- * Sekcja promocyjna "Oferta Max": baner promo, karty pakietów (MAX 1000 / MAX 2000)
- * oraz siatka pakietów telewizyjnych Premium.
- *
- * Animacje dodane w stylu PopularneOferty.tsx: LazyMotion + domAnimation,
- * fadeUp przy wejściu w viewport, whileHover/whileTap na CTA, respekt dla
- * useReducedMotion.
- *
- * Tło: obie siatki kart (pakiety Max oraz pakiety TV Premium) mają pod spodem
- * kropkowane tło (DottedBackground, wariant "dots", full-bleed do krawędzi
- * viewportu) — zgodnie z resztą serwisu. Hero-banner "Dajemy Maxx!" zostaje
- * bez kropek, bo ma już własną dekorację (świecące urządzenia + gradient róż).
- *
- * WAŻNE — tła kart: PackageCard i TvCard używają teraz w pełni NIEPRZEZROCZYSTYCH
- * pionowych gradientów (jasny u góry -> ciemny u dołu, styl "sheen"), zamiast
- * poprzednich półprzezroczystych warstw (bg-white/[0.04], bg-pink-400/[0.08]).
- * Półprzezroczyste tła pozwalały kropkom z warstwy pod spodem prześwitywać
- * wprost przez treść karty (nieczytelny, "zlewający się" wygląd) — pełna
- * nieprzezroczystość sprawia, że kropki widać wyłącznie w odstępach między
- * kartami, nigdy przez tekst.
- *
- * FIX (spójność przycisków telefon/SMS): zarówno baner promo, jak i
- * PackageCard, miały przyciski w innym stylu niż reszta serwisu (WERSALIKI,
- * numer w jednej linii z "ZADZWOŃ", rounded-[10px]). Ujednolicone do wzorca
- * z Hero.tsx głównej strony: sentence case ("Zadzwoń", nie "ZADZWOŃ"), numer
- * telefonu na osobnej linii przez <br />, rounded-2xl, ten sam rozkład
- * ikona+tekst. Kolorystyka (róż zamiast turkusu) zostaje, bo to sekcja
- * promocyjna z własną paletą — reszta stylu ujednolicona.
- *
- * FIX (czytelność kart pakietów): nazwa pakietu (MAX 1000 / MAX 2000)
- * powiększona (text-xl -> text-3xl/4xl, font-black) i przeniesiona nad
- * pigułkę promocyjną (układ pionowy zamiast poziomego, żeby duży tekst miał
- * miejsce). Pigułka "12 miesięcy za 0 zł!" zmieniona z płaskiego,
- * niskokontrastowego tła (bg-pink-400/10 + text-pink-300) na pełny gradient
- * różu z ciemnym tekstem (ten sam wzór co odznaka "Promocja" w hero) + cień
- * + ikona Sparkles + drobna animacja pop-in — dużo lepszy kontrast i większa
- * "waga" wizualna promocji.
- *
- * FIX (spójność sekcji ufności i prawnej): dodano pasek zaufania (Gauge /
- * RotateCcw / Headset) — ten sam wzorzec co w OfferQuizSection /
- * PopularneOferty — oraz zwinięty domyślnie panel "Zobacz szczegóły oferty"
- * z pełnym zapisem prawnym (wcześniej tekst prawny był zawsze widoczny na
- * pełną szerokość na dole sekcji).
- *
- * FIX (kotwica z headera): sekcja tytułu + siatki kart pakietów (MAX 1000 /
- * MAX 2000) ma teraz id="pakiety-max" + scroll-mt-[110px]. Link "12 Miesięcy
- * za 0 zł" w NetiaHeader.tsx prowadzi na "/oferty/max#pakiety-max", więc po
- * kliknięciu strona ląduje bezpośrednio przy kartach ofertowych, a nie na
- * samej górze (hero banner) — scroll-mt kompensuje wysokość fixed headera,
- * żeby nagłówek sekcji nie chował się pod nim.
- */
 
-/* Wspólny wariant fade-up — zgodnie z PopularneOferty.tsx */
+/* [DODANO] Ten sam wzorzec trackingu co w pozostałych komponentach —
+   odpalanie zdarzenia Meta Pixel "Contact" przy kliknięciu w telefon/SMS. */
+function trackContact(contentName: string) {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("track", "Contact", { content_name: contentName });
+  }
+}
+
+/* [DODANO] Treści SMS — pełne zdania zamiast gołego "MAX" / braku treści */
+const HERO_SMS_BODY = encodeURIComponent(
+  "Interesuje mnie oferta MAX (Internet + Telewizja L 4K). Proszę o kontakt."
+);
+
+function packageSmsBody(name: string) {
+  return encodeURIComponent(
+    `Interesuje mnie oferta ${name}. Proszę o kontakt.`
+  );
+}
+
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
 };
 
-// TODO: podmień na docelową ścieżkę strony pomocy telewizji, jeśli routing
-// wygląda inaczej niż zakładany tu "/pomoc/telewizja".
 const POMOC_TV_URL = "/pomoc/Telewizja";
 
-/** Format kotwicy zgodny z anchorIdForPackageKey() w NetiaTelewizjaPomocPage.tsx:
- *  "pakiet-" + klucz z dwukropkiem zamienionym na myślnik. */
 function pakietHref(addonKey?: string): string {
   if (!addonKey) return `${POMOC_TV_URL}#pakiety`;
   return `${POMOC_TV_URL}#pakiet-addon-${addonKey}`;
@@ -190,11 +152,10 @@ function PackageCard({
         </li>
       </ul>
 
-      {/* FIX (spójność): rounded-2xl (nie rounded-[10px]), sentence case,
-          numer telefonu na osobnej linii — jak w Hero.tsx. */}
       <div className="flex flex-wrap gap-3">
         <m.a
-          href="tel:+48883334124"
+          href="tel:+48887843260"
+          onClick={() => trackContact(`offer_max_${name.toLowerCase().replace(/\s+/g, "_")}_tel`)}
           whileHover={reduceMotion ? undefined : { scale: 1.02 }}
           whileTap={reduceMotion ? undefined : { scale: 0.98 }}
           className="inline-flex min-w-[140px] flex-1 items-center justify-between gap-3 rounded-2xl border border-transparent bg-pink-500 px-4 py-3 text-white shadow-[0_8px_20px_-8px_rgba(236,72,153,0.6)]"
@@ -205,13 +166,14 @@ function PackageCard({
             </span>
             <span className="text-left">
               <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
-              <span className="block text-xs font-normal text-white/85">+48 883 334 124</span>
+              <span className="block text-xs font-normal text-white/85">+48 887 843 260</span>
             </span>
           </span>
           <ChevronRight size={16} className="shrink-0 text-white/70" />
         </m.a>
         <m.a
-          href="sms:+48883334124"
+          href={`sms:+48887843260?body=${packageSmsBody(name)}`}
+          onClick={() => trackContact(`offer_max_${name.toLowerCase().replace(/\s+/g, "_")}_sms`)}
           whileHover={reduceMotion ? undefined : { scale: 1.02 }}
           whileTap={reduceMotion ? undefined : { scale: 0.98 }}
           className="inline-flex min-w-[140px] flex-1 items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-white"
@@ -235,8 +197,6 @@ interface TvCardProps {
   icon: LucideIcon;
   iconColor: string;
   iconBg: string;
-  /** Klucz dodatku z lib/channels.ts (ADDONS) — steruje przekierowaniem do
-   *  konkretnego pakietu na stronie pomocy. Brak = link do ogólnej sekcji "Pakiety". */
   addonKey?: string;
   index: number;
   reduceMotion: boolean | null;
@@ -284,15 +244,8 @@ const tvPackages: Omit<TvCardProps, "index" | "reduceMotion">[] = [
   { name: "Eleven Sports", price: "+10 zł", icon: Activity, iconColor: "#34d399", iconBg: "rgba(52,211,153,0.14)", addonKey: "eleven-sports" },
   { name: "FilmBox", price: "+10 zł", icon: Film, iconColor: "#fbbf24", iconBg: "rgba(251,191,36,0.14)", addonKey: "filmbox" },
   { name: "Dla Dorosłych", price: "+10 zł", icon: Lock, iconColor: "#f472b6", iconBg: "rgba(244,114,182,0.14)", addonKey: "dorosli" },
-  // Kombinacja dwóch dodatków naraz — brak jednego wspólnego wpisu na stronie
-  // pomocy, więc linkujemy do ogólnej sekcji "Pakiety" zamiast do konkretnego akordeonu.
   { name: "Polsat Sport Premium + Eleven Sports", price: "+20 zł", icon: Medal, iconColor: "#2dd4bf", iconBg: "rgba(45,212,191,0.14)" },
 ];
-
-/* ======================================================================
-   PASEK ZAUFANIA — ten sam wzorzec co w OfferQuizSection / PopularneOferty
-   (Gauge / RotateCcw / Headset).
-   ====================================================================== */
 
 interface TrustItem {
   icon: LucideIcon;
@@ -346,12 +299,6 @@ function TrustBar({ reduceMotion }: { reduceMotion: boolean | null }) {
   );
 }
 
-/* ======================================================================
-   SZCZEGÓŁY OFERTY (PRAWNE) — domyślnie zwinięte, rozwijane przyciskiem
-   "Zobacz szczegóły oferty" (ta sama technika grid-template-rows co
-   akordeony w OfferQuizSection / PopularneOferty).
-   ====================================================================== */
-
 function LegalDisclosure({
   paragraphs,
   reduceMotion,
@@ -391,7 +338,6 @@ function LegalDisclosure({
   );
 }
 
-/** Dekoracyjna ilustracja hero: monitor + laptop z neonowym "MAX". */
 function HeroDevices({ reduceMotion }: { reduceMotion: boolean | null }) {
   return (
 <m.div
@@ -434,10 +380,8 @@ function HeroDevices({ reduceMotion }: { reduceMotion: boolean | null }) {
           </filter>
         </defs>
 
-        {/* ambient haze */}
         <ellipse cx="190" cy="120" rx="150" ry="120" fill="url(#haze)" />
 
-        {/* sweeping light arc — animowany rysunek ścieżki */}
         <m.path
           d="M -10 230 C 90 250, 150 90, 260 60 S 360 20 380 -10"
           fill="none"
@@ -450,7 +394,6 @@ function HeroDevices({ reduceMotion }: { reduceMotion: boolean | null }) {
           transition={{ duration: 1.2, delay: 0.4, ease: "easeInOut" }}
         />
 
-        {/* laptop (tilted, back-right) */}
         <g transform="translate(150,150) rotate(-6)">
           <rect x="0" y="0" width="150" height="92" rx="8" fill="#0d2f45" stroke="rgba(255,255,255,0.12)" />
           <rect x="8" y="8" width="134" height="76" rx="4" fill="#081f30" />
@@ -470,7 +413,6 @@ function HeroDevices({ reduceMotion }: { reduceMotion: boolean | null }) {
           <rect x="-6" y="90" width="162" height="6" rx="3" fill="#0a2438" />
         </g>
 
-        {/* monitor (front-left, main) */}
         <g transform="translate(70,20)">
           <rect x="0" y="0" width="210" height="130" rx="10" fill="#0d2f45" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
           <rect x="9" y="9" width="192" height="112" rx="5" fill="#081f30" />
@@ -501,8 +443,6 @@ export default function OfferMaxSection() {
   return (
     <LazyMotion features={domAnimation} strict>
       <div className="overflow-x-hidden bg-[#0B2A3D] font-sans text-white sm:pt-36 pt-31.5">
-        {/* HERO PROMO BANNER — bez kropek: ma własną dekorację (świecące
-            urządzenia + gradient różu), dodanie tekstury by ją zagłuszyło. */}
         <m.section
           initial={reduceMotion ? false : { opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -516,7 +456,6 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
               "linear-gradient(135deg, #0B2A3D 0%, #0f3550 55%, #0B2A3D 100%)",
           }}
         >
-          {/* subtle top accent line */}
           <span className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-pink-400/70 to-transparent" />
 
           <div className="max-w-[540px]">
@@ -555,10 +494,6 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
               Internet Max z Telewizją L 4K + Bezpieczny Internet Ultra
             </m.p>
 
-            {/* FIX (spójność): sentence case zamiast WERSALIKÓW, numer
-                telefonu na osobnej linii przez <br /> — jak w Hero.tsx
-                głównej strony i w PackageCard powyżej. rounded-2xl zamiast
-                rounded-[10px], żeby zaokrąglenie było spójne wszędzie. */}
             <m.div
               initial={reduceMotion ? false : { opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -567,7 +502,8 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
               className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row lg:justify-start"
             >
               <m.a
-                href="tel:+48883334124"
+                href="tel:+48887843260"
+                onClick={() => trackContact("offer_max_hero_phone")}
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                 className="flex items-center justify-between gap-3 rounded-2xl bg-pink-500 px-5 py-3 text-white shadow-[0_8px_20px_-8px_rgba(236,72,153,0.6)] sm:w-64"
@@ -578,13 +514,14 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
                   </span>
                   <span className="text-left">
                     <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
-                    <span className="block text-xs font-normal text-white/85">+48 883 334 124</span>
+                    <span className="block text-xs font-normal text-white/85">+48 887 843 260</span>
                   </span>
                 </span>
                 <ChevronRight size={16} className="shrink-0 text-white/70" />
               </m.a>
               <m.a
-                href="sms:+48883334124?body=MAX"
+                href={`sms:+48887843260?body=${HERO_SMS_BODY}`}
+                onClick={() => trackContact("offer_max_hero_sms")}
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                 className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-white sm:w-64"
@@ -606,13 +543,6 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
         </m.section>
 
         <div className="mx-auto max-w-[1140px] px-4 sm:px-6">
-          {/* SECTION TITLE + PACKAGE CARDS — id="pakiety-max" + scroll-mt-[110px]
-              to cel kotwicy z NetiaHeader.tsx ("/oferty/max#pakiety-max").
-              scroll-mt kompensuje wysokość fixed headera (Logo h-16 + py-4
-              ≈ 96px), żeby po przewinięciu tytuł sekcji nie chował się pod
-              nim. id musi siedzieć na tym samym elemencie, który ma się
-              pojawić na górze viewportu po scrollu — stąd na wrapperze
-              tytułu, a nie np. na samej siatce kart poniżej. */}
           <m.div
             id="pakiety-max"
             initial={reduceMotion ? false : "hidden"}
@@ -628,7 +558,6 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
             <span className="mx-auto mt-3 block h-1 w-14 rounded-full bg-gradient-to-r from-pink-500 to-pink-300" />
           </m.div>
 
-          {/* PACKAGE CARDS — full-bleed kropkowane tło pod siatką */}
           <div className="relative">
             <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
               <DottedBackground variant="dots" size={22} />
@@ -655,11 +584,8 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
             </div>
           </div>
 
-          {/* PASEK ZAUFANIA — w miejscu dawnego paska SoundBox 4K */}
           <TrustBar reduceMotion={reduceMotion} />
 
-          {/* SZCZEGÓŁY OFERTY — bezpośrednio pod benefitami, zwinięte
-              domyślnie, rozwijane przyciskiem "Zobacz szczegóły oferty" */}
           <LegalDisclosure
             reduceMotion={reduceMotion}
             paragraphs={[
@@ -667,7 +593,6 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
             ]}
           />
 
-          {/* INFO BAR — pasek SoundBox 4K, przeniesiony niżej, przed pakiety TV */}
           <m.div
             initial={reduceMotion ? false : "hidden"}
             whileInView="visible"
@@ -697,7 +622,6 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
 </m.a>
           </m.div>
 
-          {/* TV PACKAGES */}
           <m.div
             initial={reduceMotion ? false : "hidden"}
             whileInView="visible"
@@ -721,7 +645,6 @@ className="relative mx-auto box-border flex w-[calc(100%-2rem)] max-w-305 flex-c
             </m.span>
           </m.div>
 
-          {/* TV PACKAGES — full-bleed kropkowane tło pod siatką */}
           <div className="relative">
             <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
               <DottedBackground variant="dots" size={22} />

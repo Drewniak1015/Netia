@@ -82,7 +82,9 @@ function Hero() {
 
       {/* CTA secondary — ta sama wielkość, styl obrysowany, żeby nie konkurował kolorem z primary */}
       <m.a
-        href="sms:+48887843260?body=SPRAWDŹ"
+        href={`sms:+48887843260?body=${encodeURIComponent(
+          "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
+        )}`}
         onClick={() => trackContact("hero_sms_button")}
         whileHover={reduceMotion ? undefined : { scale: 1.02 }}
         whileTap={reduceMotion ? undefined : { scale: 0.98 }}
