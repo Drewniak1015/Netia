@@ -142,12 +142,17 @@ function Hero() {
               na desktopie (lg:grid-cols-[1.1fr_0.9fr]) staje się drugą
               kolumną grida. */}
           <div className="order-2 flex flex-col">
-            <m.div
-              initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, ease: "easeOut", delay: 0.3 }}
-              className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40"
-            >
+            {/* FIX (LCP — "Opóźnienie renderowania elementu" 1360 ms):
+                obrazek LCP NIE jest już animowany przez Framer Motion.
+                `m.div` z initial={{opacity:0}} ustawiał opacity:0 inline
+                od pierwszego renderu — obrazek był fizycznie załadowany,
+                ale niewidoczny dopóki JS się nie zhydratował i animacja
+                (+ 300ms zadanego delay) nie dobiegła końca. Dla
+                przeglądarki to się liczy jako "brak LCP" aż do
+                faktycznego pomalowania piksela, więc to była największa
+                pojedyncza przyczyna opóźnienia. Zwykły <div> renderuje
+                obrazek widocznym natychmiast, bez czekania na JS. */}
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40">
               <Image
                 src="/images/MainHero.svg"
                 alt="Rodzina w salonie ogląda film bez przerywania dzięki stabilnemu połączeniu światłowodowemu"
@@ -157,7 +162,7 @@ function Hero() {
                 fetchPriority="high"
                 className="h-auto w-full"
               />
-            </m.div>
+            </div>
 
             <m.div
               initial={reduceMotion ? false : "hidden"}
