@@ -138,7 +138,7 @@ function Hero() {
           {/* Obraz LCP — bez animowanego kontenera, renderuje się natychmiast po ściągnięciu */}
           <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40">
             <Image
-              src="/images/MainHero.svg"
+              src="/images/MainHero.avif"
               alt="Rodzina w salonie ogląda film bez przerywania dzięki stabilnemu połączeniu światłowodowemu"
               width={1600}
               height={900}
