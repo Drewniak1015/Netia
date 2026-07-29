@@ -1,23 +1,23 @@
 "use client";
 
 import { memo, useCallback, useMemo } from "react";
-import { m } from "framer-motion";
 import { Check, Info, MessageCircle, Phone } from "lucide-react";
 import { trackContact, slugify } from "@/lib/meta-track";
 import { PHONE, PHONE_HREF, type Offer } from "@/components/home/Offersdata";
-import { HOVER_SPRING, TAP_SPRING, cardVariants } from "@/components/home/Motionconfig";
 import { PromoCena } from "@/components/home/Promocena";
 
 /* ---------------------------------------------------------------------- */
-/*  Karta Podstawa.                                                        */
+/*  Karta Podstawa.                                                       */
+/*  [OPTYMALIZACJA] Bez framer-motion — hover kart i przycisków to teraz  */
+/*  Tailwindowe utility (hover:-translate-y-*, hover:scale-*,             */
+/*  active:scale-*), animowane przez przeglądarkę na compositorze bez     */
+/*  potrzeby JS.                                                          */
 /* ---------------------------------------------------------------------- */
 const OfferCard = memo(function OfferCard({
   offer,
-  reduceMotion,
   onPokazInfo,
 }: {
   offer: Offer;
-  reduceMotion: boolean;
   onPokazInfo: (infoId: string) => void;
 }) {
   // Treść SMS-a i content_name liczone raz na zmianę `offer` (useMemo),
@@ -40,11 +40,8 @@ const OfferCard = memo(function OfferCard({
   );
 
   return (
-    <m.article
-      variants={cardVariants}
-      whileHover={reduceMotion ? undefined : { y: -6 }}
-      transition={HOVER_SPRING}
-      className={`relative flex flex-col rounded-2xl border p-6 will-change-transform ${
+    <article
+      className={`relative flex flex-col rounded-2xl border p-6 transition-transform duration-200 will-change-transform hover:-translate-y-1.5 ${
         offer.featured
           ? "border-teal-400/50 bg-[#0f2436] shadow-[0_0_24px_-8px_rgba(45,212,191,0.25)]"
           : "border-white/10 bg-[#0d1f31] hover:border-white/20"
@@ -93,30 +90,24 @@ const OfferCard = memo(function OfferCard({
         </ul>
       </div>
 
-      <m.a
+      <a
         href={`tel:${PHONE_HREF}`}
         onClick={handlePhoneClick}
-        whileHover={reduceMotion ? undefined : { scale: 1.03 }}
-        whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-        transition={TAP_SPRING}
-        className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-teal-600"
+        className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-4 py-3 text-sm font-bold text-white transition-transform duration-150 hover:scale-[1.03] hover:bg-teal-600 active:scale-[0.97]"
       >
         <Phone className="h-4 w-4" />
         ZADZWOŃ {PHONE}
-      </m.a>
+      </a>
 
-      <m.a
+      <a
         href={`sms:${PHONE_HREF}?body=${smsBody}`}
         onClick={handleSmsClick}
-        whileHover={reduceMotion ? undefined : { scale: 1.03 }}
-        whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-        transition={TAP_SPRING}
-        className="mt-2.5 flex items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-black/20"
+        className="mt-2.5 flex items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-3 text-sm font-bold text-white transition-transform duration-150 hover:scale-[1.03] hover:bg-black/20 active:scale-[0.97]"
       >
         <MessageCircle className="h-4 w-4" />
         WYŚLIJ SMS
-      </m.a>
-    </m.article>
+      </a>
+    </article>
   );
 });
 

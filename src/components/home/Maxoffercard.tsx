@@ -1,23 +1,20 @@
 "use client";
 
 import { memo, useCallback, useMemo } from "react";
-import { m } from "framer-motion";
 import { Check, Info, MessageCircle, Phone, Shield } from "lucide-react";
 import { trackContact, slugify } from "@/lib/meta-track";
 import { PHONE, PHONE_HREF, type MaxOffer } from "@/components/home/Offersdata";
-import { HOVER_SPRING, TAP_SPRING, cardVariants } from "@/components/home/Motionconfig";
 import { PromoCena } from "@/components/home/Promocena";
 
 /* ---------------------------------------------------------------------- */
 /*  Karta MAX.                                                            */
+/*  [OPTYMALIZACJA] Bez framer-motion — patrz OfferCard.tsx.               */
 /* ---------------------------------------------------------------------- */
 const MaxOfferCard = memo(function MaxOfferCard({
   offer,
-  reduceMotion,
   onPokazInfo,
 }: {
   offer: MaxOffer;
-  reduceMotion: boolean;
   onPokazInfo: (infoId: string) => void;
 }) {
   // Treść SMS-a z nazwą konkretnej oferty MAX (np. "MAX 2000"), liczona
@@ -40,11 +37,8 @@ const MaxOfferCard = memo(function MaxOfferCard({
   );
 
   return (
-    <m.article
-      variants={cardVariants}
-      whileHover={reduceMotion ? undefined : { y: -6 }}
-      transition={HOVER_SPRING}
-      className={`relative flex flex-col rounded-2xl p-6 bg-[#183648] ${
+    <article
+      className={`relative flex flex-col rounded-2xl p-6 bg-[#183648] transition-transform duration-200 will-change-transform hover:-translate-y-1.5 ${
         offer.featured
           ? "border-2 border-pink-400/70 shadow-[0_0_0_1px_rgba(244,114,182,0.15),0_20px_45px_-20px_rgba(236,72,153,0.45)]"
           : "border border-white/10"
@@ -106,30 +100,24 @@ const MaxOfferCard = memo(function MaxOfferCard({
         </ul>
       </div>
 
-      <m.a
+      <a
         href={`tel:${PHONE_HREF}`}
         onClick={handlePhoneClick}
-        whileHover={reduceMotion ? undefined : { scale: 1.03 }}
-        whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-        transition={TAP_SPRING}
-        className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-pink-500 px-4 py-3 text-sm font-bold text-white shadow-[0_8px_20px_-8px_rgba(236,72,153,0.6)]"
+        className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-pink-500 px-4 py-3 text-sm font-bold text-white shadow-[0_8px_20px_-8px_rgba(236,72,153,0.6)] transition-transform duration-150 hover:scale-[1.03] active:scale-[0.97]"
       >
         <Phone className="h-4 w-4" />
         ZADZWOŃ {PHONE}
-      </m.a>
+      </a>
 
-      <m.a
+      <a
         href={`sms:${PHONE_HREF}?body=${smsBody}`}
         onClick={handleSmsClick}
-        whileHover={reduceMotion ? undefined : { scale: 1.03 }}
-        whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-        transition={TAP_SPRING}
-        className="mt-2.5 flex items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-black/20"
+        className="mt-2.5 flex items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-3 text-sm font-bold text-white transition-transform duration-150 hover:scale-[1.03] hover:bg-black/20 active:scale-[0.97]"
       >
         <MessageCircle className="h-4 w-4" />
         WYŚLIJ SMS
-      </m.a>
-    </m.article>
+      </a>
+    </article>
   );
 });
 

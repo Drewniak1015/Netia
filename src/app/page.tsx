@@ -54,7 +54,7 @@ export default function HomePage() {
       <EntryGate/>
       <MainHero />
       {/* <MaxxBanner /> */}
-      {/* <Oferty /> */}
+      <Oferty />
       <Instrukcja />
       {/* <OfertyInternet /> */}
       <Benefity />
