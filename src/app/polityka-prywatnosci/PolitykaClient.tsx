@@ -9,28 +9,32 @@ import React, { useEffect, useRef, useState } from "react";
  * kolory zdefiniowane inline jako klasy arbitralne Tailwind (bg-[#...]),
  * więc nie wymaga rozszerzania tailwind.config.
  *
- * WERSJA 6 — dodano sekcję cookies marketingowych (Meta Pixel / reklamy
- * Facebook i Instagram), oznaczoną komentarzem [DODANO] w miejscach zmian:
- *  - Sekcja 03: nowy blok "Narzędzia marketingowe" obok istniejących
- *    "Narzędzi zewnętrznych dostawców" (analityka), z osobnym opisem
- *    Meta Pixel, kategorii danych i mechanizmu zgody/wycofania zgody.
- *  - Sekcja 04: dodana czwarta podstawa prawna — zgoda (art. 6 ust. 1
- *    lit. a RODO) dla celów marketingowych, odrębna od dotychczasowego
- *    uzasadnionego interesu (lit. f), bo marketing wymaga zgody, nie
- *    tylko uzasadnionego interesu.
- *  - Sekcja 05: dodany okres przechowywania danych z cookies
- *    marketingowych (do 180 dni / do wycofania zgody).
- *  - Sekcja 07: dodano Meta Platforms Ireland Limited jako odbiorcę
- *    danych.
- *  - Sekcja 08: dodany akapit o przekazywaniu danych do Meta Platforms,
- *    Inc. (USA) i stosowanych zabezpieczeniach.
+ * WERSJA 7 — uproszczono opis narzędzi do faktycznie wykorzystywanego
+ * zestawu: WYŁĄCZNIE Meta Pixel oraz Meta Conversions API (server-side).
+ * Usunięto wzmianki o narzędziach, z których serwis nie korzysta
+ * (Google Analytics 4 / Google Tag Manager, Microsoft Clarity, Bing
+ * Webmaster Tools, IndexNow, CookieYes) — wymienianie w polityce
+ * narzędzi, których faktycznie się nie używa, jest samo w sobie
+ * niezgodne z zasadą rzetelności/przejrzystości (art. 5 ust. 1 lit. a
+ * RODO), niezależnie od tego czy dane narzędzie wygląda "bezpieczniej".
  *
- * UWAGA PRAWNA: to wersja robocza przygotowana jako punkt wyjścia —
- * przed wdrożeniem na produkcję zalecana jest weryfikacja przez prawnika
- * lub dział compliance (Claude nie jest prawnikiem). Sam ten dokument
- * nie wystarczy: Meta Pixel musi być technicznie zablokowany do czasu,
- * aż Użytkownik zaakceptuje kategorię "Marketing" w bannerze cookies
- * (CookieYes lub inny CMP) — patrz TODO w sekcji 03.
+ * Zmiany oznaczone komentarzem [ZMIANA V7]:
+ *  - Sekcja 03: kategorie cookies uproszczone do dwóch (wymagane,
+ *    marketingowe); usunięta sekcja "Narzędzia zewnętrznych dostawców";
+ *    sekcja "Narzędzia marketingowe" rozszerzona o Meta Conversions API
+ *    (server-side) obok Meta Pixel (client-side).
+ *  - Sekcja 04: doprecyzowano podstawę prawną marketingu (Pixel + CAPI).
+ *  - Sekcja 05: okres przechowywania odniesiony do Pixel + CAPI.
+ *  - Sekcja 11: log zmian zaktualizowany.
+ *
+ * UWAGA PRAWNA: to wersja robocza — przed wdrożeniem na produkcję
+ * zalecana jest weryfikacja przez prawnika lub dział compliance (Claude
+ * nie jest prawnikiem). Sam dokument nie wystarczy: Meta Pixel i
+ * Conversions API muszą być technicznie zablokowane/nieaktywne do
+ * czasu, aż Użytkownik zaakceptuje kategorię "Marketing" w bannerze
+ * cookies (patrz TODO w sekcji 03) — w przypadku Conversions API
+ * dotyczy to również wysyłki danych po stronie serwera, nie tylko
+ * pliku cookie w przeglądarce.
  *
  * WAŻNE: `pt-26` na głównym wrapperze strony jest celowe — strona ma stały
  * (fixed) górny pasek nawigacji, który bez tego odstępu zachodziłby na
@@ -76,10 +80,11 @@ const SECTIONS: Section[] = [
       <dl className="space-y-3">
         <div>
           <dt className="font-semibold text-[15px] text-white">
-            Administrator albo Netia
+            Administrator
           </dt>
           <dd className="mt-1 text-[15px] text-white/65">
-            Netia S.A., ul. Poleczki 13, 02-822 Warszawa.
+            Jarosław Sitek, Autoryzowany Partner Netia S.A. (przedstawiciel
+            handlowy), ul. Targowa 38/38, 90-043 Łódź.
           </dd>
         </div>
         <div>
@@ -121,10 +126,10 @@ const SECTIONS: Section[] = [
             Serwis internetowy prowadzony przez Administratora bądź podmiot
             działający w jego imieniu (Autoryzowany Partner) pod adresem{" "}
             <a
-              href="https://www.uslugi-netia.pl"
+              href="https://www.swiatlowod-netia-oferta.pl"
               className="text-teal-300 underline decoration-teal-300/30 underline-offset-2 hover:decoration-teal-300"
             >
-              www.uslugi-netia.pl
+              www.swiatlowod-netia-oferta.pl
             </a>
             .
           </dd>
@@ -138,15 +143,15 @@ const SECTIONS: Section[] = [
             albo kilku usług czy funkcjonalności Serwisu.
           </dd>
         </div>
-        {/* [DODANO] — definicja partnera reklamowego, potrzebna do sekcji 03/07/08 */}
         <div>
           <dt className="font-semibold text-[15px] text-white">
             Partner reklamowy
           </dt>
           <dd className="mt-1 text-[15px] text-white/65">
-            Podmiot, któremu Administrator powierza przetwarzanie danych w
-            celach marketingowych i analitycznych, w tym Meta Platforms
-            Ireland Limited (Facebook, Instagram).
+            Meta Platforms Ireland Limited (Facebook, Instagram) — jedyny
+            podmiot, któremu Administrator powierza przetwarzanie danych w
+            celach marketingowych za pośrednictwem narzędzi Meta Pixel oraz
+            Meta Conversions API.
           </dd>
         </div>
       </dl>
@@ -218,6 +223,7 @@ const SECTIONS: Section[] = [
           </li>
         </ul>
 
+        {/* [ZMIANA V7] — kategorie uproszczone do dwóch: wymagane i marketingowe */}
         <h3 className="mt-6 mb-3 text-[15px] font-bold text-teal-300">
           Cele wykorzystania
         </h3>
@@ -225,22 +231,19 @@ const SECTIONS: Section[] = [
           <li>
             <strong className="text-white">Cookie wymagane</strong>,
             niezbędne do korzystania z serwisu: pliki z danymi wprowadzanymi
-            przez Użytkownika, uwierzytelniające pliki cookie, pliki służące
-            do zapewnienia bezpieczeństwa oraz sesyjne pliki cookie
-            odtwarzaczy multimedialnych.
+            przez Użytkownika, uwierzytelniające pliki cookie, pliki
+            służące do zapewnienia bezpieczeństwa Serwisu, a także plik
+            cookie zapamiętujący dokonany przez Użytkownika wybór w
+            zakresie zgody na cookies (nazwa: „netia_cookie_consent”),
+            dzięki któremu baner zgody nie pojawia się przy każdej wizycie.
           </li>
-          <li>
-            <strong className="text-white">Cookie funkcjonalne</strong>,
-            ułatwiające korzystanie z serwisu: trwałe pliki służące
-            personalizacji interfejsu oraz pliki monitorujące ruch na stronie
-            (analityka danych).
-          </li>
-          {/* [DODANO] — trzecia kategoria w tej samej liście, dla spójności z resztą */}
           <li>
             <strong className="text-white">Cookie marketingowe</strong>,
-            wykorzystywane do wyświetlania spersonalizowanych reklam oraz
-            pomiaru ich skuteczności — patrz „Narzędzia marketingowe”
-            poniżej. Instalowane wyłącznie po wyrażeniu zgody.
+            wykorzystywane wyłącznie za pośrednictwem narzędzi Meta (Meta
+            Pixel oraz Meta Conversions API) do wyświetlania
+            spersonalizowanych reklam oraz pomiaru ich skuteczności — patrz
+            „Narzędzia marketingowe” poniżej. Instalowane i uruchamiane
+            wyłącznie po wyrażeniu zgody.
           </li>
         </ul>
         <p className="mb-4 text-[15px] leading-relaxed text-white/65">
@@ -250,59 +253,23 @@ const SECTIONS: Section[] = [
           niektórych funkcji Serwisu.
         </p>
 
-        <h3 className="mt-6 mb-3 text-[15px] font-bold text-teal-300">
-          Narzędzia zewnętrznych dostawców
-        </h3>
-        <p className="mb-4 text-[15px] leading-relaxed text-white/65">
-          W celach analitycznych i statystycznych Administrator korzysta z
-          poniższych narzędzi, uruchamianych wyłącznie po wyrażeniu zgody
-          Użytkownika na kategorię „Analityka” w panelu plików cookie:
-        </p>
-        <ul className="mb-4 list-disc space-y-2 pl-5 text-[15px] leading-relaxed text-white/65">
-          <li>
-            <strong className="text-white">
-              Google Analytics 4 i Google Tag Manager
-            </strong>{" "}
-            (Google Ireland Limited) — pomiar ruchu w Serwisie, źródeł
-            odwiedzin oraz zdarzeń konwersji. Dane są anonimizowane.
-          </li>
-          <li>
-            <strong className="text-white">Microsoft Clarity</strong>{" "}
-            (Microsoft Corporation) — analiza zachowania Użytkownika poprzez
-            heatmapy oraz nagrania sesji; pola formularzy są automatycznie
-            maskowane.
-          </li>
-          <li>
-            <strong className="text-white">Bing Webmaster Tools</strong>{" "}
-            (Microsoft Corporation) — monitorowanie indeksacji Serwisu. Nie
-            wykorzystuje cookie po stronie Użytkownika.
-          </li>
-          <li>
-            <strong className="text-white">Protokół IndexNow</strong> —
-            powiadamianie wyszukiwarek o zmianach w treści Serwisu. Nie
-            wykorzystuje cookie po stronie Użytkownika.
-          </li>
-          <li>
-            <strong className="text-white">CookieYes</strong> (CookieYes
-            Ltd.) — zarządzanie zgodami na pliki cookie, z wykorzystaniem
-            pliku kategorii „Niezbędne”.
-          </li>
-        </ul>
-
-        {/* [DODANO] — cały poniższy blok: narzędzia marketingowe (Meta Pixel) */}
+        {/* [ZMIANA V7] — jedyna sekcja narzędzi zewnętrznych: tylko Meta */}
         <h3 className="mt-6 mb-3 text-[15px] font-bold text-teal-300">
           Narzędzia marketingowe
         </h3>
         <p className="mb-4 text-[15px] leading-relaxed text-white/65">
-          W celach marketingowych Administrator korzysta z poniższych
-          narzędzi, uruchamianych wyłącznie po wyrażeniu zgody Użytkownika na
-          kategorię <strong className="text-white">„Marketing”</strong> w
-          panelu plików cookie:
+          Administrator nie korzysta z żadnych narzędzi analitycznych ani
+          statystycznych podmiotów trzecich innych niż wskazane poniżej.
+          Poniższe narzędzia są uruchamiane wyłącznie po wyrażeniu zgody
+          Użytkownika na kategorię{" "}
+          <strong className="text-white">„Marketing”</strong> w panelu
+          zarządzania zgodami na pliki cookie:
         </p>
         <ul className="mb-4 list-disc space-y-2 pl-5 text-[15px] leading-relaxed text-white/65">
           <li>
             <strong className="text-white">Meta Pixel</strong> (Meta
-            Platforms Ireland Limited) — narzędzie wykorzystywane do pomiaru
+            Platforms Ireland Limited) — fragment kodu instalowany po
+            stronie przeglądarki Użytkownika, wykorzystywany do pomiaru
             skuteczności kampanii reklamowych prowadzonych na Facebooku i
             Instagramie, tworzenia grup odbiorców podobnych (lookalike) oraz
             remarketingu, tj. wyświetlania Użytkownikowi reklam dopasowanych
@@ -311,14 +278,29 @@ const SECTIONS: Section[] = [
             adres IP oraz informacje o odwiedzonych podstronach i działaniach
             podjętych w Serwisie (np. wypełnienie formularza kontaktowego).
           </li>
+          <li>
+            <strong className="text-white">Meta Conversions API</strong>{" "}
+            (Meta Platforms Ireland Limited) — uzupełniające narzędzie
+            działające po stronie serwera Administratora, przesyłające do
+            Meta te same lub zbliżone zdarzenia co Meta Pixel (np. wysłanie
+            formularza), niezależnie od ustawień blokowania cookies lub
+            skryptów w przeglądarce Użytkownika. W ramach tego mechanizmu
+            mogą być przekazywane zahaszowane (nieodwracalnie zaszyfrowane)
+            dane kontaktowe Użytkownika, takie jak adres e-mail lub numer
+            telefonu, o ile zostały podane w Serwisie, w celu dopasowania
+            zdarzenia do konta reklamowego bez ujawniania Meta danych w
+            postaci jawnej.
+          </li>
         </ul>
         <p className="text-[15px] leading-relaxed text-white/65">
-          Cookie marketingowe są instalowane wyłącznie po uzyskaniu zgody
-          Użytkownika. Wycofanie zgody możliwe jest w dowolnym momencie
-          poprzez ponowne otwarcie panelu zgód (link „Zmień ustawienia
-          cookies” w stopce Serwisu) lub poprzez usunięcie plików cookie w
-          ustawieniach przeglądarki, co nie wpływa na zgodność z prawem
-          przetwarzania dokonanego przed wycofaniem zgody.
+          Cookie i mechanizmy marketingowe opisane powyżej są uruchamiane
+          wyłącznie po uzyskaniu zgody Użytkownika. Wycofanie zgody możliwe
+          jest w dowolnym momencie poprzez ponowne otwarcie panelu zgód
+          (link „Zmień ustawienia cookies” w stopce Serwisu) lub poprzez
+          usunięcie plików cookie w ustawieniach przeglądarki, co nie
+          wpływa na zgodność z prawem przetwarzania dokonanego przed
+          wycofaniem zgody. Wycofanie zgody nie wpływa na zdarzenia
+          przesłane do Meta Conversions API przed jej wycofaniem.
         </p>
       </>
     ),
@@ -344,18 +326,18 @@ const SECTIONS: Section[] = [
             realizacji prawnie uzasadnionych interesów Administratora lub
             strony trzeciej — art. 6 ust. 1 lit. f RODO, w tym: wykrywanie i
             eliminowanie nadużyć oraz cele wewnętrzne związane ze
-            świadczeniem usług i prowadzeniem działalności gospodarczej
-            (dowodowe, analityczne, statystyczne).
+            świadczeniem usług i prowadzeniem działalności gospodarczej.
           </li>
-          {/* [DODANO] */}
+          {/* [ZMIANA V7] */}
           <li>
             prowadzenia działań marketingowych, w tym wyświetlania
-            spersonalizowanych reklam za pośrednictwem Meta Pixel na
-            Facebooku i Instagramie oraz mierzenia ich skuteczności — art. 6
-            ust. 1 lit. a RODO, tj. na podstawie dobrowolnej zgody
-            Użytkownika wyrażonej poprzez baner cookies. Zgoda może zostać
-            wycofana w każdym czasie, co pozostaje bez wpływu na zgodność z
-            prawem przetwarzania dokonanego przed jej wycofaniem.
+            spersonalizowanych reklam oraz mierzenia ich skuteczności za
+            pośrednictwem Meta Pixel i Meta Conversions API na Facebooku i
+            Instagramie — art. 6 ust. 1 lit. a RODO, tj. na podstawie
+            dobrowolnej zgody Użytkownika wyrażonej poprzez baner cookies.
+            Zgoda może zostać wycofana w każdym czasie, co pozostaje bez
+            wpływu na zgodność z prawem przetwarzania dokonanego przed jej
+            wycofaniem.
           </li>
         </ul>
       </>
@@ -384,12 +366,20 @@ const SECTIONS: Section[] = [
             czasu realizacji jej celu lub odwołania, w zależności co nastąpi
             wcześniej;
           </li>
-          {/* [DODANO] */}
+          {/* [ZMIANA V7] */}
           <li>
             w przypadku danych przetwarzanych na podstawie zgody na cookie
-            marketingowe — przez okres wskazany w ustawieniach danego pliku
-            cookie (standardowo do 180 dni w przypadku Meta Pixel) lub do
-            czasu wycofania zgody przez Użytkownika.
+            marketingowe (Meta Pixel oraz Meta Conversions API) — przez
+            okres wskazany w bieżącej dokumentacji Meta dla poszczególnych
+            plików cookie i zdarzeń (standardowo do 90 dni w przypadku
+            plików cookie _fbp/_fbc) lub do czasu wycofania zgody przez
+            Użytkownika, w zależności co nastąpi wcześniej;
+          </li>
+          <li>
+            plik cookie „netia_cookie_consent”, zapamiętujący dokonany
+            przez Użytkownika wybór w zakresie zgody na cookies, jest
+            przechowywany przez 180 dni (6 miesięcy), po czym Użytkownik
+            zostanie poproszony o ponowne podjęcie decyzji.
           </li>
         </ul>
         <p className="text-[15px] leading-relaxed text-white/65">
@@ -420,18 +410,17 @@ const SECTIONS: Section[] = [
     number: "07",
     title: "Odbiorcy danych",
     body: (
-      // [DODANO] — fragment o Meta Platforms na końcu zdania
       <p className="text-[15px] leading-relaxed text-white/65">
         Dane osobowe Użytkowników mogą być przekazywane następującym
-        kategoriom odbiorców: podmiotom świadczącym Administratorowi usługi
-        niezbędne do realizacji celów przetwarzania, w tym dostawcom IT,
-        podmiotom realizującym wsparcie techniczne, organizacyjne i doradcze,
-        innym podwykonawcom w zakresie obsługi klienta, integratorom oraz
-        podmiotom uprawnionym na podstawie przepisów prawa, spółkom z Grupy
-        Polsat Plus, a także — w zakresie danych przetwarzanych w związku z
-        cookies marketingowymi — Meta Platforms Ireland Limited, 4 Grand
-        Canal Square, Grand Canal Harbour, Dublin 2, Irlandia (Facebook,
-        Instagram).
+        kategoriom odbiorców: Netia S.A. z siedzibą w Warszawie — w zakresie
+        niezbędnym do realizacji zamówień na usługi Netii składanych za
+        pośrednictwem Serwisu, podmiotom świadczącym Administratorowi usługi
+        niezbędne do realizacji celów przetwarzania (np. hosting Serwisu),
+        podmiotom uprawnionym na podstawie przepisów prawa, a także —
+        wyłącznie w zakresie danych przetwarzanych za pośrednictwem Meta
+        Pixel i Meta Conversions API — Meta Platforms Ireland Limited, 4
+        Grand Canal Square, Grand Canal Harbour, Dublin 2, Irlandia
+        (Facebook, Instagram).
       </p>
     ),
   },
@@ -452,17 +441,16 @@ const SECTIONS: Section[] = [
           niego dopuszczonych. Kopie zabezpieczeń można uzyskać na wniosek
           złożony w sposób wskazany w punkcie 10.
         </p>
-        {/* [DODANO] */}
         <p className="text-[15px] leading-relaxed text-white/65">
-          W związku z korzystaniem z narzędzia Meta Pixel dane Użytkowników
-          mogą być przekazywane do Meta Platforms, Inc. z siedzibą w USA.
-          Meta Platforms, Inc. stosuje odpowiednie zabezpieczenia prawne
-          przewidziane dla przekazywania danych poza EOG, w tym może
-          korzystać z mechanizmu certyfikacji w ramach programu EU-U.S. Data
-          Privacy Framework (o ile obowiązuje w danym okresie) lub
-          standardowych klauzul umownych zatwierdzonych przez Komisję
-          Europejską. Aktualne informacje na temat stosowanych zabezpieczeń
-          dostępne są w polityce prywatności Meta Platforms.
+          W związku z korzystaniem z narzędzi Meta Pixel oraz Meta
+          Conversions API dane Użytkowników mogą być przekazywane do Meta
+          Platforms, Inc. z siedzibą w USA. Meta Platforms, Inc. stosuje
+          odpowiednie zabezpieczenia prawne przewidziane dla przekazywania
+          danych poza EOG, w tym może korzystać z mechanizmu certyfikacji w
+          ramach programu EU-U.S. Data Privacy Framework (o ile obowiązuje w
+          danym okresie) lub standardowych klauzul umownych zatwierdzonych
+          przez Komisję Europejską. Aktualne informacje na temat stosowanych
+          zabezpieczeń dostępne są w polityce prywatności Meta Platforms.
         </p>
       </>
     ),
@@ -501,36 +489,29 @@ const SECTIONS: Section[] = [
       <>
         <p className="mb-4 text-[15px] leading-relaxed text-white/65">
           Żądania, oświadczenia i wszelką korespondencję dotyczącą danych
-          osobowych należy kierować:
+          osobowych należy kierować bezpośrednio do Administratora:
         </p>
         <ul className="mb-4 list-disc space-y-2 pl-5 text-[15px] leading-relaxed text-white/65">
           <li>
-            telefonicznie do Działu Obsługi Klienta: 801 802 803, 22 711 11
-            11 lub z telefonu komórkowego 793 800 300;
+            elektronicznie, na adres e-mail:{" "}
+            <a
+              href="mailto:jaroslaw.sitek@przedstawiciel.netia.pl"
+              className="text-teal-300 underline decoration-teal-300/30 underline-offset-2 hover:decoration-teal-300"
+            >
+              jaroslaw.sitek@przedstawiciel.netia.pl
+            </a>
+            ;
           </li>
           <li>
-            pisemnie na adres: Netia S.A. — Dział Obsługi Reklamacji, skr.
-            pocztowa nr 597, 40-950 Katowice S105;
-          </li>
-          <li>
-            elektronicznie, poprzez formularz na stronie Netia Online (dla
-            klientów Netii);
-          </li>
-          <li>
-            pisemnie lub ustnie do protokołu w Punkcie sprzedaży (obsługi).
+            pisemnie na adres: Jarosław Sitek, ul. Targowa 38/38, 90-043
+            Łódź.
           </li>
         </ul>
         <p className="text-[15px] leading-relaxed text-white/65">
-          Administrator wyznaczył inspektora ochrony danych, z którym można
-          się skontaktować elektronicznie pod adresem{" "}
-          <a
-            href="mailto:iod@netia.pl"
-            className="text-teal-300 underline decoration-teal-300/30 underline-offset-2 hover:decoration-teal-300"
-          >
-            iod@netia.pl
-          </a>{" "}
-          lub pisemnie na adres siedziby Administratora, z dopiskiem
-          „Inspektor ochrony danych”.
+          Sprawy dotyczące bezpośrednio usług telekomunikacyjnych Netii
+          (np. reklamacje na usługę, a nie na przetwarzanie danych) można
+          zgłaszać także za pośrednictwem Działu Obsługi Klienta Netii: 801
+          802 803, 22 711 11 11 (lub 793 800 300 z telefonu komórkowego).
         </p>
       </>
     ),
@@ -540,17 +521,14 @@ const SECTIONS: Section[] = [
     number: "11",
     title: "Zmiany Polityki Prywatności",
     body: (
-      // [DODANO] — wzmianka o aktualizacji, data do potwierdzenia
+      // [ZMIANA V7]
       <p className="text-[15px] leading-relaxed text-white/65">
         Polityka Prywatności jest na bieżąco weryfikowana i w razie potrzeby
-        aktualizowana. Niniejsza wersja, uwzględniająca wykorzystanie cookies
-        marketingowych (Meta Pixel), stanowi aktualizację wersji przyjętej i
-        obowiązującej od{" "}
-        <strong className="text-white">05.02.2021 r.</strong>{" "}
-        <span className="text-white/40">
-          [data i numeracja aktualizacji do potwierdzenia przez
-          Administratora]
-        </span>
+        aktualizowana. Niniejsza wersja obowiązuje od{" "}
+        <strong className="text-white">29.07.2026 r.</strong> i uwzględnia
+        m.in. wskazanie Jarosława Sitka jako Administratora danych oraz
+        ograniczenie zakresu wykorzystywanych narzędzi marketingowych do
+        Meta Pixel i Meta Conversions API.
       </p>
     ),
   },
@@ -612,10 +590,6 @@ const PolitykaPrywatnosci: React.FC = () => {
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   useEffect(() => {
-    // Prostszy, mniej "kruchy" sposób ustalania aktywnej sekcji: patrzymy,
-    // która sekcja jest najbliżej góry viewportu. Nie zależy od sticky
-    // pozycjonowania ani od dokładnego rootMargin dopasowanego do
-    // konkretnego layoutu strony.
     const handleScroll = () => {
       let current = SECTIONS[0].id;
       for (const s of SECTIONS) {
@@ -665,7 +639,6 @@ const PolitykaPrywatnosci: React.FC = () => {
       />
 
       <div className="mx-auto max-w-[45rem] px-6">
-        {/* Link powrotny — reszta serwisu ma tę nawigację wszędzie, tu jej brakowało */}
         <a
           href="/"
           className="inline-flex items-center gap-1.5 pt-6 text-[13px] font-medium text-white/50 no-underline transition-colors hover:text-white/80"
@@ -674,9 +647,6 @@ const PolitykaPrywatnosci: React.FC = () => {
           Wróć do strony głównej
         </a>
 
-        {/* HERO CARD — ten sam wzorzec co na stronach Pomoc: gradientowa
-            obwódka, ikona w kółku, eyebrow badge. Wcześniej to był goły
-            tekst bez żadnej ramki/tła. */}
         <div
           className="mt-5 rounded-[22px] px-6 py-8 sm:px-8 sm:py-9"
           style={{
@@ -694,7 +664,7 @@ const PolitykaPrywatnosci: React.FC = () => {
             <div>
               <p className="mb-1.5 inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-teal-300">
                 <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
-                Netia S.A. · Ochrona danych
+                Autoryzowany Partner Netia · Ochrona danych
               </p>
               <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
                 Polityka Prywatności
@@ -703,12 +673,10 @@ const PolitykaPrywatnosci: React.FC = () => {
           </div>
           <p className="mt-4 max-w-[50ch] text-[14.5px] leading-relaxed text-white/60">
             Zasady przetwarzania danych osobowych w serwisie
-            www.uslugi-netia.pl. Obowiązuje od 05.02.2021 r.
+            www.swiatlowod-netia-oferta.pl. Obowiązuje od 29.07.2026 r.
           </p>
         </div>
 
-        {/* SPIS TREŚCI — teraz we własnej karcie zamiast pływać bezpośrednio
-            na kropkowanym tle. */}
         <nav aria-label="Spis treści" className="mt-5">
           <div
             className="rounded-2xl px-5 py-5 sm:px-6"
@@ -742,10 +710,6 @@ const PolitykaPrywatnosci: React.FC = () => {
         </nav>
       </div>
 
-      {/* TREŚĆ — każda sekcja to teraz osobna karta (bg c.card, rounded-2xl,
-          border), zamiast płaskiego tekstu oddzielonego cienką linią.
-          Znacznie łatwiej skanować wzrokiem długi tekst prawny, gdy każdy
-          punkt ma wyraźną, oddzielną "kartę" jako punkt odniesienia. */}
       <div className="mx-auto max-w-3xl px-6 pb-24 pt-8">
         <main className="flex min-w-0 flex-col gap-4">
           {SECTIONS.map((s) => (
@@ -772,15 +736,12 @@ const PolitykaPrywatnosci: React.FC = () => {
         </main>
       </div>
 
-      {/* Stopka — ta sama szerokość co reszta, dla spójnego wyrównania */}
       <footer className="mx-auto max-w-3xl border-t border-white/10 px-6 py-8 text-[13px] text-white/40">
-        © {new Date().getFullYear()} Netia S.A., ul. Poleczki 13, 02-822
-        Warszawa. Inspektor ochrony danych: iod@netia.pl.
+        © {new Date().getFullYear()} Jarosław Sitek, ul. Targowa 38/38,
+        90-043 Łódź. Kontakt w sprawach danych osobowych:
+        jaroslaw.sitek@przedstawiciel.netia.pl.
       </footer>
 
-      {/* Przycisk „do góry” — bg-teal-600 (nie teal-500): biały tekst na
-          teal-500 daje ok. 2.5:1 kontrastu (poniżej WCAG AA), teal-600
-          daje ~3.7:1, zgodne dla elementu UI. */}
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         aria-label="Wróć do początku"

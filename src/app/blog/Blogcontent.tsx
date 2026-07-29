@@ -97,9 +97,9 @@ function FiltrKategorii({
 }
 
 /* ---------------------------------------------------------------------- */
-/*  Filtr tagów — sztywny układ 3 kolumn (grid):                          */
-/*  [1] etykieta "Tagi"  [2] wyszukiwarka + combobox (stała szerokość,     */
-/*  zawsze w tym samym miejscu)  [3] wybrane tagi, lecące dalej w prawo.   */
+/*  Filtr tagów — na mobile układ w kolumnie (pełna szerokość, większe     */
+/*  pola dotykowe); od `sm:` wraca sztywny grid [auto_14rem_1fr]:          */
+/*  [1] etykieta "Tagi"  [2] wyszukiwarka + combobox  [3] wybrane tagi.    */
 /* ---------------------------------------------------------------------- */
 function FiltrTagow({
   dostepneTagi,
@@ -143,20 +143,21 @@ function FiltrTagow({
   }
 
   return (
-    <div className="grid grid-cols-[auto_14rem_1fr] items-start gap-4">
+    <div className="flex flex-col gap-3 sm:grid sm:grid-cols-[auto_14rem_1fr] sm:items-start sm:gap-4">
       {/* Kolumna 1: etykieta */}
-      <span className="mt-2 inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-white/35">
+      <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-white/35 sm:mt-2">
         <Tag size={12} />
         Tagi:
       </span>
 
-      {/* Kolumna 2: wyszukiwarka + combobox — szerokość stała (14rem),       */}
-      {/* nigdy się nie rusza niezależnie od tego, co dzieje się w kolumnie 3 */}
-      <div ref={wrapperRef} className="relative w-56">
+      {/* Kolumna 2: wyszukiwarka + combobox — pełna szerokość na mobile,    */}
+      {/* stała szerokość (14rem) od sm:, nigdy się nie rusza niezależnie   */}
+      {/* od tego, co dzieje się w kolumnie 3.                              */}
+      <div ref={wrapperRef} className="relative w-full sm:w-56">
         <div className="relative">
           <Search
-            size={12}
-            className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-white/30"
+            size={13}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/30"
           />
           <input
             type="text"
@@ -165,22 +166,22 @@ function FiltrTagow({
             onFocus={() => setOtwarte(true)}
             placeholder="Szukaj tagu…"
             aria-label="Szukaj i wybierz tag"
-            className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-1.5 pl-7 pr-6 text-xs text-white placeholder:text-white/30 outline-none transition-colors focus:border-teal-400/50 focus:bg-white/[0.07]"
+            className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-2.5 pl-8 pr-7 text-sm text-white placeholder:text-white/30 outline-none transition-colors focus:border-teal-400/50 focus:bg-white/[0.07] sm:py-1.5 sm:text-xs"
           />
           {szukajTagu && (
             <button
               type="button"
               onClick={() => setSzukajTagu("")}
               aria-label="Wyczyść wyszukiwanie tagu"
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-white/30 transition-colors hover:text-white/70"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-white/30 transition-colors hover:text-white/70"
             >
-              <X size={11} />
+              <X size={12} />
             </button>
           )}
         </div>
 
         {otwarte && (
-          <div className="absolute left-0 top-full z-20 mt-1.5 max-h-56 w-full overflow-y-auto rounded-lg border border-white/10 bg-[#0B2A3D] shadow-lg shadow-black/30">
+          <div className="absolute left-0 top-full z-20 mt-1.5 max-h-64 w-full overflow-y-auto rounded-lg border border-white/10 bg-[#0B2A3D] shadow-lg shadow-black/30 sm:max-h-56">
             {wyswietlaneTagi.length > 0 ? (
               <ul className="py-1">
                 {wyswietlaneTagi.map((tag) => {
@@ -190,7 +191,7 @@ function FiltrTagow({
                       <button
                         type="button"
                         onClick={() => przelaczTag(tag)}
-                        className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs transition-colors ${
+                        className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-sm transition-colors sm:py-2 sm:text-xs ${
                           active
                             ? "bg-teal-400/15 text-teal-200"
                             : "text-white/65 hover:bg-white/10 hover:text-white"
@@ -217,21 +218,21 @@ function FiltrTagow({
 
       {/* Kolumna 3: wybrane tagi — lecą tu dalej w prawo (i zawijają się     */}
       {/* niżej, gdy jest ich dużo), nie wpływając na kolumnę 2 obok.         */}
-      <div className="flex min-h-[2.25rem] flex-wrap items-center gap-1.5 pt-0.5">
+      <div className="flex min-h-[2.25rem] flex-wrap items-center gap-1.5 sm:pt-0.5">
         {activeTags.length > 0 ? (
           activeTags.map((tag) => (
             <button
               key={tag}
               type="button"
               onClick={() => przelaczTag(tag)}
-              className="inline-flex items-center gap-1 rounded-full border border-teal-400/50 bg-teal-400/15 px-2.5 py-1 text-[11px] font-medium text-teal-200 transition-colors hover:bg-teal-400/25"
+              className="inline-flex items-center gap-1 rounded-full border border-teal-400/50 bg-teal-400/15 px-2.5 py-1.5 text-xs font-medium text-teal-200 transition-colors hover:bg-teal-400/25 sm:py-1 sm:text-[11px]"
             >
               {tag}
               <X size={10} />
             </button>
           ))
         ) : (
-          <span className="text-[11px] text-white/25">Brak wybranych tagów</span>
+          <span className="text-xs text-white/25 sm:text-[11px]">Brak wybranych tagów</span>
         )}
       </div>
     </div>
@@ -451,19 +452,22 @@ function Paginacja({
   const numeryStron = Array.from({ length: liczbaStron }, (_, i) => i + 1);
 
   return (
-    <nav aria-label="Paginacja" className="mt-10 flex items-center justify-center gap-2">
+    <nav
+      aria-label="Paginacja"
+      className="mt-10 flex items-center justify-start gap-2 overflow-x-auto px-1 sm:justify-center"
+    >
       {strona > 1 ? (
         <Link
           href={urlStrony(activeCategory, szukaj, activeTags, strona - 1)}
           aria-label="Poprzednia strona"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
         >
           <ChevronLeft size={16} />
         </Link>
       ) : (
         <span
           aria-hidden="true"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/5 text-white/20"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/5 text-white/20"
         >
           <ChevronLeft size={16} />
         </span>
@@ -474,7 +478,7 @@ function Paginacja({
           key={n}
           href={urlStrony(activeCategory, szukaj, activeTags, n)}
           aria-current={n === strona ? "page" : undefined}
-          className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition-colors ${
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors ${
             n === strona
               ? "bg-teal-400/15 text-teal-200 ring-1 ring-inset ring-teal-400/50"
               : "text-white/60 hover:bg-white/10 hover:text-white"
@@ -488,14 +492,14 @@ function Paginacja({
         <Link
           href={urlStrony(activeCategory, szukaj, activeTags, strona + 1)}
           aria-label="Następna strona"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
         >
           <ChevronRight size={16} />
         </Link>
       ) : (
         <span
           aria-hidden="true"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/5 text-white/20"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/5 text-white/20"
         >
           <ChevronRight size={16} />
         </span>

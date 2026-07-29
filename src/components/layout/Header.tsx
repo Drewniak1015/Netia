@@ -138,7 +138,13 @@ const NAV: NavItem[] = [
               title: "Stwórz Własną Oferte",
               desc: "Twoje zasady, Twoja cena. Płacisz tylko za to, czego potrzebujesz.",
               icon: Wifi,
-              href: "/konfigurator",
+              // Kotwica #pakiety-internet: klik z headera ma lądować od razu
+              // w sekcji z kartami pakietów internetowych na /konfigurator,
+              // a nie na samej górze (hero banner konfiguratora). Patrz
+              // Konfigurator.tsx — id="pakiety-internet" + scroll-mt-[140px]
+              // dodane na kontenerze tej sekcji (ten sam wzorzec co
+              // #pakiety-max i #pakiety powyżej).
+              href: "/konfigurator#pakiety-internet",
             },
           ],
         },
@@ -249,24 +255,6 @@ function DotCluster({ size = 22 }: { size?: number }) {
 function Logo() {
   return (
     <Link href="/" className="flex items-center shrink-0" aria-label="Netia — strona główna">
-      {/*
-        FIX (CLS): brakowało width/height na <img>. Height było ustawione
-        tylko przez klasę Tailwind (h-16), a szerokość była "auto" — więc
-        przeglądarka nie wiedziała ile miejsca zarezerwować, dopóki SVG się
-        nie załadował. Efekt: logo "doskakiwało" do właściwej szerokości,
-        co przesuwało nav/przycisk "Zadzwoń" obok w headerze — i to właśnie
-        łapał Layout Shift, mimo że header jest position:fixed (liczy się
-        ruch elementów w viewporcie, nie czy header pcha resztę strony).
-
-        width/height poniżej dają przeglądarce znać jaki jest naturalny
-        aspect-ratio obrazka (nowoczesne przeglądarki same liczą
-        aspect-ratio z tych atrybutów), więc miejsce jest zarezerwowane od
-        razu przy pierwszym renderze — zero przeskoku.
-
-        Wartości 165×65 poniżej to realne proporcje Placeholder.svg
-        (viewBox 666×256 ≈ 2.6:1, przy wysokości h-16/64px daje ~165px
-        szerokości).
-      */}
       <img
         src="/images/Placeholder.svg"
         alt="Netia"

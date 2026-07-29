@@ -335,7 +335,17 @@ function KonfiguratorZawartosc() {
               <DottedBackground variant="dots" size={22} />
             </div>
 
-            <div className="relative">
+            <div
+              id="pakiety-internet"
+              className="relative scroll-mt-[140px]"
+            >
+              {/* Kotwica #pakiety-internet: klik z headera ("Stwórz Własną
+                  Ofertę" w NetiaHeader.tsx) ma lądować od razu w tej sekcji
+                  z kartami pakietów internetowych, a nie na samej górze
+                  strony (hero banner konfiguratora) — ten sam wzorzec co
+                  #pakiety-max i #pakiety na innych podstronach ofert.
+                  scroll-mt-[140px] kompensuje stały (fixed) nagłówek strony,
+                  żeby tytuł "Internet" nie chował się pod nim po skoku. */}
               <h2 className="flex items-center gap-2 text-xl font-extrabold text-white sm:text-2xl">
                 <Wifi size={22} className="text-teal-300" />
                 Internet
