@@ -2,32 +2,33 @@
 
 // src/components/CookieConsent.tsx
 //
-// WERSJA 2 — zmiany na prośbę: jasne (białe) tło dla kontrastu z ciemnym
-// motywem reszty strony, oraz kompaktowa forma na telefonie.
+// WERSJA 3 — zmiany:
+//  - Klucz sessionStorage i nazwa eventu EntryGate są teraz importowane
+//    z @/lib/entry-gate zamiast trzymane jako osobny literał string w tym
+//    pliku. Wcześniej EntryGate.tsx w ogóle NIE wysyłał eventu
+//    "entry-gate-closed", mimo że ten komponent na niego nasłuchiwał —
+//    w efekcie baner cookies zawsze czekał pełne 4s (fallback timeout)
+//    zamiast pojawić się od razu po zamknięciu bramki. To naprawione po
+//    stronie EntryGate.tsx; ten plik teraz po prostu importuje tę samą
+//    stałą, więc obie strony zawsze się zgadzają.
+//  - Dodana subtelna animacja wejścia czystym CSS (@keyframes), żeby baner
+//    nie pojawiał się nagle — bez żadnej biblioteki JS, tylko keyframe
+//    odgrywany naturalnie przy zamontowaniu elementu.
 //
-// Co się zmieniło względem wersji 1:
-//  - Tło karty: białe (zamiast ciemnego rgb(19,55,78)) — wyraźnie odróżnia
-//    się od reszty strony, łatwiej to zauważyć i przeczytać.
-//  - Pozycja: floating card w lewym dolnym rogu (nie pełna szerokość ekranu
-//    jak wcześniej) — na telefonie to była szeroka belka na całą szerokość
-//    z dużym paddingiem, przez co zasłaniała spory kawałek treści i
-//    "rozjeżdżała" layout. Teraz to zwarta karta z ograniczoną szerokością
-//    (max-w-[380px]), więc na telefonie zajmuje tylko fragment ekranu, nie
-//    cały dolny pas.
-//  - Tekst skrócony (mobile najpierw): jedno krótkie zdanie zamiast akapitu.
-//  - Przyciski w kolumnie na wąskich ekranach (łatwiej trafić palcem, nie
-//    ściskają się w jednej linii).
-//  - Dodany env(safe-area-inset-bottom) — na iPhone z paskiem gestów karta
-//    nie chowa się częściowo pod systemowym paskiem na dole.
-//  - Panel "Ustawienia" też przeprojektowany na jasne tło, spójnie z resztą.
+// Zmiany z WERSJI 2 (bez zmian funkcjonalnych, zachowane):
+//  - Tło karty: białe — wyraźnie odróżnia się od ciemnego motywu reszty
+//    strony.
+//  - Floating card w lewym dolnym rogu, kompaktowa na telefonie
+//    (max-w-[320px]), zamiast pełnej szerokości ekranu.
+//  - Przyciski w kolumnie na wąskich ekranach.
+//  - env(safe-area-inset-bottom) dla iPhone z paskiem gestów.
 
 import React, { useEffect, useState } from "react";
 import { getConsent, acceptAll, rejectAll, setConsent } from "@/lib/cookie-consent";
-
-// [DODANO] Nazwa musi być identyczna jak SESSION_KEY w EntryGate.tsx —
-// dzięki temu wiemy, czy EntryGate już się pokazał/zamknął w tej sesji,
-// zanim w ogóle zdążymy odmontować nasz baner.
-const ENTRY_GATE_SESSION_KEY = "netia_entry_gate_dismissed";
+import {
+  ENTRY_GATE_CLOSED_EVENT,
+  isEntryGateDismissed,
+} from "@/components/Entrygate";
 
 const CookieConsent: React.FC = () => {
   const [visible, setVisible] = useState(false);
@@ -39,31 +40,39 @@ const CookieConsent: React.FC = () => {
     const existing = getConsent();
     if (existing) return; // zgoda już podjęta wcześniej — nic nie pokazujemy
 
-    // [DODANO] Jeśli EntryGate jeszcze nie został zamknięty w tej sesji,
-    // czekamy na jego event "entry-gate-closed", zamiast pokazywać się
-    // od razu — inaczej oba okna nakładałyby się na siebie na wejściu.
-    let entryGateDismissed = false;
-    try {
-      entryGateDismissed = !!sessionStorage.getItem(ENTRY_GATE_SESSION_KEY);
-    } catch {
-      entryGateDismissed = true; // sessionStorage niedostępny — nie blokujemy bannera
-    }
-
-    if (entryGateDismissed) {
+    // Jeśli EntryGate jeszcze nie został zamknięty w tej sesji, czekamy na
+    // jego event (wysyłany teraz poprawnie przez dismissEntryGate() w
+    // @/lib/entry-gate), zamiast pokazywać się od razu — inaczej oba okna
+    // nakładałyby się na siebie na wejściu.
+    if (isEntryGateDismissed()) {
       setVisible(true);
       return;
     }
 
-    const handleEntryGateClosed = () => setVisible(true);
-    window.addEventListener("entry-gate-closed", handleEntryGateClosed);
+    const handleEntryGateClosed = () => {
+      // Użytkownik mógł już podjąć decyzję (np. przez inną ścieżkę) zanim
+      // ten event doszedł — sprawdzamy jeszcze raz, żeby nie pokazać
+      // bannera na siłę.
+      if (!getConsent()) setVisible(true);
+    };
+    window.addEventListener(ENTRY_GATE_CLOSED_EVENT, handleEntryGateClosed);
 
     // Zabezpieczenie: gdyby EntryGate nie istniał na danej podstronie (np.
     // strona bez tego komponentu), event nigdy nie nadejdzie — po 4s
     // pokazujemy baner mimo wszystko, żeby nie "zgubić" zgody na stałe.
-    const fallback = setTimeout(() => setVisible(true), 4000);
+    //
+    // [POPRAWKA] Ten efekt odpala się raz na starcie i nie odmontowuje się
+    // przy zamknięciu bannera (przyciski tylko wołają setVisible(false)),
+    // więc clearTimeout w funkcji czyszczącej poniżej NIE anulował tego
+    // zegara, jeśli użytkownik kliknął "Akceptuję/Odrzuć/Zapisz" przed
+    // upływem 4s — baner wracał mimo zapisanej już zgody. Sprawdzamy więc
+    // getConsent() dopiero w momencie, gdy fallback faktycznie strzela.
+    const fallback = setTimeout(() => {
+      if (!getConsent()) setVisible(true);
+    }, 4000);
 
     return () => {
-      window.removeEventListener("entry-gate-closed", handleEntryGateClosed);
+      window.removeEventListener(ENTRY_GATE_CLOSED_EVENT, handleEntryGateClosed);
       clearTimeout(fallback);
     };
   }, []);
@@ -93,7 +102,22 @@ const CookieConsent: React.FC = () => {
       aria-modal="true"
       aria-label="Zgoda na pliki cookie"
     >
-      <div className="w-full max-w-[320px] rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
+      <style>{`
+        @keyframes cookieConsentFadeInUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .cookie-consent-card {
+          animation: cookieConsentFadeInUp 300ms ease-out both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .cookie-consent-card {
+            animation: none !important;
+          }
+        }
+      `}</style>
+
+      <div className="cookie-consent-card w-full max-w-[320px] rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
         {!showDetails ? (
           <>
             <p className="mb-1 text-[12px] font-bold text-slate-900">
