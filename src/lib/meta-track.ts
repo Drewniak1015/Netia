@@ -76,3 +76,24 @@ export function trackContact(contentName: string): void {
 export function trackViewContent(contentName: string): void {
   trackMetaEvent({ eventName: "ViewContent", contentName });
 }
+
+/**
+ * Buduje slug z dowolnego tekstu (obsługuje polskie znaki), np.
+ * "1000 Mb/s" + "TV S" -> po połączeniu "1000_mb_s_tv_s".
+ * Używane przez OfferCard/MaxOfferCard do budowania `content_name`
+ * przekazywanego do trackContact/trackMetaEvent.
+ */
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/ą/g, "a")
+    .replace(/ć/g, "c")
+    .replace(/ę/g, "e")
+    .replace(/ł/g, "l")
+    .replace(/ń/g, "n")
+    .replace(/ó/g, "o")
+    .replace(/ś/g, "s")
+    .replace(/ź|ż/g, "z")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type RefObject } from "react";
+import Image from "next/image";
 import {
   RotateCcw,
   Headset,
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
 import { REVIEWS } from "./homeReviewsData";
+import { trackContact } from "@/lib/meta-track";
 
 // UWAGA: dodaj pole `photoUrl`, `pakiet` oraz `stat` do każdego wpisu w homeReviewsData.ts
 // (np. photoUrl: "/images/person1.webp", pakiet: "Internet 600 Mb/s",
@@ -27,15 +29,6 @@ const FALLBACK_STATS = [
   "Zgłoszenie 20:14 → naprawa 20:47",
   "Umowa podpisana w 6 minut",
 ];
-
-/* [DODANO] Ten sam wzorzec trackingu co w Hero.tsx / Oferty.tsx /
-   HowToOrderSection.tsx — odpalanie zdarzenia Meta Pixel "Contact" przy
-   kliknięciu w telefon/SMS. */
-function trackContact(contentName: string) {
-  if (typeof window !== "undefined" && (window as any).fbq) {
-    (window as any).fbq("track", "Contact", { content_name: contentName });
-  }
-}
 
 type Review = {
   initials: string;
@@ -118,8 +111,8 @@ export default function NetiaSocialProof({
 }: AdvisorInfo) {
   const [sectionRef, sectionInView] = useInView();
 
-  // [DODANO] Treść SMS-a — pełne zdanie zamiast samego "INTERNET",
-  // poprawnie zakodowane dla polskich znaków.
+  // Treść SMS-a — pełne zdanie zamiast samego "INTERNET", poprawnie
+  // zakodowane dla polskich znaków.
   const smsBody = encodeURIComponent(
     "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
   );
@@ -189,9 +182,11 @@ export default function NetiaSocialProof({
                 >
                   {/* Kolumna ze zdjęciem — na mobile zdjęcie po lewej, opis po prawej; od sm: zdjęcie na górze, opis wyśrodkowany pod spodem; od lg: wyrównanie do góry */}
                   <div className="flex flex-row items-center gap-4 w-full sm:w-28 md:w-32 sm:flex-col sm:items-center shrink-0">
-                    <img
+                    <Image
                       src={r.photoUrl ?? FALLBACK_PHOTOS[i % FALLBACK_PHOTOS.length]}
                       alt={r.name}
+                      width={96}
+                      height={96}
                       className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 rounded-xl object-cover border border-white/15 shrink-0"
                     />
                     <div className="flex flex-col items-start text-left sm:items-center sm:text-center">
@@ -264,9 +259,11 @@ export default function NetiaSocialProof({
 
             {/* Mini-profil doradcy — przejęty z dawnej ContactSection, teraz z krótkim bio zaufania */}
             <div className="flex items-center gap-4 pt-5 mb-5 border-t border-white/10">
-              <img
+              <Image
                 src={advisorPhotoUrl}
                 alt={advisorName}
+                width={64}
+                height={64}
                 className="h-16 w-16 shrink-0 rounded-xl object-cover border border-white/15"
               />
               <div>
