@@ -3,9 +3,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
 import {
   ChevronDown,
+  MessageCircle,
   Phone,
   Search,
   Wifi,
@@ -19,6 +20,7 @@ import {
   Newspaper,
   type LucideIcon,
 } from "lucide-react";
+import { trackContact } from "@/lib/meta-track";
 
 /* ------------------------------------------------------------------ */
 /* Typy                                                                 */
@@ -51,6 +53,16 @@ interface NavItem {
 /* ------------------------------------------------------------------ */
 /* Dane — edytuj / podmieniaj swobodnie                                 */
 /* ------------------------------------------------------------------ */
+
+// Ten sam numer i domyślna treść SMS-a co w Hero.tsx — wcześniej Header/
+// Footer wskazywały na inny numer (+48 883 334 124) niż reszta strony
+// (+48 887 843 260), co rozjeżdżało tracking i myliło użytkowników, którzy
+// dzwonili z różnych miejsc na stronie pod różne numery.
+const PHONE_HREF = "+48887843260";
+const PHONE_DISPLAY = "+48 887 843 260";
+const SMS_BODY = encodeURIComponent(
+  "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
+);
 
 const DOT_COLORS: string[] = ["#EC4899", "#F59E0B", "#22C55E", "#0EA5E9", "#8B5CF6", "#14B8A6"];
 const underlineVariants = {
@@ -294,7 +306,7 @@ function SimplePanel({
               const Icon: LucideIcon | undefined = item.icon;
               const isSelected = !!item.href && item.href === pathname;
               return (
-                <motion.div
+                <m.div
                   key={j}
                   whileHover={{ x: 4 }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -313,7 +325,7 @@ function SimplePanel({
                     {isSelected && (
                       <span className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-full bg-teal-500" />
                     )}
-                    <motion.span
+                    <m.span
                       whileHover={{ scale: 1.12, rotate: -4 }}
                       transition={{ type: "spring", stiffness: 400, damping: 15 }}
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-shadow duration-200 group-hover:shadow-md ${
@@ -325,7 +337,7 @@ function SimplePanel({
                       }`}
                     >
                       {Icon ? <Icon size={17} /> : <DotCluster size={18} />}
-                    </motion.span>
+                    </m.span>
                     <span className="min-w-0 pt-0.5">
                       <span className="flex items-center gap-2">
                         <span
@@ -348,7 +360,7 @@ function SimplePanel({
                       )}
                     </span>
                   </Link>
-                </motion.div>
+                </m.div>
               );
             })}
           </div>
@@ -419,24 +431,24 @@ function MobileNavItem({
         }`}
       >
         {open && (
-          <motion.span
+          <m.span
             layoutId="mobile-active-bar"
             transition={{ type: "spring", stiffness: 500, damping: 35 }}
             className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-teal-400"
           />
         )}
         <span className={!open && item.highlight ? "text-pink-300" : ""}>{item.label}</span>
-        <motion.span
+        <m.span
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.25, ease: "easeInOut" }}
           className={open ? "text-teal-300" : "text-white/60"}
         >
           <ChevronDown size={16} />
-        </motion.span>
+        </m.span>
       </button>
       <AnimatePresence initial={false}>
         {open && (
-          <motion.div
+          <m.div
             key="content"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -447,7 +459,7 @@ function MobileNavItem({
             <div className="rounded-xl bg-white p-5 mb-3">
               <Panel item={item} pathname={pathname} onItemClick={onNavigate} />
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>
@@ -528,193 +540,219 @@ export default function NetiaHeader() {
   }, [pathname]);
 
   return (
-    <div className="font-sans">
-      <header
-        ref={headerRef}
-        className={`fixed top-0 z-40 w-full border-b transition-all duration-300 ${
-          scrolled
-            ? "border-white/10 shadow-lg shadow-black/20 backdrop-blur-xl backdrop-saturate-150"
-            : "border-white/10 shadow-none"
-        }`}
-        style={{
-          backgroundColor: scrolled ? "rgba(11, 42, 61, 0.72)" : "#0B2A3D",
-        }}
-      >
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-10 px-8 py-4">
-          <Logo />
+    <LazyMotion features={domAnimation} strict>
+      <div className="font-sans">
+        <header
+          ref={headerRef}
+          className={`fixed top-0 z-40 w-full border-b transition-all duration-300 ${
+            scrolled
+              ? "border-white/10 shadow-lg shadow-black/20 backdrop-blur-xl backdrop-saturate-150"
+              : "border-white/10 shadow-none"
+          }`}
+          style={{
+            backgroundColor: scrolled ? "rgba(11, 42, 61, 0.72)" : "#0B2A3D",
+          }}
+        >
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-10 px-8 py-4">
+            <Logo />
 
-          <nav className="hidden lg:flex items-center gap-3">
-            {NAV.map((item) =>
-              item.panel ? (
-                <div
-                  key={item.key}
-                  className="relative"
-                  onMouseEnter={() => openMenu(item.key)}
-                  onMouseLeave={scheduleClose}
-                >
-                  <motion.button
-                    type="button"
-                    onClick={() => toggleMenu(item.key)}
-                    initial={isSectionActive(item, pathname) ? "hover" : "rest"}
-                    whileHover="hover"
-                    animate={activeKey === item.key || isSectionActive(item, pathname) ? "hover" : "rest"}
-                    className={`relative flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm transition-all duration-200 hover:scale-[1.04] active:scale-[0.98]
-                      ${
-                        item.highlight
-                          ? "text-pink-300 hover:text-pink-200"
-                          : "text-white/85 hover:text-white"
-                      }
-                      ${isSectionActive(item, pathname) ? "font-bold" : "font-semibold"}
-                    `}
+            <nav className="hidden lg:flex items-center gap-3">
+              {NAV.map((item) =>
+                item.panel ? (
+                  <div
+                    key={item.key}
+                    className="relative"
+                    onMouseEnter={() => openMenu(item.key)}
+                    onMouseLeave={scheduleClose}
                   >
-                    {item.highlight && <Sparkles size={14} />}
-                    {item.label}
-                    <motion.span
-                      animate={{ rotate: activeKey === item.key ? 180 : 0 }}
-                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                    <m.button
+                      type="button"
+                      onClick={() => toggleMenu(item.key)}
+                      initial={isSectionActive(item, pathname) ? "hover" : "rest"}
+                      whileHover="hover"
+                      animate={activeKey === item.key || isSectionActive(item, pathname) ? "hover" : "rest"}
+                      className={`relative flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm transition-all duration-200 hover:scale-[1.04] active:scale-[0.98]
+                        ${
+                          item.highlight
+                            ? "text-pink-300 hover:text-pink-200"
+                            : "text-white/85 hover:text-white"
+                        }
+                        ${isSectionActive(item, pathname) ? "font-bold" : "font-semibold"}
+                      `}
                     >
-                      <ChevronDown size={14} />
-                    </motion.span>
-
-                    <motion.span
-                      variants={underlineVariants}
-                      transition={{ duration: 0.25, ease: "easeOut" }}
-                      style={{ originX: 0 }}
-                      className={`absolute left-4 right-4 -bottom-0.5 h-[2px] rounded-full ${
-                        item.highlight ? "bg-pink-300" : "bg-teal-400"
-                      }`}
-                    />
-                  </motion.button>
-
-                  {/* Rozwijany panel — idealnie wyśrodkowany pod punktem, z którego został otwarty */}
-                  <AnimatePresence>
-                    {activeKey === item.key && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -8, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -8, scale: 0.98 }}
-                        transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="absolute left-1/2 top-full mt-3 z-40 w-max min-w-[340px] max-w-md -translate-x-1/2 rounded-2xl border border-slate-100 bg-white shadow-2xl"
+                      {item.highlight && <Sparkles size={14} />}
+                      {item.label}
+                      <m.span
+                        animate={{ rotate: activeKey === item.key ? 180 : 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
                       >
-                        <div className="px-6 py-6">
-                          <Panel
-                            item={item}
-                            pathname={pathname}
-                            onItemClick={() => setActiveKey(null)}
-                          />
-                        </div>
-                      </motion.div>
+                        <ChevronDown size={14} />
+                      </m.span>
+
+                      <m.span
+                        variants={underlineVariants}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                        style={{ originX: 0 }}
+                        className={`absolute left-4 right-4 -bottom-0.5 h-[2px] rounded-full ${
+                          item.highlight ? "bg-pink-300" : "bg-teal-400"
+                        }`}
+                      />
+                    </m.button>
+
+                    {/* Rozwijany panel — idealnie wyśrodkowany pod punktem, z którego został otwarty */}
+                    <AnimatePresence>
+                      {activeKey === item.key && (
+                        <m.div
+                          initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                          transition={{ duration: 0.18, ease: "easeOut" }}
+                          className="absolute left-1/2 top-full mt-3 z-40 w-max min-w-[340px] max-w-md -translate-x-1/2 rounded-2xl border border-slate-100 bg-white shadow-2xl"
+                        >
+                          <div className="px-6 py-6">
+                            <Panel
+                              item={item}
+                              pathname={pathname}
+                              onItemClick={() => setActiveKey(null)}
+                            />
+                          </div>
+                        </m.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <Link
+                    key={item.key}
+                    href={item.href ?? "#"}
+                    className={`relative flex items-center gap-1 rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-200 hover:scale-[1.04] active:scale-[0.98] ${
+                      item.highlight ? "text-pink-300 hover:text-pink-200" : "text-white/85 hover:text-white"
+                    } ${
+                      pathname === item.href
+                        ? "bg-white/20 text-white shadow-inner"
+                        : "hover:bg-white/10"
+                    }`}
+                  >
+                    {item.label}
+                    {pathname === item.href && (
+                      <span className="absolute -bottom-1 left-3 right-3 h-[3px] rounded-full bg-teal-400" />
                     )}
-                  </AnimatePresence>
+                  </Link>
+                )
+              )}
+            </nav>
+
+            <div className="hidden lg:flex items-center gap-2.5">
+              <m.a
+                href={`tel:${PHONE_HREF}`}
+                onClick={() => trackContact("header_phone_button")}
+                whileHover={{ scale: 1.05, boxShadow: "0 8px 20px rgba(20,184,166,0.45)" }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                className="flex items-center gap-2 rounded-full bg-teal-500 px-5 py-2.5 text-sm font-bold text-white"
+              >
+                <Phone size={15} />
+                Zadzwoń
+              </m.a>
+              <m.a
+                href={`sms:${PHONE_HREF}?body=${SMS_BODY}`}
+                onClick={() => trackContact("header_sms_button")}
+                aria-label="Wyślij SMS"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                className="flex items-center justify-center rounded-full border border-white/15 bg-white/5 p-2.5 text-white transition-colors hover:bg-white/10"
+              >
+                <MessageCircle size={16} />
+              </m.a>
+            </div>
+
+            <button
+              type="button"
+              className="lg:hidden text-white transition-transform duration-200 hover:scale-110 active:scale-95"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Otwórz menu"
+            >
+              <Menu size={24} />
+            </button>
+          </div>
+        </header>
+
+        {/* Mobile drawer — na telefonie zajmuje 100% szerokości (test) */}
+        <AnimatePresence>
+          {mobileOpen && (
+            <div className="fixed inset-0 z-50 lg:hidden">
+              <m.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0 bg-black/50"
+                onClick={() => setMobileOpen(false)}
+              />
+              <m.div
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "tween", duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
+                className="absolute right-0 top-0 h-full w-full sm:w-[86%] sm:max-w-sm overflow-y-auto px-5 py-5"
+                style={{ backgroundColor: "#0B2A3D" }}
+              >
+                <div className="mb-4 flex items-center justify-between">
+                  <Logo />
+                  <button
+                    type="button"
+                    onClick={() => setMobileOpen(false)}
+                    className="text-white transition-transform duration-200 hover:scale-110 hover:rotate-90 active:scale-95"
+                    aria-label="Zamknij menu"
+                  >
+                    <X size={22} />
+                  </button>
                 </div>
-              ) : (
-                <Link
-                  key={item.key}
-                  href={item.href ?? "#"}
-                  className={`relative flex items-center gap-1 rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-200 hover:scale-[1.04] active:scale-[0.98] ${
-                    item.highlight ? "text-pink-300 hover:text-pink-200" : "text-white/85 hover:text-white"
-                  } ${
-                    pathname === item.href
-                      ? "bg-white/20 text-white shadow-inner"
-                      : "hover:bg-white/10"
-                  }`}
-                >
-                  {item.label}
-                  {pathname === item.href && (
-                    <span className="absolute -bottom-1 left-3 right-3 h-[3px] rounded-full bg-teal-400" />
-                  )}
-                </Link>
-              )
-            )}
-          </nav>
 
-          <div className="hidden lg:flex items-center gap-5">
-            <motion.a
-              href="tel:+48883334124"
-              whileHover={{ scale: 1.05, boxShadow: "0 8px 20px rgba(20,184,166,0.45)" }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 400, damping: 20 }}
-              className="flex items-center gap-2 rounded-full bg-teal-500 px-5 py-2.5 text-sm font-bold text-white"
-            >
-              <Phone size={15} />
-              Zadzwoń
-            </motion.a>
-          </div>
+                {NAV.map((item) => (
+                  <MobileNavItem
+                    key={item.key}
+                    item={item}
+                    open={mobileActiveKey === item.key}
+                    onToggle={() => setMobileActiveKey(mobileActiveKey === item.key ? null : item.key)}
+                    active={!item.panel && pathname === item.href}
+                    pathname={pathname}
+                    onNavigate={() => {
+                      setMobileOpen(false);
+                      setMobileActiveKey(null);
+                    }}
+                  />
+                ))}
 
-          <button
-            type="button"
-            className="lg:hidden text-white transition-transform duration-200 hover:scale-110 active:scale-95"
-            onClick={() => setMobileOpen(true)}
-            aria-label="Otwórz menu"
-          >
-            <Menu size={24} />
-          </button>
-        </div>
-      </header>
-
-      {/* Mobile drawer — na telefonie zajmuje 100% szerokości (test) */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 bg-black/50"
-              onClick={() => setMobileOpen(false)}
-            />
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "tween", duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
-              className="absolute right-0 top-0 h-full w-full sm:w-[86%] sm:max-w-sm overflow-y-auto px-5 py-5"
-              style={{ backgroundColor: "#0B2A3D" }}
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <Logo />
-                <button
-                  type="button"
-                  onClick={() => setMobileOpen(false)}
-                  className="text-white transition-transform duration-200 hover:scale-110 hover:rotate-90 active:scale-95"
-                  aria-label="Zamknij menu"
-                >
-                  <X size={22} />
-                </button>
-              </div>
-
-              {NAV.map((item) => (
-                <MobileNavItem
-                  key={item.key}
-                  item={item}
-                  open={mobileActiveKey === item.key}
-                  onToggle={() => setMobileActiveKey(mobileActiveKey === item.key ? null : item.key)}
-                  active={!item.panel && pathname === item.href}
-                  pathname={pathname}
-                  onNavigate={() => {
-                    setMobileOpen(false);
-                    setMobileActiveKey(null);
-                  }}
-                />
-              ))}
-
-              <div className="mt-5 flex flex-col gap-2">
-                <motion.a
-                  href="tel:+48883334124"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                  className="flex items-center justify-center gap-2 rounded-full bg-teal-500 py-2.5 text-sm font-bold text-white"
-                >
-                  <Phone size={15} />
-                  Zadzwoń: +48 883 334 124
-                </motion.a>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </div>
+                <div className="mt-5 flex flex-col gap-2">
+                  <m.a
+                    href={`tel:${PHONE_HREF}`}
+                    onClick={() => trackContact("header_mobile_phone_button")}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    className="flex items-center justify-center gap-2 rounded-full bg-teal-500 py-2.5 text-sm font-bold text-white"
+                  >
+                    <Phone size={15} />
+                    Zadzwoń: {PHONE_DISPLAY}
+                  </m.a>
+                  <m.a
+                    href={`sms:${PHONE_HREF}?body=${SMS_BODY}`}
+                    onClick={() => trackContact("header_mobile_sms_button")}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    className="flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 py-2.5 text-sm font-bold text-white"
+                  >
+                    <MessageCircle size={15} />
+                    Wyślij SMS
+                  </m.a>
+                </div>
+              </m.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
+    </LazyMotion>
   );
 }
