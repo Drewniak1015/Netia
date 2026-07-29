@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Phone,
   MessageCircle,
@@ -23,21 +22,14 @@ import {
   ClipboardCheck,
 } from "lucide-react";
 import type { ElementType } from "react";
+import { trackContact } from "@/lib/meta-track";
+import { useRevealOnScroll } from "@/hooks/Userevealonscroll";
 
 type FaqItem = {
   q: string;
   a: string;
   icon: ElementType;
 };
-
-/* [DODANO] Ten sam wzorzec trackingu co w Hero.tsx / Oferty.tsx /
-   HowToOrderSection.tsx / NetiaSocialProof.tsx — odpalanie zdarzenia Meta
-   Pixel "Contact" przy kliknięciu w telefon/SMS. */
-function trackContact(contentName: string) {
-  if (typeof window !== "undefined" && (window as any).fbq) {
-    (window as any).fbq("track", "Contact", { content_name: contentName });
-  }
-}
 
 // Tier 1 — najsilniejsze objection-killery, zawsze widoczne domyślnie
 const TIER_1: FaqItem[] = [
@@ -128,13 +120,106 @@ const TIER_3: FaqItem[] = [
 
 const EXTRA_ITEMS = [...TIER_2, ...TIER_3];
 
+/* [OPTYMALIZACJA] Bez framer-motion:
+   - rozwijanie odpowiedzi: grid-template-rows 0fr/1fr trick (ten sam
+     wzorzec co w Miasta.tsx dla rozwijanej listy miast) zamiast
+     AnimatePresence + animate={{ height: "auto" }}.
+   - obracanie ikony "+" na 45°, pulsowanie ikonki gdy otwarte, hover na
+     karcie: czyste CSS (transition/transform, @keyframes).
+   - wejście na scroll: IntersectionObserver (useRevealOnScroll) zamiast
+     whileInView. */
+function FaqCard({
+  item,
+  isOpen,
+  onToggle,
+  visible,
+  delay,
+}: {
+  item: FaqItem;
+  isOpen: boolean;
+  onToggle: () => void;
+  visible: boolean;
+  delay: number;
+}) {
+  const Icon = item.icon;
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-expanded={isOpen}
+      onClick={onToggle}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onToggle();
+        }
+      }}
+      className={`faq-reveal cursor-pointer rounded-2xl overflow-hidden border transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99] ${
+        isOpen
+          ? "bg-teal-400/10 border-teal-400/30 shadow-[0_8px_20px_-8px_rgba(0,0,0,0.35)]"
+          : "bg-white/5 border-white/10 hover:bg-white/[0.07]"
+      } ${visible ? "in-view" : ""}`}
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div className="w-full flex items-center gap-4 text-left px-5 py-4 sm:px-6 sm:py-5">
+        <div
+          className={`flex items-center justify-center shrink-0 rounded-xl h-10 w-10 transition-colors duration-300 ${
+            isOpen ? "bg-teal-400/15 text-teal-300 faq-icon-pulse" : "bg-white/10 text-white/60"
+          }`}
+        >
+          <Icon size={19} strokeWidth={2} />
+        </div>
+
+        <span
+          className={`flex-1 font-medium text-base sm:text-[1.0625rem] leading-snug transition-colors duration-300 ${
+            isOpen ? "text-white" : "text-white/80"
+          }`}
+        >
+          {item.q}
+        </span>
+
+        <div
+          className={`shrink-0 transition-transform duration-300 ease-out ${
+            isOpen ? "rotate-45" : "rotate-0"
+          }`}
+        >
+          <Plus size={20} className="text-teal-400" />
+        </div>
+      </div>
+
+      {/* Grid-rows trick zamiast animate height: "auto" z frameru */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: isOpen ? "1fr" : "0fr",
+          transition: "grid-template-rows 0.3s cubic-bezier(0.22,1,0.36,1)",
+        }}
+      >
+        <div style={{ overflow: "hidden" }}>
+          <p
+            className="px-5 sm:px-6 pb-5 sm:pb-6 pl-[calc(2.5rem+1rem)] text-sm sm:text-[0.9375rem] leading-relaxed text-white/60"
+            style={{
+              opacity: isOpen ? 1 : 0,
+              transition: `opacity ${isOpen ? "0.3s ease 0.05s" : "0.15s ease"}`,
+            }}
+          >
+            {item.a}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function NetiaFAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [headerRef, headerVisible] = useRevealOnScroll<HTMLDivElement>();
+  const [gridRef, gridVisible] = useRevealOnScroll<HTMLDivElement>();
+  const [ctaRef, ctaVisible] = useRevealOnScroll<HTMLDivElement>();
 
   const visibleItems = showAll ? [...TIER_1, ...EXTRA_ITEMS] : TIER_1;
 
-  // [DODANO] Treść SMS-a — pełne zdanie zamiast samego "INTERNET"
   const smsBody = encodeURIComponent(
     "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
   );
@@ -144,175 +229,97 @@ export default function NetiaFAQ() {
       style={{ backgroundColor: "#0B2A3D" }}
       className="w-full py-16 px-6 font-sans overflow-hidden"
     >
-      <div className="max-w-305 mx-auto">
-        {/* Eyebrow */}
-        <motion.div
-          className="flex justify-center mb-5"
-          initial={{ opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.6 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">
-            <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
-            FAQ
-          </span>
-        </motion.div>
+      <style>{`
+        @keyframes faqFadeUp {
+          from { opacity: 0; transform: translateY(14px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes faqIconPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.08); }
+        }
+        @keyframes faqCtaGlow {
+          0% { box-shadow: 0 0 0 0 rgba(45,212,191,0.45); }
+          50% { box-shadow: 0 0 0 8px rgba(45,212,191,0); }
+          100% { box-shadow: 0 0 0 0 rgba(45,212,191,0.45); }
+        }
+        .faq-reveal { opacity: 0; }
+        .faq-reveal.in-view { animation: faqFadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+        .faq-icon-pulse { animation: faqIconPulse 1.8s ease-in-out infinite; }
+        .faq-cta-glow { animation: faqCtaGlow 2.4s ease-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .faq-reveal { opacity: 1; animation: none !important; }
+          .faq-icon-pulse, .faq-cta-glow { animation: none !important; }
+        }
+      `}</style>
 
-        <motion.h2
-          className="text-center font-extrabold text-white text-2xl sm:text-3xl lg:text-4xl tracking-tight mb-3"
-          initial={{ opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.6 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
-        >
-          Najczęstsze pytania
-        </motion.h2>
-        <motion.p
-          className="text-center mb-12 max-w-lg mx-auto text-sm sm:text-base text-white/65"
-          initial={{ opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.6 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.16 }}
-        >
-          Odpowiedzi na to, co najczęściej pyta nas 2,4 mln klientów. Coś jeszcze
-          niejasne? Doradca odpowie w 3 minuty przez telefon.
-        </motion.p>
+      <div className="max-w-305 mx-auto">
+        <div ref={headerRef}>
+          <div className={`faq-reveal flex justify-center mb-5 ${headerVisible ? "in-view" : ""}`}>
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">
+              <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
+              FAQ
+            </span>
+          </div>
+
+          <h2
+            className={`faq-reveal text-center font-extrabold text-white text-2xl sm:text-3xl lg:text-4xl tracking-tight mb-3 ${
+              headerVisible ? "in-view" : ""
+            }`}
+            style={{ animationDelay: "80ms" }}
+          >
+            Najczęstsze pytania
+          </h2>
+          <p
+            className={`faq-reveal text-center mb-12 max-w-lg mx-auto text-sm sm:text-base text-white/65 ${
+              headerVisible ? "in-view" : ""
+            }`}
+            style={{ animationDelay: "160ms" }}
+          >
+            Odpowiedzi na to, co najczęściej pyta nas 2,4 mln klientów. Coś jeszcze
+            niejasne? Doradca odpowie w 3 minuty przez telefon.
+          </p>
+        </div>
 
         {/* Accordion — dwie kolumny od sm w górę, jedna na mobile */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 items-start">
-          {visibleItems.map((item, i) => {
-            const isOpen = openIndex === i;
-            const Icon = item.icon;
-            return (
-              <motion.div
-                key={item.q}
-                role="button"
-                tabIndex={0}
-                aria-expanded={isOpen}
-                onClick={() => setOpenIndex(isOpen ? null : i)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setOpenIndex(isOpen ? null : i);
-                  }
-                }}
-                initial={{ opacity: 0, y: 14 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{
-                  duration: 0.5,
-                  ease: [0.22, 1, 0.36, 1],
-                  delay: (i % 2) * 0.08,
-                }}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.99 }}
-                className={`cursor-pointer rounded-2xl overflow-hidden border transition-colors duration-200 ${
-                  isOpen
-                    ? "bg-teal-400/10 border-teal-400/30"
-                    : "bg-white/5 border-white/10 hover:bg-white/[0.07]"
-                }`}
-                style={{
-                  boxShadow: isOpen
-                    ? "0 8px 20px -8px rgba(0,0,0,0.35)"
-                    : "none",
-                }}
-              >
-                <div className="w-full flex items-center gap-4 text-left px-5 py-4 sm:px-6 sm:py-5">
-                  <motion.div
-                    animate={
-                      isOpen
-                        ? { scale: [1, 1.08, 1] }
-                        : { scale: 1 }
-                    }
-                    transition={
-                      isOpen
-                        ? { duration: 1.8, repeat: Infinity, ease: "easeInOut" }
-                        : { duration: 0.3 }
-                    }
-                    className={`flex items-center justify-center shrink-0 rounded-xl h-10 w-10 transition-colors duration-300 ${
-                      isOpen
-                        ? "bg-teal-400/15 text-teal-300"
-                        : "bg-white/10 text-white/60"
-                    }`}
-                  >
-                    <Icon size={19} strokeWidth={2} />
-                  </motion.div>
-
-                  <span
-                    className={`flex-1 font-medium text-base sm:text-[1.0625rem] leading-snug transition-colors duration-300 ${
-                      isOpen ? "text-white" : "text-white/80"
-                    }`}
-                  >
-                    {item.q}
-                  </span>
-
-                  <motion.div
-                    animate={{ rotate: isOpen ? 45 : 0 }}
-                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                    className="shrink-0"
-                  >
-                    <Plus size={20} className="text-teal-400" />
-                  </motion.div>
-                </div>
-
-                <AnimatePresence initial={false}>
-                  {isOpen && (
-                    <motion.div
-                      key="content"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                      className="overflow-hidden"
-                    >
-                      <motion.p
-                        initial={{ y: -6, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 0.3, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-                        className="px-5 sm:px-6 pb-5 sm:pb-6 pl-[calc(2.5rem+1rem)] text-sm sm:text-[0.9375rem] leading-relaxed text-white/60"
-                      >
-                        {item.a}
-                      </motion.p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })}
+        <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 items-start">
+          {visibleItems.map((item, i) => (
+            <FaqCard
+              key={item.q}
+              item={item}
+              isOpen={openIndex === i}
+              onToggle={() => setOpenIndex(openIndex === i ? null : i)}
+              visible={gridVisible}
+              delay={(i % 2) * 80}
+            />
+          ))}
         </div>
 
         {/* Toggle — trzyma domyślną wysokość sekcji krótką, bez tracenia treści */}
         {!showAll && (
           <div className="flex justify-center mb-14">
-            <motion.button
+            <button
               type="button"
               onClick={() => {
                 setShowAll(true);
                 setOpenIndex(null);
               }}
-              whileHover={{ y: -1 }}
-              whileTap={{ scale: 0.98 }}
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white transition-colors duration-200"
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10 hover:text-white active:scale-[0.98]"
             >
               Pokaż więcej pytań ({EXTRA_ITEMS.length})
               <ChevronDown size={16} />
-            </motion.button>
+            </button>
           </div>
         )}
         {showAll && <div className="mb-14" />}
 
         {/* Closing CTA — call or SMS only, styled like Hero buttons */}
-        <motion.div
-          className="max-w-2xl mx-auto rounded-3xl border border-white/10 bg-white/5 px-6 py-8 sm:px-10 sm:py-10 text-center"
-          initial={{ opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        <div
+          ref={ctaRef}
+          className={`faq-reveal max-w-2xl mx-auto rounded-3xl border border-white/10 bg-white/5 px-6 py-8 sm:px-10 sm:py-10 text-center ${
+            ctaVisible ? "in-view" : ""
+          }`}
         >
-          {/* [ZMIENIONO] Nagłówek i opis — z trybu "masz pytania?" na tryb
-              domykający sprzedaż: "gotowy do zamówienia?" zamiast pytania
-              o wątpliwości. */}
           <h3 className="font-bold text-white text-xl sm:text-2xl mb-2">
             Gotowy/a do zamówienia?
           </h3>
@@ -321,20 +328,10 @@ export default function NetiaFAQ() {
           </p>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <motion.a
+            <a
               href="tel:+48887843260"
               onClick={() => trackContact("faq_closing_phone_button")}
-              animate={{
-                boxShadow: [
-                  "0 0 0 0 rgba(45, 212, 191, 0.45)",
-                  "0 0 0 8px rgba(45, 212, 191, 0)",
-                  "0 0 0 0 rgba(45, 212, 191, 0.45)",
-                ],
-              }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeOut" }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              className="flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white sm:min-w-60"
+              className="faq-cta-glow flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] active:scale-[0.97] sm:min-w-60"
             >
               <span className="flex items-center gap-3">
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
@@ -346,14 +343,12 @@ export default function NetiaFAQ() {
                 </span>
               </span>
               <ChevronRight size={18} className="text-white/70" />
-            </motion.a>
+            </a>
 
-            <motion.a
+            <a
               href={`sms:+48887843260?body=${smsBody}`}
               onClick={() => trackContact("faq_closing_sms_button")}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white sm:min-w-60"
+              className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] active:scale-[0.97] sm:min-w-60"
             >
               <span className="flex items-center gap-3">
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
@@ -365,9 +360,9 @@ export default function NetiaFAQ() {
                 </span>
               </span>
               <ChevronRight size={18} className="text-white/50" />
-            </motion.a>
+            </a>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

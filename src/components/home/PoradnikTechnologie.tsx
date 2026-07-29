@@ -1,24 +1,21 @@
 "use client";
 
-import { memo } from "react";
-import { LazyMotion, domAnimation, m, useReducedMotion, type Variants } from "framer-motion";
 import { Check, Wifi, Cable, Smartphone, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import DottedBackground from "@/components/ui/DottedBackground";
+import { useRevealOnScroll } from "@/hooks/Userevealonscroll";
 
 type Column = {
   icon: typeof Wifi;
   title: string;
-  points: string[]; // max 2 short points now
-  note: string; // one short line
+  points: string[];
+  note: string;
   featured?: boolean;
   speedLabel: string;
-  speedPct: number; // relative to fiber = 100%
+  speedPct: number;
   speedVariable?: boolean;
 };
 
-// Skrócone treści: max 2 krótkie punkty + 1 zwięzła notka na kolumnę
-// Notki celowo przetłumaczone na "co to znaczy dla Ciebie", nie na żargon techniczny
 const columns: Column[] = [
   {
     icon: Wifi,
@@ -50,44 +47,27 @@ const columns: Column[] = [
 
 const sectionBgStyle = { backgroundColor: "#0B2A3D" } as const;
 
-const gridVariants: Variants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.08 } },
-};
-
-const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
-};
-
-const fadeUpVariants: Variants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
-};
-
-const headerVariants: Variants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.06 } },
-};
-
-const ColumnCard = memo(function ColumnCard({
+/* [OPTYMALIZACJA] Bez framer-motion — hover kart to Tailwind
+   (hover:-translate-y-1), a wejście na scroll to IntersectionObserver +
+   CSS @keyframes (useRevealOnScroll), zamiast LazyMotion + m + whileInView. */
+function ColumnCard({
   column,
-  reduceMotion,
+  visible,
+  delay,
 }: {
   column: Column;
-  reduceMotion: boolean;
+  visible: boolean;
+  delay: number;
 }) {
   const Icon = column.icon;
   return (
-    <m.article
-      variants={cardVariants}
-      whileHover={reduceMotion ? undefined : { y: -3 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
-      className={`relative flex flex-col rounded-2xl border p-5 will-change-transform ${
+    <article
+      className={`poradnik-reveal relative flex flex-col rounded-2xl border p-5 transition-transform duration-200 will-change-transform hover:-translate-y-1 ${
         column.featured
           ? "border-teal-400/50 bg-[#0f2436] shadow-[0_0_24px_-8px_rgba(45,212,191,0.25)]"
           : "border-white/10 bg-[#0d1f31]"
-      }`}
+      } ${visible ? "in-view" : ""}`}
+      style={{ animationDelay: `${delay}ms` }}
     >
       {column.featured && (
         <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-teal-400 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#0a1a2b] text-center">
@@ -157,74 +137,82 @@ const ColumnCard = memo(function ColumnCard({
       >
         {column.note}
       </p>
-    </m.article>
+    </article>
   );
-});
+}
 
 export default function PoradnikTechnologie() {
-  const reduceMotion = useReducedMotion();
+  const [headerRef, headerVisible] = useRevealOnScroll<HTMLDivElement>();
+  const [gridRef, gridVisible] = useRevealOnScroll<HTMLDivElement>();
 
   return (
-    <LazyMotion features={domAnimation} strict>
-      <section className="relative overflow-hidden py-10 px-8" style={sectionBgStyle}>
-        <DottedBackground variant="grid-fade" size={40} opacity={0.15} focusY="50%" />
+    <section className="relative overflow-hidden py-10 px-8" style={sectionBgStyle}>
+      <DottedBackground variant="grid-fade" size={40} opacity={0.15} focusY="50%" />
 
-        <div className="max-w-305 mx-auto">
-          <m.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-            variants={headerVariants}
-            className="text-center mb-8"
-          >
-            <m.span
-              variants={fadeUpVariants}
-              className="inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wide text-teal-300"
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
-              KRÓTKI PRZEWODNIK
-            </m.span>
-            <m.h2 variants={fadeUpVariants} className="mt-4 text-3xl md:text-4xl font-extrabold text-white">
-              Dlaczego światłowód, <span className="text-teal-400">a nie LTE czy kabel?</span>
-            </m.h2>
-            {/* Skrócony lead — jedno zdanie zamiast trzech */}
-            <m.p variants={fadeUpVariants} className="mt-3 text-slate-400 text-sm max-w-xl mx-auto">
-              Światłowód Netii jest dostępny w wybranych lokalizacjach — sprawdź, która technologia działa pod Twoim adresem.
-            </m.p>
-          </m.div>
+      <style>{`
+        @keyframes poradnikFadeUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .poradnik-reveal { opacity: 0; }
+        .poradnik-reveal.in-view {
+          animation: poradnikFadeUp 0.5s ease-out both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .poradnik-reveal { opacity: 1; animation: none !important; }
+        }
+      `}</style>
 
-          <m.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-            variants={gridVariants}
-            className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch"
+      <div className="max-w-305 mx-auto">
+        <div ref={headerRef} className="text-center mb-8">
+          <span
+            className={`poradnik-reveal inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wide text-teal-300 ${
+              headerVisible ? "in-view" : ""
+            }`}
           >
-            {columns.map((column) => (
-              <ColumnCard key={column.title} column={column} reduceMotion={!!reduceMotion} />
-            ))}
-          </m.div>
-
-          {/* Zamiast osobnego bloku CTA (Zadzwoń/SMS) — sticky header już to pokrywa.
-              Zostaje tylko lekki link tekstowy, żeby nie duplikować przycisków. */}
-          <m.p
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-            variants={fadeUpVariants}
-            className="mt-6 text-center text-sm text-slate-400"
+            <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
+            KRÓTKI PRZEWODNIK
+          </span>
+          <h2
+            className={`poradnik-reveal mt-4 text-3xl md:text-4xl font-extrabold text-white ${
+              headerVisible ? "in-view" : ""
+            }`}
+            style={{ animationDelay: "60ms" }}
           >
-            Pakiety Netii zaczynają się od 30 zł/mies. —{" "}
-            <Link
-              href="/oferty/NajlepszaCena#pakiety"
-              className="inline-flex items-center gap-1 font-semibold text-teal-400 hover:text-teal-300 transition-colors"
-            >
-            wybierz ofertę i sprawdź dostępność pod swoim adresem
-              <ChevronRight className="h-3.5 w-3.5" />
-            </Link>
-          </m.p>
+            Dlaczego światłowód, <span className="text-teal-400">a nie LTE czy kabel?</span>
+          </h2>
+          <p
+            className={`poradnik-reveal mt-3 text-slate-400 text-sm max-w-xl mx-auto ${
+              headerVisible ? "in-view" : ""
+            }`}
+            style={{ animationDelay: "120ms" }}
+          >
+            Światłowód Netii jest dostępny w wybranych lokalizacjach — sprawdź, która technologia działa pod Twoim adresem.
+          </p>
         </div>
-      </section>
-    </LazyMotion>
+
+        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
+          {columns.map((column, i) => (
+            <ColumnCard key={column.title} column={column} visible={gridVisible} delay={i * 80} />
+          ))}
+        </div>
+
+        <p
+          className={`poradnik-reveal mt-6 text-center text-sm text-slate-400 ${
+            gridVisible ? "in-view" : ""
+          }`}
+          style={{ animationDelay: `${columns.length * 80 + 60}ms` }}
+        >
+          Pakiety Netii zaczynają się od 30 zł/mies. —{" "}
+          <Link
+            href="/oferty/NajlepszaCena#pakiety"
+            className="inline-flex items-center gap-1 font-semibold text-teal-400 hover:text-teal-300 transition-colors"
+          >
+            wybierz ofertę i sprawdź dostępność pod swoim adresem
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        </p>
+      </div>
+    </section>
   );
 }
