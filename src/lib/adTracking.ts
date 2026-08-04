@@ -10,7 +10,7 @@
 const STORAGE_KEY = 'ad_custom_id';
 
 // URL wygenerowany przy wdrożeniu Google Apps Script (kończy się na /exec)
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbycaqBVveRBEFOgzUzDZZuiJoui0beFFZGS_Cxn7IEJ2d_d9jltP7h-nFmflWj7BLUf/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKZBsipJQEjPqtGZRS6paIHNO7uqbb5pcCTrQmNChhKyvrEHN1tEy5Y2EOt6QrhUdrig/exec';
 
 /**
  * Wywołaj tę funkcję raz, przy wejściu na stronę (np. w layout.tsx).
