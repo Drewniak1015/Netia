@@ -4,6 +4,7 @@ import Footer from '@/components/layout/Footer';
 import { KonfiguratorProvider } from '@/components/Konfigurator/konfigurator';
 import CookieConsent from '@/components/CookieConsent';
 import MetaPixel from '@/components/MetaPixel';
+import AdIdCapture from '@/components/AdIdCapture';
 import './globals.css';
 
 const geistSans = Geist({
@@ -57,12 +58,13 @@ export default function RootLayout({
   return (
     <html lang="pl" className={geistSans.variable}>
       <body>
+<AdIdCapture />
+
         <KonfiguratorProvider>
           <Header />
           {children}
           <Footer />
         </KonfiguratorProvider>
-
         {/* Baner zgody na cookies — musi być poza KonfiguratorProvider,
             żeby renderować się na każdej podstronie niezależnie */}
         <CookieConsent />

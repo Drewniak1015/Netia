@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
 import { trackContact } from "@/lib/meta-track";
+import { trackPhoneClick, trackSmsClick } from "@/lib/adTracking";
 
 /* ------------------------------------------------------------------ */
 /*  HERO — [OPTYMALIZACJA] zero framer-motion.                          */
@@ -155,7 +156,10 @@ function Hero() {
             {/* CTA primary */}
             <a
               href="tel:+48887843260"
-              onClick={() => trackContact("hero_phone_button")}
+              onClick={() => {
+                trackContact("hero_phone_button");
+                trackPhoneClick();
+              }}
               className="flex min-h-[60px] items-center justify-between gap-4 rounded-2xl bg-teal-500 px-5 py-3 text-white shadow-lg shadow-teal-500/20 outline-none transition-all duration-150 hover:scale-[1.02] hover:shadow-teal-400/30 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
             >
               <span className="flex items-center gap-3">
@@ -175,7 +179,10 @@ function Hero() {
               href={`sms:+48887843260?body=${encodeURIComponent(
                 "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
               )}`}
-              onClick={() => trackContact("hero_sms_button")}
+              onClick={() => {
+                trackContact("hero_sms_button");
+                trackSmsClick();
+              }}
               className="flex min-h-[60px] items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-white outline-none transition-all duration-150 hover:scale-[1.02] hover:bg-white/[0.08] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
             >
               <span className="flex items-center gap-3">
