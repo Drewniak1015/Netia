@@ -1,54 +1,26 @@
 import { Geist } from "next/font/google";
+import Script from "next/script";
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { KonfiguratorProvider } from '@/components/Konfigurator/konfigurator';
 import CookieConsent from '@/components/CookieConsent';
-import MetaPixel from '@/components/MetaPixel';
 import AdIdCapture from '@/components/AdIdCapture';
 import './globals.css';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-  // FIX (CLS, mobile-only): "swap" podmienia font zastępczy na Geist gdy
-  // tylko się doładuje — na wolnym łączu (Lighthouse Mobile throttling)
-  // to okno jest długo widoczne, a na wąskim viewporcie mobilnym nawet
-  // drobna różnica w szerokości znaków potrafi przełamać tekst na inną
-  // liczbę linii (na desktopie zwykle nie, bo jest więcej "luzu" w wierszu).
-  // "optional" mówi przeglądarce: jeśli font nie zdąży w ~100ms, zostań
-  // przy foncie zastępczym na cały ten load — zero ryzyka shiftu z fonta.
-  // Font i tak trafia do cache, więc kolejne wizyty i tak go użyją od razu.
   display: "optional",
-  // FIX (Drzewo zależności sieciowych): usunięty preload — z display:
-  // "optional" font i tak nie blokuje renderu tekstu, więc preload z
-  // wysokim priorytetem tylko zabierał pasmo ważniejszym zasobom (np.
-  // obrazkowi LCP w Hero) w tej samej pierwszej fazie ładowania.
   preload: false,
 });
 
-// FIX (29,18 KiB zbędnego fontu na ścieżce krytycznej): Geist_Mono był
-// zaimportowany i podpięty globalnie przez className na <html>, ale
-// nigdzie na stronie nie jest faktycznie używany (brak font-mono w
-// Tailwindzie / brak var(--font-geist-mono) w CSS). Przeglądarka i tak
-// go ściągała na każdej stronie, bo był zadeklarowany globalnie.
-// Usunięty całkowicie. Jeśli w przyszłości pojawi się realna potrzeba
-// (np. kod promocyjny, cena w monospace) — dodać z powrotem, ale
-// zaimportować LOKALNIE w tym jednym komponencie, nie globalnie w layout.
-
 export const metadata = {
-  // FIX (SEO — "URL nie jest bezwzględny"): bez metadataBase Next.js nie
-  // wie jak zamienić względne ścieżki (np. w alternates.canonical na
-  // poszczególnych stronach) na pełne, bezwzględne URL-e — więc albo
-  // canonical w ogóle się nie generuje, albo generuje się jako ścieżka
-  // względna, dokładnie to co zgłosił Lighthouse. metadataBase ustawia
-  // domenę-bazę dla WSZYSTKICH stron w apce naraz (canonical, Open Graph
-  // images, itd.) — nie trzeba tego powtarzać na każdej podstronie.
-  //
-  // PODMIENIONO na docelową domenę produkcyjną (było: netia.vercel.app)
   metadataBase: new URL("https://www.swiatlowod-netia-oferta.pl"),
   title: 'Netia - Internet Światłowodowy',
   description: '...',
 };
+
+const META_PIXEL_ID = "1349335553947080";
 
 export default function RootLayout({
   children,
@@ -58,21 +30,46 @@ export default function RootLayout({
   return (
     <html lang="pl" className={geistSans.variable}>
       <body>
-<AdIdCapture />
+        <AdIdCapture />
 
         <KonfiguratorProvider>
           <Header />
           {children}
           <Footer />
         </KonfiguratorProvider>
+
         {/* Baner zgody na cookies — musi być poza KonfiguratorProvider,
             żeby renderować się na każdej podstronie niezależnie */}
         <CookieConsent />
 
-        {/* Meta Pixel — komponent nic nie renderuje (return null), sam
-            decyduje czy załadować skrypt na podstawie zgody użytkownika.
-            Pixel ID: Netia-Oferta-Pixel (Meta Business Suite). */}
-        <MetaPixel pixelId="2143913536525465" />
+        {/* Meta Pixel — Netia-Oferta-Pixel (Meta Business Suite) */}
+        <Script
+          id="meta-pixel"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              !function(f,b,e,v,n,t,s)
+              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+              n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+              if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+              n.queue=[];t=b.createElement(e);t.async=!0;
+              t.src=v;s=b.getElementsByTagName(e)[0];
+              s.parentNode.insertBefore(t,s)}(window, document,'script',
+              'https://connect.facebook.net/en_US/fbevents.js');
+              fbq('init', '${META_PIXEL_ID}');
+              fbq('track', 'PageView');
+            `,
+          }}
+        />
+        <noscript>
+          <img
+            height="1"
+            width="1"
+            style={{ display: 'none' }}
+            src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
+            alt=""
+          />
+        </noscript>
       </body>
     </html>
   );
