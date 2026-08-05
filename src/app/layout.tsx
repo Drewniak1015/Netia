@@ -20,7 +20,7 @@ export const metadata = {
   description: '...',
 };
 
-const META_PIXEL_ID = "1349335553947080";
+const META_PIXEL_ID = "2143913536525465";
 
 export default function RootLayout({
   children,
