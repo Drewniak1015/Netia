@@ -120,7 +120,7 @@ export const OFFER_SECTIONS: OfferSectionData[] = [
         priceNote: "zł/mies.",
         features: [FEATURE_ROUTER_BASIC, FEATURE_DEKODER_BASIC, FEATURE_NETIA_GO],
         tvSize: "XS",
-        promoMonths: 0,
+        promoMonths: 3,
       },
       {
         name: "Internet 600 Mb/s + TV M",
@@ -153,7 +153,7 @@ export const OFFER_SECTIONS: OfferSectionData[] = [
         priceNote: "zł/mies.",
         features: [FEATURE_ROUTER_WIFI6, FEATURE_DEKODER_4K, FEATURE_NETIA_GO],
         tvSize: "S",
-        promoMonths: 3,
+        promoMonths: 6,
       },
       {
         name: "Internet 1 Gb/s + TV M",
@@ -186,7 +186,7 @@ export const OFFER_SECTIONS: OfferSectionData[] = [
         priceNote: "zł/mies.",
         features: [FEATURE_ROUTER_WIFI7, FEATURE_DEKODER_4K, FEATURE_NETIA_GO],
         tvSize: "S",
-        promoMonths: 3,
+        promoMonths: 6,
       },
       {
         name: "Internet 2 Gb/s + TV M",

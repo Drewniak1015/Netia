@@ -92,7 +92,7 @@ export const plans: Plan[] = [
     speed: "1000 Mb/s",
     price: "65",
     tag: "Moc dla wymagających",
-    promoMonths: 3,
+    promoMonths: 6,
     icon: Zap,
     speedInfoId: "predkosc-1000",
     accent: "pink",

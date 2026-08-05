@@ -14,6 +14,8 @@ export type Offer = {
   speed: string;
   pkg: string;
   price: string;
+  /** Pigułka nad/pod ceną informująca o długości trwania promocji, np. "Promocja przez 6 miesięcy" */
+  monthsPill: string;
   features: Feature[];
   featured?: boolean;
 };
@@ -23,6 +25,7 @@ export const offers: Offer[] = [
     speed: "1000 Mb/s",
     pkg: "TV S",
     price: "70 zł",
+    monthsPill: "Cena promocyjna przez 6 miesięcy",
     features: [
       { label: "Router z Wi-Fi 6 w cenie", infoId: "router-wifi6" },
       { label: "Dekoder 4K w cenie", infoId: "dekoder-evobox" },
@@ -33,6 +36,7 @@ export const offers: Offer[] = [
     speed: "1000 Mb/s",
     pkg: "TV M",
     price: "80 zł",
+    monthsPill: "Cena promocyjna przez 6 miesięcy",
     featured: true,
     features: [
       { label: "Router z Wi-Fi 6 w cenie", infoId: "router-wifi6" },
@@ -45,6 +49,7 @@ export const offers: Offer[] = [
     speed: "2000 Mb/s",
     pkg: "TV L",
     price: "125 zł",
+    monthsPill: "Cena promocyjna przez 6 miesięcy",
     features: [
       { label: "Router Combo z ONT Wi-Fi 7", infoId: "router-wifi7" },
       { label: "Dekoder 4K w cenie", infoId: "dekoder-evobox" },

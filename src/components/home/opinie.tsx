@@ -12,6 +12,7 @@ import {
   Clock,
   MessageCircle,
   ChevronRight,
+  Mail,
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
 import { REVIEWS } from "./homeReviewsData";
@@ -70,6 +71,7 @@ type AdvisorInfo = {
   advisorRole?: string;
   advisorBio?: string;
   advisorPhotoUrl?: string;
+  advisorEmail?: string;
   phoneNumber?: string;
 };
 
@@ -107,6 +109,7 @@ export default function NetiaSocialProof({
   advisorBio = "Pomagam klientom bezstresowo zmienić dostawcę internetu.",
   // TODO: podmień ścieżkę, jeśli plik leży gdzie indziej niż /public.
   advisorPhotoUrl = "/images/Jaroslaw.webp",
+  advisorEmail = "jaroslaw.sitek@przedstawiciel.netia.pl",
   phoneNumber = "+48 887 843 260",
 }: AdvisorInfo) {
   const [sectionRef, sectionInView] = useInView();
@@ -273,6 +276,16 @@ export default function NetiaSocialProof({
                 </p>
                 {advisorBio && (
                   <p className="text-white/45 text-xs leading-snug m-0 mt-1">{advisorBio}</p>
+                )}
+                {advisorEmail && (
+                  <a
+                    href={`mailto:${advisorEmail}`}
+                    onClick={() => trackContact("social_proof_email_link")}
+                    className="mt-1.5 inline-flex items-center gap-1.5 text-teal-300/90 text-xs font-medium transition-colors hover:text-teal-300 hover:underline underline-offset-2"
+                  >
+                    <Mail size={12} className="shrink-0" />
+                    {advisorEmail}
+                  </a>
                 )}
               </div>
             </div>

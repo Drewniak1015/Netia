@@ -59,9 +59,9 @@ const OfferCard = memo(function OfferCard({
       </p>
 
       <PromoCena
-        promoLabel="Abonament 12 miesięcy za 0 zł po rabatach"
+        promoLabel="Abonament 6 miesięcy za 0 zł po rabatach"
         regularPrice={offer.price}
-        regularPriceNote={`Od 13. do 24. miesiąca: ${offer.price}/mies.`}
+        regularPriceNote={`Od 7. do 24. miesiąca: ${offer.price}/mies.`}
         accent="orange"
         leadWithZero={false}
       />
