@@ -2,9 +2,6 @@
 
 import { useState } from "react";
 import {
-  Phone,
-  MessageCircle,
-  ChevronRight,
   ChevronDown,
   Plus,
   ShieldCheck,
@@ -22,8 +19,6 @@ import {
   ClipboardCheck,
 } from "lucide-react";
 import type { ElementType } from "react";
-import { trackContact } from "@/lib/meta-track";
-import { useRevealOnScroll } from "@/hooks/Userevealonscroll";
 
 type FaqItem = {
   q: string;
@@ -120,26 +115,18 @@ const TIER_3: FaqItem[] = [
 
 const EXTRA_ITEMS = [...TIER_2, ...TIER_3];
 
-/* [OPTYMALIZACJA] Bez framer-motion:
-   - rozwijanie odpowiedzi: grid-template-rows 0fr/1fr trick (ten sam
-     wzorzec co w Miasta.tsx dla rozwijanej listy miast) zamiast
-     AnimatePresence + animate={{ height: "auto" }}.
-   - obracanie ikony "+" na 45°, pulsowanie ikonki gdy otwarte, hover na
-     karcie: czyste CSS (transition/transform, @keyframes).
-   - wejście na scroll: IntersectionObserver (useRevealOnScroll) zamiast
-     whileInView. */
+/* [KOPIA] Bez animacji wejścia i bez zamykającego CTA — sekcja kończy
+   się na liście pytań i przycisku "Pokaż więcej". CTA do kontaktu
+   zostaje tylko w dedykowanej sekcji ContactSection, żeby nie
+   powielać tego samego wezwania do działania dwa razy pod rząd. */
 function FaqCard({
   item,
   isOpen,
   onToggle,
-  visible,
-  delay,
 }: {
   item: FaqItem;
   isOpen: boolean;
   onToggle: () => void;
-  visible: boolean;
-  delay: number;
 }) {
   const Icon = item.icon;
   return (
@@ -154,17 +141,16 @@ function FaqCard({
           onToggle();
         }
       }}
-      className={`faq-reveal cursor-pointer rounded-2xl overflow-hidden border transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99] ${
+      className={`cursor-pointer rounded-2xl overflow-hidden border transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99] ${
         isOpen
           ? "bg-teal-400/10 border-teal-400/30 shadow-[0_8px_20px_-8px_rgba(0,0,0,0.35)]"
           : "bg-white/5 border-white/10 hover:bg-white/[0.07]"
-      } ${visible ? "in-view" : ""}`}
-      style={{ animationDelay: `${delay}ms` }}
+      }`}
     >
       <div className="w-full flex items-center gap-4 text-left px-5 py-4 sm:px-6 sm:py-5">
         <div
           className={`flex items-center justify-center shrink-0 rounded-xl h-10 w-10 transition-colors duration-300 ${
-            isOpen ? "bg-teal-400/15 text-teal-300 faq-icon-pulse" : "bg-white/10 text-white/60"
+            isOpen ? "bg-teal-400/15 text-teal-300" : "bg-white/10 text-white/60"
           }`}
         >
           <Icon size={19} strokeWidth={2} />
@@ -187,7 +173,7 @@ function FaqCard({
         </div>
       </div>
 
-      {/* Grid-rows trick zamiast animate height: "auto" z frameru */}
+      {/* Grid-rows trick zamiast animate height: "auto" */}
       <div
         style={{
           display: "grid",
@@ -214,90 +200,45 @@ function FaqCard({
 export default function NetiaFAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [showAll, setShowAll] = useState(false);
-  const [headerRef, headerVisible] = useRevealOnScroll<HTMLDivElement>();
-  const [gridRef, gridVisible] = useRevealOnScroll<HTMLDivElement>();
-  const [ctaRef, ctaVisible] = useRevealOnScroll<HTMLDivElement>();
 
   const visibleItems = showAll ? [...TIER_1, ...EXTRA_ITEMS] : TIER_1;
-
-  const smsBody = encodeURIComponent(
-    "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
-  );
 
   return (
     <section
       style={{ backgroundColor: "#0B2A3D" }}
       className="w-full py-16 px-6 font-sans overflow-hidden"
     >
-      <style>{`
-        @keyframes faqFadeUp {
-          from { opacity: 0; transform: translateY(14px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes faqIconPulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.08); }
-        }
-        @keyframes faqCtaGlow {
-          0% { box-shadow: 0 0 0 0 rgba(45,212,191,0.45); }
-          50% { box-shadow: 0 0 0 8px rgba(45,212,191,0); }
-          100% { box-shadow: 0 0 0 0 rgba(45,212,191,0.45); }
-        }
-        .faq-reveal { opacity: 0; }
-        .faq-reveal.in-view { animation: faqFadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both; }
-        .faq-icon-pulse { animation: faqIconPulse 1.8s ease-in-out infinite; }
-        .faq-cta-glow { animation: faqCtaGlow 2.4s ease-out infinite; }
-        @media (prefers-reduced-motion: reduce) {
-          .faq-reveal { opacity: 1; animation: none !important; }
-          .faq-icon-pulse, .faq-cta-glow { animation: none !important; }
-        }
-      `}</style>
-
       <div className="max-w-305 mx-auto">
-        <div ref={headerRef}>
-          <div className={`faq-reveal flex justify-center mb-5 ${headerVisible ? "in-view" : ""}`}>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">
-              <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
-              FAQ
-            </span>
-          </div>
-
-          <h2
-            className={`faq-reveal text-center font-extrabold text-white text-2xl sm:text-3xl lg:text-4xl tracking-tight mb-3 ${
-              headerVisible ? "in-view" : ""
-            }`}
-            style={{ animationDelay: "80ms" }}
-          >
-            Najczęstsze pytania
-          </h2>
-          <p
-            className={`faq-reveal text-center mb-12 max-w-lg mx-auto text-sm sm:text-base text-white/65 ${
-              headerVisible ? "in-view" : ""
-            }`}
-            style={{ animationDelay: "160ms" }}
-          >
-            Odpowiedzi na to, co najczęściej pyta nas 2,4 mln klientów. Coś jeszcze
-            niejasne? Doradca odpowie w 3 minuty przez telefon.
-          </p>
+        <div className="flex justify-center mb-5">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">
+            <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
+            FAQ
+          </span>
         </div>
 
+        <h2 className="text-center font-extrabold text-white text-2xl sm:text-3xl lg:text-4xl tracking-tight mb-3">
+          Najczęstsze pytania
+        </h2>
+        <p className="text-center mb-12 max-w-lg mx-auto text-sm sm:text-base text-white/65">
+          Odpowiedzi na to, co najczęściej pyta nas 2,4 mln klientów. Coś jeszcze
+          niejasne? Doradca odpowie w 3 minuty przez telefon.
+        </p>
+
         {/* Accordion — dwie kolumny od sm w górę, jedna na mobile */}
-        <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 items-start">
           {visibleItems.map((item, i) => (
             <FaqCard
               key={item.q}
               item={item}
               isOpen={openIndex === i}
               onToggle={() => setOpenIndex(openIndex === i ? null : i)}
-              visible={gridVisible}
-              delay={(i % 2) * 80}
             />
           ))}
         </div>
 
         {/* Toggle — trzyma domyślną wysokość sekcji krótką, bez tracenia treści */}
         {!showAll && (
-          <div className="flex justify-center mb-14">
+          <div className="flex justify-center">
             <button
               type="button"
               onClick={() => {
@@ -311,58 +252,6 @@ export default function NetiaFAQ() {
             </button>
           </div>
         )}
-        {showAll && <div className="mb-14" />}
-
-        {/* Closing CTA — call or SMS only, styled like Hero buttons */}
-        <div
-          ref={ctaRef}
-          className={`faq-reveal max-w-2xl mx-auto rounded-3xl border border-white/10 bg-white/5 px-6 py-8 sm:px-10 sm:py-10 text-center ${
-            ctaVisible ? "in-view" : ""
-          }`}
-        >
-          <h3 className="font-bold text-white text-xl sm:text-2xl mb-2">
-            Gotowy/a do zamówienia?
-          </h3>
-          <p className="mb-6 text-sm sm:text-[0.9375rem] text-white/65">
-            ~3 minuty rozmowy i internet jest zamówiony. Doradca odbierze od razu.
-          </p>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <a
-              href="tel:+48887843260"
-              onClick={() => trackContact("faq_closing_phone_button")}
-              className="faq-cta-glow flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] active:scale-[0.97] sm:min-w-60"
-            >
-              <span className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
-                  <Phone size={16} />
-                </span>
-                <span className="text-left">
-                  <span className="block text-sm font-bold leading-tight">ZADZWOŃ</span>
-                  <span className="block text-xs text-white/85">+48 887 843 260</span>
-                </span>
-              </span>
-              <ChevronRight size={18} className="text-white/70" />
-            </a>
-
-            <a
-              href={`sms:+48887843260?body=${smsBody}`}
-              onClick={() => trackContact("faq_closing_sms_button")}
-              className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] active:scale-[0.97] sm:min-w-60"
-            >
-              <span className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
-                  <MessageCircle size={16} />
-                </span>
-                <span className="text-left">
-                  <span className="block text-sm font-bold leading-tight">WYŚLIJ SMS</span>
-                  <span className="block text-xs text-white/70">Oddzwonimy w 3 minuty</span>
-                </span>
-              </span>
-              <ChevronRight size={18} className="text-white/50" />
-            </a>
-          </div>
-        </div>
       </div>
     </section>
   );

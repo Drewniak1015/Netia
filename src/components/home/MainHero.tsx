@@ -14,31 +14,16 @@ import DottedBackground from "@/components/ui/DottedBackground";
 import { trackContact } from "@/lib/meta-track";
 
 /* ------------------------------------------------------------------ */
-/*  HERO — [OPTYMALIZACJA] zero framer-motion.                          */
-/*                                                                      */
-/*  To komponent zawierający obraz LCP i renderujący się jako jeden z   */
-/*  pierwszych na każdej stronie — każdy KB JS wykonywany przed         */
-/*  paintem ma bezpośredni wpływ na czas do wyrenderowania największej  */
-/*  treści. Zamiast LazyMotion + m.div + whileHover/whileTap:            */
-/*                                                                      */
-/*   - Animacje wejścia (fade-up) to czyste @keyframes ze staggerem     */
-/*     przez animation-delay (ten sam wzorzec co w NetiaSocialProof).   */
-/*   - Hover/tap na przyciskach CTA to Tailwindowe utility              */
-/*     (hover:scale-*, active:scale-*) — przeglądarka i tak to robi     */
-/*     na compositorze, bez potrzeby JS.                                 */
-/*   - Obraz hero (LCP) NIE jest owinięty w żaden animowany kontener —  */
-/*     renderuje się natychmiast po ściągnięciu, zero zależności od     */
-/*     jakiejkolwiek biblioteki animacyjnej.                             */
-/*                                                                      */
-/*  Układ mobile/desktop nadal w całości sterowany CSS-em (grid +       */
-/*  order), więc obraz LCP trafia do wygenerowanego przez serwer        */
-/*  HTML-a od razu, z `priority` + `fetchPriority="high"`.               */
+/*  HERO — [KOPIA] bez animacji wejścia. Sekcja renderuje się od razu   */
+/*  w pełnej formie, co dodatkowo pomaga LCP (obraz hero i tak nie był  */
+/*  animowany, ale teraz też otaczający go tekst/CTA nie czeka na       */
+/*  żadne opóźnienia).                                                  */
 /*                                                                      */
 /*  UWAGA: tracking kliknięć w tel:/sms: (custom_id -> Google Sheets)   */
-/*  jest teraz obsługiwany GLOBALNIE przez AdIdCapture.tsx (listener    */
-/*  na całym dokumencie) - nie trzeba już wywoływać trackPhoneClick/    */
-/*  trackSmsClick ręcznie w tym pliku. trackContact (Meta) zostaje,     */
-/*  bo to osobny, niezależny system.                                    */
+/*  jest obsługiwany GLOBALNIE przez AdIdCapture.tsx (listener na całym */
+/*  dokumencie) - nie trzeba wywoływać trackPhoneClick/trackSmsClick    */
+/*  ręcznie w tym pliku. trackContact (Meta) zostaje, bo to osobny,      */
+/*  niezależny system.                                                  */
 /* ------------------------------------------------------------------ */
 function Hero() {
   return (
@@ -46,19 +31,6 @@ function Hero() {
       style={{ backgroundColor: "#0B2A3D" }}
       className="relative mt-18 overflow-hidden font-sans"
     >
-      <style>{`
-        @keyframes heroFadeUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .hero-fade-up {
-          animation: heroFadeUp 0.6s ease-out both;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .hero-fade-up { animation: none !important; }
-        }
-      `}</style>
-
       <DottedBackground variant="dots-fade" focusY="25%" size={24} />
 
       <div
@@ -73,16 +45,12 @@ function Hero() {
       <div className="relative z-10 mx-auto grid max-w-320 grid-cols-1 items-center gap-10 px-5 py-10 sm:px-6 sm:py-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-8 lg:px-8 lg:py-20">
         {/* Kolumna tekstowa — zawsze pierwsza w porządku DOM i wizualnym */}
         <div className="relative z-10 order-1 text-center lg:text-left">
-          {/* LCP-adjacent element: statyczny tekst, bez opóźnienia od animacji */}
-          <h1 className="hero-fade-up text-3xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-4xl lg:text-5xl xl:text-6xl">
+          <h1 className="text-3xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-4xl lg:text-5xl xl:text-6xl">
             Koniec z internetem, który{" "}
             <span className="text-teal-300">pada</span> w najgorszym momencie.
           </h1>
 
-          <h2
-            className="hero-fade-up mx-auto mt-5 max-w-xl text-base font-normal leading-snug text-white/75 sm:text-lg lg:mx-0"
-            style={{ animationDelay: "100ms" }}
-          >
+          <h2 className="mx-auto mt-5 max-w-xl text-base font-normal leading-snug text-white/75 sm:text-lg lg:mx-0">
             Instalacja w 3 dni. Stała cena przez całą umowę —{" "}
             <span className="font-semibold text-teal-300">
               bez podwyżek co pół roku
@@ -95,10 +63,7 @@ function Hero() {
           </h2>
 
           {/* Social proof — card z awatarem */}
-          <div
-            className="hero-fade-up mx-auto mt-6 flex max-w-xl items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 lg:mx-0"
-            style={{ animationDelay: "200ms" }}
-          >
+          <div className="mx-auto mt-6 flex max-w-xl items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 lg:mx-0">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-teal-300/20 bg-gradient-to-br from-teal-400/25 to-teal-600/10">
               <UserRound size={20} className="text-teal-200" />
             </span>
@@ -120,10 +85,7 @@ function Hero() {
           </div>
 
           {/* Trust badges + risk reversal */}
-          <div
-            className="hero-fade-up mt-5 flex flex-wrap items-center justify-center gap-2 lg:justify-start"
-            style={{ animationDelay: "300ms" }}
-          >
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
             <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white/90 sm:text-sm">
               <ShieldCheck size={14} className="shrink-0 text-teal-300" />
               Umowa online w 5 minut
@@ -141,7 +103,7 @@ function Hero() {
 
         {/* Kolumna wizualna — na mobile pod tekstem (order-2), na desktopie druga kolumna grida */}
         <div className="order-2 flex flex-col">
-          {/* Obraz LCP — bez animowanego kontenera, renderuje się natychmiast po ściągnięciu */}
+          {/* Obraz LCP — renderuje się natychmiast po ściągnięciu */}
           <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40">
             <Image
               src="/images/MainHero.avif"
@@ -154,10 +116,7 @@ function Hero() {
             />
           </div>
 
-          <div
-            className="hero-fade-up mt-10 flex flex-col items-stretch gap-4 sm:flex-row sm:justify-center lg:justify-start"
-            style={{ animationDelay: "420ms" }}
-          >
+          <div className="mt-10 flex flex-col items-stretch gap-4 sm:flex-row sm:justify-center lg:justify-start">
             {/* CTA primary */}
             <a
               href="tel:+48887843260"
@@ -194,10 +153,7 @@ function Hero() {
             </a>
           </div>
 
-          <div
-            className="hero-fade-up mx-auto mt-4 flex w-fit items-center justify-center gap-1.5 sm:mx-0"
-            style={{ animationDelay: "500ms" }}
-          >
+          <div className="mx-auto mt-4 flex w-fit items-center justify-center gap-1.5 sm:mx-0">
             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal-300/80" />
             <span className="text-xs font-medium text-white/50 sm:text-sm">
               Oddzwonimy w 3 minuty bez czekania, bez przekierowań między działami

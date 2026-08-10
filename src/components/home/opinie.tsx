@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef, useState, type RefObject } from "react";
 import Image from "next/image";
 import {
   RotateCcw,
@@ -66,6 +65,26 @@ const GUARANTEES = [
   },
 ];
 
+// Skrócona wersja gwarancji na sam dół sekcji — 3 najsilniejsze objection-killery
+// w poziomym pasku, tak jak w referencyjnym screenie (ikona + tytuł + opis).
+const BOTTOM_TRUST_STRIP = [
+  {
+    icon: Gauge,
+    title: "Prędkość zgodna z umową",
+    desc: "Minimum 50% deklarowanej prędkości, zgodnie z prawem.",
+  },
+  {
+    icon: RotateCcw,
+    title: "14 dni na zmianę zdania",
+    desc: "Odstąpienie od umowy bez podania przyczyny.",
+  },
+  {
+    icon: Headset,
+    title: "Wsparcie zawsze pod ręką",
+    desc: "Infolinia i serwis techniczny gotowe pomóc.",
+  },
+];
+
 type AdvisorInfo = {
   advisorName?: string;
   advisorRole?: string;
@@ -75,34 +94,11 @@ type AdvisorInfo = {
   phoneNumber?: string;
 };
 
-// Hook: returns true once the element has scrolled into view (fires once)
-function useInView(
-  options: IntersectionObserverInit = {}
-): [RefObject<HTMLElement | null>, boolean] {
-  const ref = useRef<HTMLElement | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect(); // animate once, don't repeat on every scroll
-        }
-      },
-      { threshold: 0.15, ...options }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [options]);
-
-  return [ref, isVisible];
-}
-
+/* [KOPIA] Bez animacji wejścia — sekcja renderuje się od razu w pełnej
+   formie. Na samym dole dodany poziomy pasek zaufania (3 gwarancje),
+   powtórzenie tych samych faktów co w panelu po prawej, ale w formacie
+   łatwym do zeskanowania jednym rzutem oka, tuż przed przejściem do
+   kolejnej sekcji strony. */
 export default function NetiaSocialProof({
   advisorName = "Jarosław Sitek",
   advisorRole = "Twój doradca w sprawie internetu",
@@ -112,8 +108,6 @@ export default function NetiaSocialProof({
   advisorEmail = "jaroslaw.sitek@przedstawiciel.netia.pl",
   phoneNumber = "+48 887 843 260",
 }: AdvisorInfo) {
-  const [sectionRef, sectionInView] = useInView();
-
   // Treść SMS-a — pełne zdanie zamiast samego "INTERNET", poprawnie
   // zakodowane dla polskich znaków.
   const smsBody = encodeURIComponent(
@@ -122,53 +116,28 @@ export default function NetiaSocialProof({
 
   return (
     <section
-      ref={sectionRef}
       style={{ backgroundColor: "#0B2A3D" }}
       className="relative overflow-hidden w-full py-16 px-6 font-sans"
     >
       <DottedBackground variant="dots-accent" size={22} />
-      <style>{`
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(16px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .reveal {
-          opacity: 0;
-        }
-        .reveal.in-view {
-          animation: fadeInUp 0.6s ease-out both;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .reveal {
-            opacity: 1;
-            animation: none !important;
-          }
-        }
-      `}</style>
 
       <div className="max-w-305 mx-auto">
         {/* Eyebrow */}
-        <div className={`flex justify-center mb-5 reveal ${sectionInView ? "in-view" : ""}`}>
+        <div className="flex justify-center mb-5">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">
             <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
             Opinie i gwarancje
           </span>
         </div>
 
-        <h2
-          className={`text-center font-extrabold text-white text-2xl sm:text-3xl lg:text-4xl tracking-tight mb-2 reveal ${sectionInView ? "in-view" : ""}`}
-          style={{ animationDelay: "80ms" }}
-        >
+        <h2 className="text-center font-extrabold text-white text-2xl sm:text-3xl lg:text-4xl tracking-tight mb-2">
           Dołącz do <span className="text-teal-400">2,4 mln klientów</span>, którzy{" "}
           <br className="hidden sm:block" />
           przestali martwić się o internet
         </h2>
 
         {/* Podtytuł przejęty z dawnej osobnej sekcji kontaktowej */}
-        <p
-          className={`text-center text-white/60 text-sm sm:text-base mb-8 reveal ${sectionInView ? "in-view" : ""}`}
-          style={{ animationDelay: "120ms" }}
-        >
+        <p className="text-center text-white/60 text-sm sm:text-base mb-8">
           Szybki kontakt, zero formalności — i internet, który wreszcie działa tak, jak obiecano.
         </p>
 
@@ -180,8 +149,7 @@ export default function NetiaSocialProof({
               return (
                 <div
                   key={i}
-                  className={`flex flex-col sm:flex-row items-start sm:items-center lg:items-start text-left gap-4 sm:gap-5 flex-1 rounded-2xl p-5 sm:p-6 border border-white/10 bg-white/5 transition-all duration-300 hover:border-teal-400/30 hover:bg-white/[0.07] hover:-translate-y-0.5 reveal ${sectionInView ? "in-view" : ""}`}
-                  style={{ animationDelay: `${160 + i * 100}ms` }}
+                  className="flex flex-col sm:flex-row items-start sm:items-center lg:items-start text-left gap-4 sm:gap-5 flex-1 rounded-2xl p-5 sm:p-6 border border-white/10 bg-white/5 transition-all duration-300 hover:border-teal-400/30 hover:bg-white/[0.07] hover:-translate-y-0.5"
                 >
                   {/* Kolumna ze zdjęciem — na mobile zdjęcie po lewej, opis po prawej; od sm: zdjęcie na górze, opis wyśrodkowany pod spodem; od lg: wyrównanie do góry */}
                   <div className="flex flex-row items-center gap-4 w-full sm:w-28 md:w-32 sm:flex-col sm:items-center shrink-0">
@@ -231,10 +199,7 @@ export default function NetiaSocialProof({
           </div>
 
           {/* Guarantees + Advisor contact — scalony panel (dawniej 2 osobne sekcje) */}
-          <div
-            className={`rounded-2xl p-6 sm:p-7 flex flex-col border border-white/10 bg-white/5 reveal ${sectionInView ? "in-view" : ""}`}
-            style={{ animationDelay: "220ms" }}
-          >
+          <div className="rounded-2xl p-6 sm:p-7 flex flex-col border border-white/10 bg-white/5">
             <p className="uppercase mb-5 text-teal-400 text-xs font-bold tracking-wide">
               Kupujesz bez ryzyka
             </p>
@@ -336,6 +301,26 @@ export default function NetiaSocialProof({
               warunkami.
             </p>
           </div>
+        </div>
+
+        {/* Poziomy pasek zaufania na samym dole sekcji */}
+        <div className="mt-10 pt-10 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {BOTTOM_TRUST_STRIP.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.title} className="flex items-start gap-3.5">
+                <div className="flex items-center justify-center shrink-0 rounded-xl h-11 w-11 bg-white/5 text-white/70">
+                  <Icon size={18} strokeWidth={2} />
+                </div>
+                <div>
+                  <p className="text-white text-sm font-bold leading-snug m-0 mb-0.5">
+                    {item.title}
+                  </p>
+                  <p className="text-white/45 text-[13px] leading-snug m-0">{item.desc}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

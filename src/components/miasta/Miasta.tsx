@@ -1,7 +1,7 @@
 "use client";
 
-import { MapPin, ArrowRight, Wifi } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { MapPin, ArrowRight } from "lucide-react";
+import { useState } from "react";
 import { CITIES } from "@/lib/cities";
 
 const VISIBLE_LIMIT = 8;
@@ -17,55 +17,14 @@ interface MiastaProps {
 }
 
 /**
- * Hook: zwraca ref + flagę "widoczny", ustawianą raz, gdy element
- * wjedzie w viewport. Respektuje prefers-reduced-motion (od razu widoczny).
- */
-function useRevealOnScroll<T extends HTMLElement>(options?: IntersectionObserverInit) {
-  const ref = useRef<T | null>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) {
-      setVisible(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setVisible(true);
-            observer.disconnect();
-          }
-        });
-      },
-      { threshold: 0.15, rootMargin: "0px 0px -40px 0px", ...options }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  return { ref, visible };
-}
-
-/**
  * Pojedyncza karta miasta — wydzielona, żeby nie duplikować JSX
  * pomiędzy siatką "zawsze widoczną" a siatką "rozwijaną".
  */
 function CityCard({
   city,
-  index,
-  visible,
   baseHref,
 }: {
   city: (typeof CITIES)[number];
-  index: number;
-  visible: boolean;
   baseHref: string;
 }) {
   return (
@@ -74,14 +33,6 @@ function CityCard({
       title={`Internet i telewizja w ${city.locative} — sprawdź ofertę`}
       aria-label={`Sprawdź dostępność internetu i telewizji w ${city.locative}`}
       className="group flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-left transition-all duration-200 hover:border-teal-400/40 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D]"
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(20px)",
-        transitionProperty: "opacity, transform, border-color, background-color",
-        transitionDuration: "600ms, 600ms, 200ms, 200ms",
-        transitionTimingFunction: "ease-out",
-        transitionDelay: visible ? `${index * 60}ms` : "0ms",
-      }}
     >
       <div className="flex items-center gap-3">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-teal-300">
@@ -100,11 +51,12 @@ function CityCard({
   );
 }
 
+/* [KOPIA] Bez animacji wejścia na scroll — useRevealOnScroll usunięty,
+   header/grid renderują się od razu w pełnej formie. Zostaje tylko
+   rozwijanie/zwijanie listy dodatkowych miast (grid-rows trick) — to
+   funkcjonalna interakcja przycisku "Pokaż więcej", nie animacja
+   wejścia, więc działa tak jak wcześniej. */
 export default function Miasta({ baseHref = "/internet-miasta", onShowFullList }: MiastaProps) {
-  const header = useRevealOnScroll<HTMLDivElement>();
-  const grid = useRevealOnScroll<HTMLDivElement>();
-  const footer = useRevealOnScroll<HTMLDivElement>();
-
   const [expanded, setExpanded] = useState(false);
   const visibleCities = CITIES.slice(0, VISIBLE_LIMIT);
   const restCities = CITIES.slice(VISIBLE_LIMIT);
@@ -117,14 +69,7 @@ export default function Miasta({ baseHref = "/internet-miasta", onShowFullList }
     >
       <div className="relative z-10 mx-auto max-w-320 px-5 py-16 sm:px-6 sm:py-16 lg:px-8 lg:py-16">
         {/* Badge + Header */}
-        <div
-          ref={header.ref}
-          className="mb-10 transition-all duration-700 ease-out"
-          style={{
-            opacity: header.visible ? 1 : 0,
-            transform: header.visible ? "translateY(0)" : "translateY(16px)",
-          }}
-        >
+        <div className="mb-10">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
             <span className="text-[11px] font-semibold uppercase tracking-wide text-white/70">
@@ -140,16 +85,10 @@ export default function Miasta({ baseHref = "/internet-miasta", onShowFullList }
           </p>
         </div>
 
-        {/* City grid — pierwsze 25 zawsze widoczne */}
-        <div ref={grid.ref} className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {visibleCities.map((city, i) => (
-            <CityCard
-              key={city.slug}
-              city={city}
-              index={i}
-              visible={grid.visible}
-              baseHref={baseHref}
-            />
+        {/* City grid — pierwsze 8 zawsze widoczne */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {visibleCities.map((city) => (
+            <CityCard key={city.slug} city={city} baseHref={baseHref} />
           ))}
         </div>
 
@@ -171,14 +110,8 @@ export default function Miasta({ baseHref = "/internet-miasta", onShowFullList }
                     transition: `opacity ${expanded ? ".2s ease .05s" : ".1s ease"}`,
                   }}
                 >
-                  {restCities.map((city, i) => (
-                    <CityCard
-                      key={city.slug}
-                      city={city}
-                      index={i}
-                      visible={expanded}
-                      baseHref={baseHref}
-                    />
+                  {restCities.map((city) => (
+                    <CityCard key={city.slug} city={city} baseHref={baseHref} />
                   ))}
                 </div>
               </div>
@@ -201,8 +134,6 @@ export default function Miasta({ baseHref = "/internet-miasta", onShowFullList }
             </div>
           </>
         )}
-
-        {/* Footer callout */}
       </div>
     </section>
   );

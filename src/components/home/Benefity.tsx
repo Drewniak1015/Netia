@@ -1,95 +1,105 @@
 "use client";
 
-import {
-  Rocket,
-  MonitorPlay,
-  Tv,
-  Wifi,
-  Headset,
-  ShieldCheck,
-} from "lucide-react";
-import { useRevealOnScroll } from "@/hooks/Userevealonscroll";
+import { Gauge, Lock, ShieldCheck } from "lucide-react";
+import DottedBackground from "@/components/ui/DottedBackground";
 
-const benefits = [
-  { icon: Rocket, title: "Internet gotowy już następnego dnia" },
-  { icon: MonitorPlay, title: "238 kanałów zawsze pod ręką" },
-  { icon: Tv, title: "Obraz w jakości 4K, bez zacięć" },
-  { icon: Wifi, title: "Stabilne połączenie bez przerw" },
-  { icon: Headset, title: "Pomoc techniczna 24/7, bez automatów" },
-  { icon: ShieldCheck, title: "Ocena 4,8/5 od 2,4 mln klientów" },
+/* [KOPIA] Prosty layout: obrazek + tekst, na przemian lewo/prawo.
+   Wybrane 2 propy to te z największą siłą przekonywania wg
+   Value Equation: (1) prędkość jako mechanizm sieci, nie liczba
+   reklamowa, (2) cena jako zobowiązanie umowne, nie promocja.
+   Bez animacji wejścia — sekcja renderuje się od razu w pełnej formie. */
+
+const valueProps = [
+  {
+    eyebrow: "Sieć światłowodowa Orange",
+    icon: Gauge,
+    title: "2 Gb/s, które nie spadają wieczorem.",
+    body: "Większość dostawców łata mieszaną, przestarzałą infrastrukturę — dlatego prędkość zjeżdża, gdy cała ulica wraca z pracy. My korzystamy z sieci światłowodowej Orange od podstaw, więc deklarowana prędkość to liczba, nie marketing.",
+    bullets: [
+      "Prawna gwarancja min. 50% deklarowanej prędkości",
+      "Monitoring łącza 24/7, zanim zadzwonisz",
+    ],
+    image: "/images/value-prop-siec.webp",
+    imageAlt: "Technik instaluje światłowodowe łącze ONT w nowoczesnym mieszkaniu",
+  },
+  {
+    eyebrow: "Cena zapisana w umowie",
+    icon: Lock,
+    title: "Rachunek, który wygląda tak samo za rok.",
+    body: "Inni operatorzy podnoszą ceny w trakcie trwania umowy — zwykle po cichu, przez klauzule waloryzacyjne. Netia zapisuje cenę w umowie na cały jej okres, więc kwota, którą widzisz dziś, to kwota, którą zapłacisz za 12 i za 24 miesiące.",
+    bullets: [
+      "Zero klauzul waloryzacyjnych w trakcie umowy",
+      "Pełna kwota po promocji widoczna od razu, bez ukrywania",
+    ],
+    image: "/images/value-prop-cena.webp",
+    imageAlt: "Osoba spokojnie sprawdza stały rachunek za internet przy porannej kawie",
+  },
 ];
 
-/* [OPTYMALIZACJA] Bez framer-motion — wejście na scroll to
-   IntersectionObserver + CSS @keyframes (useRevealOnScroll), stagger
-   przez animation-delay per karta, hover to Tailwind
-   (hover:-translate-y-1) zamiast whileHover ze springiem. */
 export default function Benefity() {
-  const [leftRef, leftVisible] = useRevealOnScroll<HTMLDivElement>();
-  const [gridRef, gridVisible] = useRevealOnScroll<HTMLDivElement>();
-
   return (
-    <section className="py-16 px-8" style={{ backgroundColor: "#0B2A3D" }}>
-      <style>{`
-        @keyframes benefityFadeUp {
-          from { opacity: 0; transform: translateY(16px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .benefity-reveal { opacity: 0; }
-        .benefity-reveal.in-view {
-          animation: benefityFadeUp 0.5s ease-out both;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .benefity-reveal { opacity: 1; animation: none !important; }
-        }
-      `}</style>
+    <section className="relative overflow-hidden py-16 px-8" style={{ backgroundColor: "#0B2A3D" }}>
+      <DottedBackground variant="dots-accent" size={48} opacity={0.30} focusY="25%" />
 
-      <div className="mx-auto max-w-304">
-        <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.6fr] gap-10">
-          {/* Left column */}
-          <div
-            ref={leftRef}
-            className={`benefity-reveal flex flex-col justify-center ${
-              leftVisible ? "in-view" : ""
-            }`}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <span className="h-px w-8 bg-teal-400" />
-              <span className="inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-4 py-1.5 text-xs font-semibold tracking-widest text-teal-400 uppercase">
-                <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
-                Dlaczego Netia?
-              </span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Korzyści <span className="text-teal-400">dla Ciebie</span>
-            </h2>
-            <p className="text-slate-400 leading-relaxed">
-              W Netii zyskujesz szybki internet światłowodowy oraz telewizję
-              z bogatą ofertą 238 kanałów w atrakcyjnych pakietach. Do tego
-              dochodzą nowoczesne urządzenia – dekodery 4K i ultraszybkie
-              Wi-Fi 7, a także całodobowe wsparcie techniczne, dzięki czemu
-              korzystanie z usług jest wygodne i bezproblemowe.
-            </p>
+      <div className="relative mx-auto max-w-304">
+        {/* Header */}
+        <div className="max-w-2xl mb-14">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="h-px w-8 bg-teal-400" />
+            <span className="inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/5 px-4 py-1.5 text-xs font-semibold tracking-widest text-teal-400 uppercase">
+              <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
+              Dlaczego Netia?
+            </span>
           </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Korzyści, które <span className="text-teal-400">faktycznie odczujesz</span>
+          </h2>
+          <p className="text-slate-400 leading-relaxed">
+            Nie tylko liczby w reklamie — mechanizm, dzięki któremu te liczby są prawdziwe każdego dnia.
+          </p>
+        </div>
 
-          {/* Right column - benefit cards */}
-          <div
-            ref={gridRef}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-          >
-            {benefits.map(({ icon: Icon, title }, i) => (
+        {/* Value prop rows */}
+        <div className="flex flex-col gap-10">
+          {valueProps.map((vp, i) => {
+            const Icon = vp.icon;
+            const reversed = i % 2 === 1;
+            return (
               <div
-                key={title}
-                className={`benefity-reveal rounded-xl border border-white/10 bg-[#0d1f31] p-6 transition-all duration-200 will-change-transform hover:-translate-y-1 hover:border-teal-400/40 ${
-                  gridVisible ? "in-view" : ""
-                }`}
-                style={{ animationDelay: `${i * 80}ms` }}
+                key={vp.title}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center"
               >
-                <Icon className="h-7 w-7 text-teal-400 mb-4" strokeWidth={1.75} />
-                <p className="text-white font-semibold leading-snug mb-3">{title}</p>
-                <span className="block h-px w-6 bg-teal-400/60" />
+                <div className={reversed ? "lg:order-2" : ""}>
+                  <img
+                    src={vp.image}
+                    alt={vp.imageAlt}
+                    className="w-full h-auto rounded-2xl border border-white/10 object-cover aspect-[4/3]"
+                  />
+                </div>
+
+                <div className={reversed ? "lg:order-1" : ""}>
+                  <div className="inline-flex items-center gap-2 mb-4">
+                    <Icon className="h-4 w-4 text-teal-400" strokeWidth={2} />
+                    <span className="text-xs font-semibold tracking-widest text-teal-400 uppercase">
+                      {vp.eyebrow}
+                    </span>
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-bold text-white mb-4 leading-snug">
+                    {vp.title}
+                  </h3>
+                  <p className="text-slate-400 leading-relaxed mb-6">{vp.body}</p>
+                  <ul className="flex flex-col gap-3">
+                    {vp.bullets.map((b) => (
+                      <li key={b} className="flex items-start gap-3 text-sm text-slate-300">
+                        <ShieldCheck className="h-4 w-4 text-teal-400 mt-0.5 flex-shrink-0" strokeWidth={2} />
+                        <span>{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
     </section>
