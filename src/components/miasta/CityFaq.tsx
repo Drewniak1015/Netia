@@ -219,14 +219,14 @@ export default function CityFaq({ cityName, cityLocative, faq }: CityFaqProps) {
                 </span>
                 <span className="text-left">
                   <span className="block text-sm font-bold leading-tight">ZADZWOŃ</span>
-                  <span className="block text-xs text-white/85">+48 883 334 124</span>
+                  <span className="block text-xs text-white/85">+48 887 843 260</span>
                 </span>
               </span>
               <ChevronRight size={18} className="text-white/70" />
             </a>
 
             <a
-              href="sms:+48883334124?body=INTERNET"
+              href="sms:+48887843260?body=INTERNET"
               className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] sm:min-w-60"
             >
               <span className="flex items-center gap-3">

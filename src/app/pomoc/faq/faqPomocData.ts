@@ -144,7 +144,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     icon: Baby,
     q: "Czy Bezpieczny Internet obejmuje kontrolę rodzicielską?",
-    a: "Uzupełnij odpowiedź przed publikacją.",
+    a: "Tak. Bezpieczny Internet Ultra zawiera pełną kontrolę rodzicielską — możesz blokować dostęp do stron z niebezpieczną treścią (np. pornografia, hazard, przemoc), ustawić dzienny limit czasu korzystania z internetu oraz włączyć funkcję Pora Spać, która automatycznie odcina transmisję danych na urządzeniu dziecka o wybranej godzinie. Ustawienia konfigurujesz z poziomu aplikacji, osobno dla każdego chronionego urządzenia.",
     category: "Inne usługi",
   },
   {
