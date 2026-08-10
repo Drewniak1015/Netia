@@ -11,10 +11,10 @@ import DottedBackground from "@/components/ui/DottedBackground";
 
 const valueProps = [
   {
-    eyebrow: "Sieć światłowodowa Orange",
+    eyebrow: "Sieć światłowodowa Netii",
     icon: Gauge,
     title: "2 Gb/s, które nie spadają wieczorem.",
-    body: "Większość dostawców łata mieszaną, przestarzałą infrastrukturę — dlatego prędkość zjeżdża, gdy cała ulica wraca z pracy. My korzystamy z sieci światłowodowej Orange od podstaw, więc deklarowana prędkość to liczba, nie marketing.",
+    body: "Większość dostawców łata mieszaną, przestarzałą infrastrukturę — dlatego prędkość zjeżdża, gdy cała ulica wraca z pracy. My korzystamy z sieci światłowodowej od podstaw, więc deklarowana prędkość to liczba, nie marketing.",
     bullets: [
       "Prawna gwarancja min. 50% deklarowanej prędkości",
       "Monitoring łącza 24/7, zanim zadzwonisz",

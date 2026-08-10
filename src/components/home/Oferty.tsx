@@ -61,7 +61,7 @@ interface OfertyProps {
   defaultOferta?: "podstawa" | "max";
 }
 
-export default function Oferty({ cityLocative, defaultOferta = "max" }: OfertyProps = {}) {
+export default function Oferty({ cityLocative, defaultOferta = "podstawa" }: OfertyProps = {}) {
   const [aktywnyInfoId, setAktywnyInfoId] = useState<string | null>(null);
   const [tryb, setTryb] = useState<"podstawa" | "max">(defaultOferta);
   const [sectionRef, sectionInView] = useInView();
