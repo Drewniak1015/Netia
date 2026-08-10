@@ -1,5 +1,6 @@
 import { Geist } from "next/font/google";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { KonfiguratorProvider } from '@/components/Konfigurator/konfigurator';
@@ -38,8 +39,6 @@ export default function RootLayout({
           <Footer />
         </KonfiguratorProvider>
 
-        {/* Baner zgody na cookies — musi być poza KonfiguratorProvider,
-            żeby renderować się na każdej podstronie niezależnie */}
         <CookieConsent />
 
         {/* Meta Pixel — Netia-Oferta-Pixel (Meta Business Suite) */}
@@ -70,6 +69,8 @@ export default function RootLayout({
             alt=""
           />
         </noscript>
+
+        <Analytics />
       </body>
     </html>
   );
