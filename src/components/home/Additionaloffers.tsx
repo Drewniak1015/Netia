@@ -25,9 +25,8 @@ import DottedBackground from "../ui/DottedBackground";
 /*                                                                        */
 /*  CTA prowadzą do konfiguratora (nie tel:), bo to nawigacja do wyboru   */
 /*  pakietu, nie połączenie telefoniczne.                                 */
-/*  UWAGA: linki wskazują na localhost:3000 — zamień na ścieżki           */
-/*  względne (np. "/konfigurator/Internet#pakiety-internet-tv") przed     */
-/*  wdrożeniem na produkcję, żeby nie wskazywały na localhost.            */
+/*  [FIX] Linki wskazywały na localhost:3000 — zamienione na ścieżki      */
+/*  względne, żeby działały poprawnie na produkcji.                       */
 /*                                                                        */
 /*  UWAGA: obrazy w tle to placeholdery (/images/offer-internet.jpg,      */
 /*  /images/offer-internet-tv.jpg) — podmień na docelowe zdjęcia.         */
@@ -53,7 +52,7 @@ const offers: AdditionalOffer[] = [
     description:
       "Masz już Netflixa i YouTube'a? Płać za to, z czego faktycznie korzystasz — sam internet, bez kanałów, których nigdy nie odpalisz.",
     cta: "Sprawdź ofertę Internet — od 30 zł/mies.",
-    href: "http://localhost:3000/oferty/NajlepszaCena#pakiety",
+    href: "/oferty/NajlepszaCena#pakiety",
   },
   {
     icon: Tv,
@@ -63,7 +62,7 @@ const offers: AdditionalOffer[] = [
     description:
       "Dekoder 4K, setki kanałów na żywo i Netia GO w cenie — jeden abonament na cały dom, bez dodatkowych umów.",
     cta: "Sprawdź Internet 300 Mb/s + TV M — od 55 zł/mies.",
-    href: "http://localhost:3000/konfigurator/InternetOrazTelewizja",
+    href: "/konfigurator/InternetOrazTelewizja",
   },
 ];
 
@@ -122,4 +121,4 @@ export default function AdditionalOffers() {
       </div>
     </section>
   );
-} 
+}
