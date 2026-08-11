@@ -17,6 +17,10 @@ import {
   Percent,
   Truck,
   ClipboardCheck,
+  Gauge,
+  Home,
+  MonitorCheck,
+  Cable,
 } from "lucide-react";
 import type { ElementType } from "react";
 
@@ -63,6 +67,31 @@ const TIER_1: FaqItem[] = [
 // Tier 2 — wspierają decyzję, gaszą praktyczne wątpliwości (widoczne po rozwinięciu)
 const TIER_2: FaqItem[] = [
   {
+    icon: Gauge,
+    q: "Mój obecny internet działa nie najgorzej — po co zmieniać?",
+    a: "„Nie najgorzej” najczęściej znaczy: działa, dopóki nie sprawdzisz go wieczorem, gdy cała rodzina jest online. To właśnie wtedy większość dostawców nie gwarantuje niczego poza liczbą „do X Mb/s” na papierze. U nas prędkość jest monitorowana 24/7, a sprawdzenie, ile realnie zyskujesz pod swoim adresem, nic nie kosztuje i do niczego nie zobowiązuje.",
+  },
+  {
+    icon: Home,
+    q: "Mój problem z Wi-Fi to pewnie wina grubych ścian, nie dostawcy — czy zmiana coś da?",
+    a: "Możliwe, że częściowo tak — dlatego technik podczas instalacji sprawdza pokrycie sygnałem w każdym pomieszczeniu i dobiera ustawienie routera (lub dodatkowy access point, jeśli trzeba) w cenie instalacji. Sama zmiana dostawcy nie naprawi grubych ścian, ale konfiguracja pod Twoje mieszkanie już tak.",
+  },
+  {
+    icon: MonitorCheck,
+    q: "Dekoder pewnie i tak będzie się zawieszał, niezależnie od dostawcy — mam to już za sobą.",
+    a: "Zawieszanie się dekodera najczęściej wynika z niestabilnego łącza, nie tylko samego sprzętu — dlatego dajemy Dekoder 4K razem z monitorowanym połączeniem, nie osobno. Jeśli mimo to coś się zacina, serwisant jest u Ciebie w 24h, nie za tydzień.",
+  },
+  {
+    icon: Cable,
+    q: "Czy to na pewno prawdziwy światłowód, nie hybryda pod inną nazwą?",
+    a: "Technologię dostępną pod Twoim adresem (FTTH, HFC czy inna) potwierdzamy jeszcze przed podpisaniem umowy, podczas sprawdzania dostępności — widzisz to czarno na białym, zanim się zdecydujesz, nie dowiadujesz się po fakcie.",
+  },
+  {
+    icon: Percent,
+    q: "Co jeśli zechcę zrezygnować już w trakcie trwania umowy, nie tylko w pierwszych 14 dniach?",
+    a: "Po okresie 14 dni na odstąpienie obowiązują standardowe zasady wcześniejszego rozwiązania umowy zawartej na czas określony (opisane w regulaminie oferty) — to nie jest już rezygnacja bez podania przyczyny. Dlatego zachęcamy do wykorzystania pełnych 14 dni na sprawdzenie usługi u siebie, zanim zdecydujesz się na stałe.",
+  },
+  {
     icon: Router,
     q: "Czy mogę używać własnego routera?",
     a: "Tak — musi być kompatybilny z technologią światłowodową. Jeśli wolisz, dostarczymy nowoczesny router (Wi-Fi 6 lub Combo Wi-Fi 7) w cenie abonamentu.",
@@ -76,11 +105,6 @@ const TIER_2: FaqItem[] = [
     icon: Tag,
     q: "Jaki jest najtańszy internet w Netii?",
     a: "Najtańsza oferta to 40 zł/mies. za Internet do 300 Mb/s + Telewizję S (umowa 24-miesięczna). Sam internet bez TV — najpopularniejszy wariant to 1000 Mb/s w promocji „6 miesięcy za 0 zł„, potem 65 zł/mies. Ostateczna cena zależy od technologii dostępnej pod Twoim adresem.",
-  },
-  {
-    icon: Percent,
-    q: "Mam teraz promocję u obecnego dostawcy — czy zmiana się opłaca?",
-    a: "Sprawdzimy Twoją obecną cenę telefonicznie i pokażemy realne porównanie — bez naciągania. W większości przypadków nasza oferta jest konkurencyjna już od pierwszego miesiąca, a stała cena obowiązuje przez całą umowę, bez podwyżek w trakcie jej trwania.",
   },
   {
     icon: Truck,
@@ -118,7 +142,13 @@ const EXTRA_ITEMS = [...TIER_2, ...TIER_3];
 /* [KOPIA] Bez animacji wejścia i bez zamykającego CTA — sekcja kończy
    się na liście pytań i przycisku "Pokaż więcej". CTA do kontaktu
    zostaje tylko w dedykowanej sekcji ContactSection, żeby nie
-   powielać tego samego wezwania do działania dwa razy pod rząd. */
+   powielać tego samego wezwania do działania dwa razy pod rząd.
+
+   [POPRAWKA] Dodano 5 pozycji do TIER_2, adresujących obiekcje z
+   Offer_Brief, które wcześniej nie miały żadnej odpowiedzi w FAQ:
+   "speed już wystarcza", ściany/Wi-Fi, dekoder, światłowód-vs-hybryda,
+   i rezygnacja po okresie 14 dni (uczciwie, bez ukrywania że wtedy
+   obowiązują standardowe zasady wypowiedzenia). */
 function FaqCard({
   item,
   isOpen,

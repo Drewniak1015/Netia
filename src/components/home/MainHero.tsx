@@ -8,7 +8,6 @@ import {
   Star,
   ShieldCheck,
   Zap,
-  UserRound,
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
 import { trackContact } from "@/lib/meta-track";
@@ -24,6 +23,17 @@ import { trackContact } from "@/lib/meta-track";
 /*  dokumencie) - nie trzeba wywoływać trackPhoneClick/trackSmsClick    */
 /*  ręcznie w tym pliku. trackContact (Meta) zostaje, bo to osobny,      */
 /*  niezależny system.                                                  */
+/*                                                                      */
+/*  ZMIANY W TEJ WERSJI (copywriting deck):                             */
+/*  1. H1 zamieniony na wariant #6 z decku ("Przestań sprawdzać, czy    */
+/*     internet znowu zwolnił") — mocniej łączy przekonanie #1          */
+/*     (to nie pech, to model biznesowy) z mechanizmem monitoringu.     */
+/*  2. Subheadline zamieniony na Subheadline V2 z decku (pain point ->  */
+/*     mechanizm -> korzyść z ramą czasową "od 3. dnia po instalacji"). */
+/*  3. Mikrocopy pod CTA zaktualizowane pod CTA #1 z decku ("bez        */
+/*     zobowiązań") — dokłada redukcję ryzyka do istniejącego urgency.  */
+/*  Linia sceptycyzmu z poprzedniej iteracji zostaje bez zmian, bo dalej */
+/*  robi swoją robotę przed obietnicą w subheadline.                    */
 /* ------------------------------------------------------------------ */
 function Hero() {
   return (
@@ -46,26 +56,45 @@ function Hero() {
         {/* Kolumna tekstowa — zawsze pierwsza w porządku DOM i wizualnym */}
         <div className="relative z-10 order-1 text-center lg:text-left">
           <h1 className="text-3xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-4xl lg:text-5xl xl:text-6xl">
-            Koniec z internetem, który{" "}
-            <span className="text-teal-300">pada</span> w najgorszym momencie.
+            Przestań sprawdzać, czy internet{" "}
+            <span className="text-teal-300">znowu zwolnił</span>.
           </h1>
 
-          <h2 className="mx-auto mt-5 max-w-xl text-base font-normal leading-snug text-white/75 sm:text-lg lg:mx-0">
-            Instalacja w 3 dni. Stała cena przez całą umowę —{" "}
+          {/* Linia sceptycyzmu — przekonanie #2 z beliefes.docx, musi wylądować
+              przed obietnicą poniżej, żeby "cena w umowie" nie zabrzmiała jak
+              kolejny slogan konkurencji */}
+          <p className="mx-auto mt-4 max-w-xl text-sm font-medium italic text-white/45 sm:text-base lg:mx-0">
+            „Do X Mb/s” i „gwarantowana cena” słyszałeś już wszędzie — i wiesz,
+            ile są warte po sześciu miesiącach.
+          </p>
+
+          {/* Subheadline V2 z copywriting decku: pain point -> mechanizm ->
+              korzyść z ramą czasową, prowadzi wprost do CTA */}
+          <h2 className="mx-auto mt-3 max-w-xl text-base font-normal leading-snug text-white/75 sm:text-lg lg:mx-0">
+            Jedyny dostawca, który{" "}
             <span className="font-semibold text-teal-300">
-              bez podwyżek co pół roku
+              monitoruje Twoje łącze 24/7
             </span>{" "}
-            i bez czekania na infolinii.{" "}
+            i zapisuje cenę w umowie na stałe, żeby zagwarantować realną
+            prędkość, stabilne wideorozmowy i{" "}
             <span className="italic text-teal-200/85">
-              Wideorozmowy bez zacięć, filmy bez buforowania — internet, o
-              którym w końcu przestajesz myśleć.
+              spokojny wieczór już od 3. dnia po instalacji
             </span>
+            .
           </h2>
 
-          {/* Social proof — card z awatarem */}
+          {/* Social proof — card ze zdjęciem klienta (zamiast ikony placeholder).
+              Plik: /public/images/testimonial-avatar.jpg — patrz prompt do
+              wygenerowania w komentarzu na końcu pliku. */}
           <div className="mx-auto mt-6 flex max-w-xl items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 lg:mx-0">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-teal-300/20 bg-gradient-to-br from-teal-400/25 to-teal-600/10">
-              <UserRound size={20} className="text-teal-200" />
+            <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-teal-300/20">
+              <Image
+                src="/images/testimonial-avatar.webp"
+                alt="Zadowolony klient po zmianie dostawcy internetu"
+                fill
+                sizes="44px"
+                className="object-cover"
+              />
             </span>
             <span className="text-left">
               <span className="flex items-center gap-2">
@@ -128,7 +157,7 @@ function Hero() {
                   <Phone size={16} />
                 </span>
                 <span className="text-left">
-                  <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
+                  <span className="block text-sm font-bold leading-tight">Sprawdź dostępność</span>
                   <span className="block text-xs text-white/85">+48 887 843 260</span>
                 </span>
               </span>
@@ -153,10 +182,13 @@ function Hero() {
             </a>
           </div>
 
+          {/* Mikrocopy pod CTA — oparte na CTA #1 z decku: urgency (3 minuty)
+              plus redukcja ryzyka (bez zobowiązań), zamiast samego urgency */}
           <div className="mx-auto mt-4 flex w-fit items-center justify-center gap-1.5 sm:mx-0">
             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal-300/80" />
             <span className="text-xs font-medium text-white/50 sm:text-sm">
-              Oddzwonimy w 3 minuty bez czekania, bez przekierowań między działami
+              Sprawdzenie dostępności zajmuje 3 minuty i jest bez zobowiązań,
+              oddzwonimy zanim znów o tym zapomnisz.
             </span>
           </div>
         </div>
@@ -166,3 +198,28 @@ function Hero() {
 }
 
 export default Hero;
+
+/* ------------------------------------------------------------------ */
+/*  PROMPT DO WYGENEROWANIA ZDJĘCIA (testimonial-avatar.jpg)            */
+/*  Wklej do Midjourney / DALL-E / Ideogram itp.                        */
+/*                                                                      */
+/*  "Photorealistic close-up portrait of a Polish woman in her early    */
+/*  30s, sitting relaxed at home, natural warm smile, looking slightly  */
+/*  off-camera, soft natural window light, casual home clothing (knit   */
+/*  sweater), blurred cozy living room background, shot on 50mm lens,   */
+/*  shallow depth of field, authentic candid feel, not overly polished, */
+/*  looks like a real customer photo not a stock photo, square crop,    */
+/*  even lighting on face, no text, no logos, no watermark"             */
+/*                                                                      */
+/*  Uwagi:                                                              */
+/*  - Kwadratowy kadr (1:1), bo w karcie jest przycinane do koła 44px — */
+/*    twarz musi być wycentrowana i wypełniać kadr.                     */
+/*  - Warto wygenerować 2-3 warianty (różna płeć/wiek) i rotować je      */
+/*    losowo albo A/B testować — dopasowane do różnych segmentów        */
+/*    avatara (rodzic 28-45 vs młodszy singiel 20-30).                  */
+/*  - Unikaj efektu "stockowego" — zbyt idealne, symetryczne, uśmiechy   */
+/*    "korporacyjne" obniżają wiarygodność testimoniala bardziej niż    */
+/*    ich brak.                                                         */
+/*  - Skompresuj do WebP/AVIF przed wrzuceniem do /public/images, żeby  */
+/*    nie obciążać LCP hero (sekcja jest priority-loaded).              */
+/* ------------------------------------------------------------------ */

@@ -1,8 +1,8 @@
 "use client";
 
 import { Phone, MessageCircle, ChevronRight, Check } from "lucide-react";
-import DottedBackground from "@/components/ui/DottedBackground";
-import { useEffect,useState } from "react";
+
+import { useEffect, useState } from "react";
 type ContactSectionProps = {
   phoneNumber?: string;
 };
@@ -12,7 +12,24 @@ type ContactSectionProps = {
    na dole), więc obraz robi tę samą robotę co tekst: "to nie slogan,
    to zapisane warunki". Bez animacji wejścia — sekcja renderuje się od
    razu w pełnej formie (useIsDesktop zostaje, bo steruje tym, czy
-   kolumna ze zdjęciem w ogóle się montuje, nie animacją). */
+   kolumna ze zdjęciem w ogóle się montuje, nie animacją).
+
+   [POPRAWKI — najmocniejsze możliwe CTA na końcu strony]:
+   1. Podnagłówek rozszerzony o trzy konkretne triggery z Avatar_Sheet
+      ("Quotes on Motivation & Urgency Around Success"): awaria/spadek
+      prędkości, koniec promocji, nowa potrzeba w domu. To jedyne miejsce
+      na stronie, gdzie wszystkie trzy triggery są wymienione razem —
+      to ostatnia szansa, żeby trafić w ten, który dotyczy czytelnika.
+   2. "Oddzwonimy w kilka minut" -> "w 3 minuty" — wcześniej niespójne
+      z resztą strony (Hero.tsx i inne sekcje mówią konkretnie "3 minuty").
+   3. Domknięcie klamrą z Hero.tsx — ostatnie zdanie przed CTA nawiązuje
+      wprost do linii "zanim znów o tym zapomnisz" z góry strony, więc
+      ktoś, kto przeczytał całość, dostaje spójne zamknięcie pętli, nie
+      kolejny, oderwany argument.
+   4. ŚWIADOMIE bez fałszywej presji (fake scarcity, zmyślone limity
+      czasowe/miejsc) — urgency opiera się wyłącznie na prawdziwych
+      mechanizmach z researchu (promo-cliff, auto-przedłużenie umowy),
+      nie na wymyślonych deadline'ach. */
 
 const recapPoints = [
   "Gwarancja min. 50% deklarowanej prędkości",
@@ -44,7 +61,7 @@ export default function ContactSection({
       style={{ backgroundColor: "#0B2A3D" }}
       className="relative overflow-hidden font-sans"
     >
-      <DottedBackground variant="dots-accent" size={22} />
+
 
       <div className="relative z-10 mx-auto grid max-w-320 grid-cols-1 items-center gap-10 px-5 py-16 sm:px-6 sm:py-20 lg:grid-cols-[0.9fr_1.1fr] lg:gap-8 lg:px-8 lg:py-16">
         {/* Kolumna tekstowa */}
@@ -55,8 +72,10 @@ export default function ContactSection({
           </h2>
 
           <h3 className="mx-auto mt-2.5 max-w-xl text-sm font-normal text-white/65 sm:text-base lg:mx-0">
-            Sprawdź, zanim Twoja obecna umowa przedłuży się automatycznie albo zanim dostaniesz
-            kolejny SMS o podwyżce. Rozmowa zajmuje 3 minuty, a doradca odbiera od razu.
+            Ostatnia awaria w złym momencie, koniec promocji za kilka miesięcy,
+            a może po prostu ktoś nowy zacznie pracować albo uczyć się zdalnie
+            w Twoim domu — to zwykle wtedy ludzie w końcu sprawdzają inną
+            opcję. Rozmowa zajmuje 3 minuty, a doradca odbiera od razu.
           </h3>
 
           {/* Recap 3 value propów */}
@@ -102,7 +121,7 @@ export default function ContactSection({
                 </span>
                 <span className="text-left">
                   <span className="block text-sm font-bold leading-tight">ZOSTAW SMS</span>
-                  <span className="block text-xs text-white/70">Oddzwonimy w kilka minut</span>
+                  <span className="block text-xs text-white/70">Oddzwonimy w 3 minuty</span>
                 </span>
               </span>
               <ChevronRight
@@ -112,10 +131,11 @@ export default function ContactSection({
             </a>
           </div>
 
-          {/* Redukcja FUD */}
+          {/* Redukcja FUD + domknięcie klamrą z Hero.tsx */}
           <p className="mx-auto mt-6 max-w-xl text-xs text-white/50 lg:mx-0">
             Jeśli po zmianie okaże się gorzej niż u obecnego dostawcy, masz 14 dni na
-            odstąpienie i pełny zwrot. Bez pytań.
+            odstąpienie i pełny zwrot, bez pytań. Sprawdzenie dostępności zajmuje 3 minuty —
+            zrób to teraz, zanim znów o tym zapomnisz.
           </p>
         </div>
 

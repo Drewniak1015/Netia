@@ -13,6 +13,13 @@ import { pagesMetadata } from "@/lib/seo/pages-metadata";
 import { FAQ_ITEMS } from "@/components/home/homeFaqData";
 import { REVIEWS } from "@/components/home/homeReviewsData";
 import EntryGate from "@/components/entrygatecomp";
+import Oferty1k from "@/components/home/Oferty1k";
+import SocialProofStats from "@/components/home/socialproofstats";
+import ValueProp3 from "@/components/home/ValueProp3";
+import Gwarancja from "@/components/home/Gwarancja";
+import Testimonials from "@/components/home/testimonials";
+import FinalCTA from "@/components/home/finalcta";
+import AdditionalOffers from "@/components/home/Additionaloffers";
 
 const organizationSchema = {
   "@context": "https://schema.org",
@@ -53,13 +60,21 @@ export default function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewsSchema) }} />
       {/* <EntryGate/> */}
       <MainHero />
-      <Opinie />
-      <PoradnikTechnologie />
-      <Benefity />
-      <Instrukcja />
       <Oferty />
-      <NetiaFAQ />
+      <Opinie />
+      <Benefity />
+   
+      <Oferty1k/>
+      <Instrukcja />
+      <PoradnikTechnologie />
+      <SocialProofStats/>
       {/* <MaxxBanner /> */}
+      <ValueProp3/>
+        <Gwarancja/>
+      <Testimonials/>
+      <NetiaFAQ />
+      <AdditionalOffers/>
+      {/* <FinalCTA/> */}
       {/* <OfertyInternet /> */}
       <CTA />
       <Miasta />
