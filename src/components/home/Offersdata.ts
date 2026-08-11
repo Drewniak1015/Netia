@@ -5,6 +5,10 @@
 /*  Twojego realnego screena ("Router z Wi-Fi 6 w cenie", nie "Router    */
 /*  Wi-Fi 6 w cenie" — brakowało "z"). Reszta bez zmian względem         */
 /*  poprzedniej wersji (promoMonths, featured, PHONE_HREF bez "tel:").  */
+/*                                                                      */
+/*  FIX (build error TS2305): dodano alias `MaxOffer = Offer` na końcu   */
+/*  pliku, bo inny plik importował `type MaxOffer`, którego tu nie      */
+/*  było. Zero zmian w kształcie danych — tylko dodatkowa nazwa typu.    */
 /* ------------------------------------------------------------------ */
 
 export interface OfferBenefit {
@@ -70,6 +74,12 @@ export const offersBySpeed: Record<SpeedTier, Offer[]> = {
    domyślnie wskazuje na tańszą paczkę 600 Mb/s. Jeśli nic tego nie
    importuje poza Oferty.tsx, możesz to bezpiecznie usunąć. */
 export const offers = offersBySpeed["600"];
+
+/** Alias zachowany dla kompatybilności — komponent karty importuje ten typ
+ *  jako "MaxOffer". Jeśli w przyszłości okaże się, że MaxOffer powinien mieć
+ *  inny kształt niż Offer (np. dodatkowe pole), zamień na osobny interface
+ *  zamiast aliasu. */
+export type MaxOffer = Offer;
 
 /* ------------------------------------------------------------------ */
 /*  INFO_ITEMS DO DODANIA w Infomodal.tsx (bez zmian względem           */
