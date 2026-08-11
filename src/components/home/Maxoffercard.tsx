@@ -116,12 +116,6 @@ export type MaxOffer = Offer;
 /*    body: "Nie musisz zgłaszać awarii, żeby ktoś się dowiedział, że    */
 /*           coś nie działa. Monitorujemy Twoje łącze non-stop — jeśli   */
 /*           prędkość spadnie poniżej gwarantowanego minimum, wiemy o    */
-/*           tym najczęściej zanim Ty zadzwonisz."                       */
-/*  },                                                                   */
-/*  "cena-zapisana-w-umowie": {                                          */
-/*    title: "Cena zapisana w umowie",                                  */
-/*    body: "Kwota, którą widzisz teraz, to kwota, którą zapłacisz za    */
-/*           12 i za 24 miesiąc. Żadnych klauzul waloryzacyjnych ani     */
 /*           cichych podwyżek po okresie promocyjnym."                   */
 /*  },                                                                   */
 /* ------------------------------------------------------------------ */
