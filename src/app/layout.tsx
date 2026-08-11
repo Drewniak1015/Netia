@@ -1,6 +1,7 @@
 import { Geist } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { KonfiguratorProvider } from '@/components/Konfigurator/konfigurator';
@@ -22,6 +23,7 @@ export const metadata = {
 };
 
 const META_PIXEL_ID = "2143913536525465";
+const GA_MEASUREMENT_ID = "G-6YND0DQLWL";
 
 export default function RootLayout({
   children,
@@ -71,6 +73,7 @@ export default function RootLayout({
         </noscript>
 
         <Analytics />
+        <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />
       </body>
     </html>
   );
