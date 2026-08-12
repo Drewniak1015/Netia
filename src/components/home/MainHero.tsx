@@ -1,45 +1,37 @@
 "use client"
 
 import Image from "next/image";
+import Link from "next/link";
 import {
-  Phone,
-  MessageCircle,
   ChevronRight,
-  Star,
   ShieldCheck,
   Zap,
+  Users,
+  Clock,
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
 import { trackContact } from "@/lib/meta-track";
 
 /* ------------------------------------------------------------------ */
-/*  HERO — [KOPIA] bez animacji wejścia. Sekcja renderuje się od razu   */
-/*  w pełnej formie, co dodatkowo pomaga LCP (obraz hero i tak nie był  */
-/*  animowany, ale teraz też otaczający go tekst/CTA nie czeka na       */
-/*  żadne opóźnienia).                                                  */
+/*  HERO — [KOPIA] bez animacji wejścia.                                */
 /*                                                                      */
-/*  UWAGA: tracking kliknięć w tel:/sms: (custom_id -> Google Sheets)   */
-/*  jest obsługiwany GLOBALNIE przez AdIdCapture.tsx (listener na całym */
-/*  dokumencie) - nie trzeba wywoływać trackPhoneClick/trackSmsClick    */
-/*  ręcznie w tym pliku. trackContact (Meta) zostaje, bo to osobny,      */
-/*  niezależny system.                                                  */
-/*                                                                      */
-/*  ZMIANY W TEJ WERSJI (copywriting deck):                             */
-/*  1. H1 zamieniony na wariant #6 z decku ("Przestań sprawdzać, czy    */
-/*     internet znowu zwolnił") — mocniej łączy przekonanie #1          */
-/*     (to nie pech, to model biznesowy) z mechanizmem monitoringu.     */
-/*  2. Subheadline zamieniony na Subheadline V2 z decku (pain point ->  */
-/*     mechanizm -> korzyść z ramą czasową "od 3. dnia po instalacji"). */
-/*  3. Mikrocopy pod CTA zaktualizowane pod CTA #1 z decku ("bez        */
-/*     zobowiązań") — dokłada redukcję ryzyka do istniejącego urgency.  */
-/*  Linia sceptycyzmu z poprzedniej iteracji zostaje bez zmian, bo dalej */
-/*  robi swoją robotę przed obietnicą w subheadline.                    */
+/*  ZMIANY W TEJ WERSJI:                                                */
+/*  1. Kolejność na mobile: H1 -> zdjęcie -> H2 -> CTA -> social proof  */
+/*     -> trust badges -> tekst pod CTA (przez "contents" + order-*).   */
+/*  2. Mniejsze odstępy pionowe na mobile: py-4 (od sm: wraca py-12),   */
+/*     gap-6 (od sm: gap-10), mt-6 przy CTA (od sm: mt-10), oraz        */
+/*     drobne cięcia w mt-3/mt-4 dla social proof/trust badges.         */
+/*  3. Większy odstęp od góry na mobile przez padding-top: pt-28,       */
+/*     od sm: wraca pt-18.                                              */
+/*  4. W H2: wyróżnienia "monitoruje Twoje łącze 24/7" i "spokojny      */
+/*     wieczór już od 3. dnia po instalacji" zamienione z font-semibold */
+/*     na kolor teal-300 (bez pogrubienia).                             */
 /* ------------------------------------------------------------------ */
 function Hero() {
   return (
     <section
       style={{ backgroundColor: "#0B2A3D" }}
-      className="relative mt-18 overflow-hidden font-sans"
+      className="relative overflow-hidden pt-28 font-sans sm:pt-18"
     >
       <DottedBackground variant="dots-fade" focusY="25%" size={24} />
 
@@ -52,88 +44,83 @@ function Hero() {
         className="pointer-events-none absolute -left-40 bottom-0 z-0 h-96 w-96 rounded-full bg-teal-500/5 blur-[100px]"
       />
 
-      <div className="relative z-10 mx-auto grid max-w-320 grid-cols-1 items-center gap-10 px-5 py-10 sm:px-6 sm:py-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-8 lg:px-8 lg:py-20">
-        {/* Kolumna tekstowa — zawsze pierwsza w porządku DOM i wizualnym */}
-        <div className="relative z-10 order-1 text-center lg:text-left">
-          <h1 className="text-3xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-4xl lg:text-5xl xl:text-6xl">
+      <div className="relative z-10 mx-auto grid max-w-320 grid-cols-1 items-center gap-6 px-5 py-4 sm:gap-10 sm:px-6 sm:py-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-8 lg:px-8 lg:py-20">
+        {/* Kolumna tekstowa — na mobile "contents" rozbija ją na pojedyncze
+            elementy, które ustawiają się wg order-* w całym gridzie.
+            Na lg wraca jako normalna kolumna flex. */}
+        <div className="contents text-center lg:flex lg:flex-col lg:text-left">
+          {/* H1 — order 1 na mobile */}
+          <h1 className="order-1 text-3xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-4xl lg:order-none lg:text-5xl xl:text-6xl">
             Przestań sprawdzać, czy internet{" "}
             <span className="text-teal-300">znowu zwolnił</span>.
           </h1>
 
-          {/* Linia sceptycyzmu — przekonanie #2 z beliefes.docx, musi wylądować
-              przed obietnicą poniżej, żeby "cena w umowie" nie zabrzmiała jak
-              kolejny slogan konkurencji */}
-          <p className="mx-auto mt-4 max-w-xl text-sm font-medium italic text-white/45 sm:text-base lg:mx-0">
-            „Do X Mb/s” i „gwarantowana cena” słyszałeś już wszędzie — i wiesz,
-            ile są warte po sześciu miesiącach.
-          </p>
-
-          {/* Subheadline V2 z copywriting decku: pain point -> mechanizm ->
-              korzyść z ramą czasową, prowadzi wprost do CTA */}
-          <h2 className="mx-auto mt-3 max-w-xl text-base font-normal leading-snug text-white/75 sm:text-lg lg:mx-0">
+          {/* H2 — order 3 na mobile (po zdjęciu) */}
+          <h2 className="order-3 mx-auto mt-3 max-w-xl text-base font-normal leading-snug text-white/75 sm:mt-4 sm:text-lg lg:order-none lg:mx-0">
             Jedyny dostawca, który{" "}
-            <span className="font-semibold text-teal-300">
+            <span className="text-teal-300">
               monitoruje Twoje łącze 24/7
             </span>{" "}
             i zapisuje cenę w umowie na stałe, żeby zagwarantować realną
             prędkość, stabilne wideorozmowy i{" "}
-            <span className="italic text-teal-200/85">
+            <span className="text-teal-300">
               spokojny wieczór już od 3. dnia po instalacji
             </span>
             .
           </h2>
 
-          {/* Social proof — card ze zdjęciem klienta (zamiast ikony placeholder).
-              Plik: /public/images/testimonial-avatar.jpg — patrz prompt do
-              wygenerowania w komentarzu na końcu pliku. */}
-          <div className="mx-auto mt-6 flex max-w-xl items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 lg:mx-0">
-            <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-teal-300/20">
-              <Image
-                src="/images/testimonial-avatar.webp"
-                alt="Zadowolony klient po zmianie dostawcy internetu"
-                fill
-                sizes="44px"
-                className="object-cover"
-              />
-            </span>
-            <span className="text-left">
-              <span className="flex items-center gap-2">
-                <span className="flex shrink-0 items-center gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} size={12} className="fill-amber-400 text-amber-400" />
-                  ))}
-                </span>
-                <span className="text-xs font-medium text-white/50">
-                  jeden z 2.4 mln klientów po zmianie dostawcy
-                </span>
+          {/* Social proof — order 5 na mobile (po CTA) */}
+          <div className="order-5 mx-auto mt-4 grid max-w-xl grid-cols-3 divide-x divide-white/10 rounded-2xl border border-white/10 bg-white/[0.03] sm:mt-6 lg:order-none lg:mx-0">
+            <div className="flex flex-col items-center gap-1.5 px-3 py-4 text-center">
+              <Users size={18} className="text-teal-300" />
+              <span className="text-lg font-bold leading-none text-white sm:text-xl">
+                2,4 mln
               </span>
-              <p className="mt-1 text-sm italic leading-snug text-white/90 sm:text-base">
-                „Nareszcie nie muszę myśleć o internecie”
-              </p>
-            </span>
+              <span className="text-[11px] font-medium leading-tight text-white/50 sm:text-xs">
+                obsłużonych klientów
+              </span>
+            </div>
+            <div className="flex flex-col items-center gap-1.5 px-3 py-4 text-center">
+              <ShieldCheck size={18} className="text-teal-300" />
+              <span className="text-lg font-bold leading-none text-white sm:text-xl">
+                15 lat
+              </span>
+              <span className="text-[11px] font-medium leading-tight text-white/50 sm:text-xs">
+                doświadczenia na rynku
+              </span>
+            </div>
+            <div className="flex flex-col items-center gap-1.5 px-3 py-4 text-center">
+              <Clock size={18} className="text-teal-300" />
+              <span className="text-lg font-bold leading-none text-white sm:text-xl">
+                24h
+              </span>
+              <span className="text-[11px] font-medium leading-tight text-white/50 sm:text-xs">
+                czas reakcji serwisu
+              </span>
+            </div>
           </div>
 
-          {/* Trust badges + risk reversal */}
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
-            <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white/90 sm:text-sm">
+          {/* Trust badges — order 6 na mobile (po social proof) */}
+          <div className="order-6 mx-auto mt-3 grid max-w-xl grid-cols-3 gap-2 sm:mt-4 lg:order-none lg:mx-0">
+            <span className="flex items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-center text-xs font-semibold text-white/90">
               <ShieldCheck size={14} className="shrink-0 text-teal-300" />
-              Umowa online w 5 minut
+              Umowa online w 5 min
             </span>
-            <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white/90 sm:text-sm">
+            <span className="flex items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-center text-xs font-semibold text-white/90">
               <Zap size={14} className="shrink-0 text-teal-300" />
               Serwisant w 24h
             </span>
-            <span className="flex items-center gap-1.5 rounded-full border border-teal-400/30 bg-teal-400/10 px-3 py-1.5 text-xs font-semibold text-white/90 sm:text-sm">
+            <span className="flex items-center justify-center gap-1.5 rounded-full border border-teal-400/30 bg-teal-400/10 px-3 py-2 text-center text-xs font-semibold text-white/90">
               <ShieldCheck size={14} className="shrink-0 text-teal-300" />
-              Rezygnacja bez kosztów w 14 dni
+              Rezygnacja w 14 dni
             </span>
           </div>
         </div>
 
-        {/* Kolumna wizualna — na mobile pod tekstem (order-2), na desktopie druga kolumna grida */}
-        <div className="order-2 flex flex-col">
-          {/* Obraz LCP — renderuje się natychmiast po ściągnięciu */}
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40">
+        {/* Kolumna wizualna — analogicznie "contents" na mobile */}
+        <div className="contents lg:flex lg:flex-col">
+          {/* Zdjęcie — order 2 na mobile (zaraz po H1) */}
+          <div className="order-2 relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40 lg:order-none">
             <Image
               src="/images/MainHero.avif"
               alt="Rodzina w salonie ogląda film bez przerywania dzięki stabilnemu połączeniu światłowodowemu"
@@ -145,47 +132,28 @@ function Hero() {
             />
           </div>
 
-          <div className="mt-10 flex flex-col items-stretch gap-4 sm:flex-row sm:justify-center lg:justify-start">
-            {/* CTA primary */}
-            <a
-              href="tel:+48887843260"
-              onClick={() => trackContact("hero_phone_button")}
-              className="flex min-h-[60px] items-center justify-between gap-4 rounded-2xl bg-teal-500 px-5 py-3 text-white shadow-lg shadow-teal-500/20 outline-none transition-all duration-150 hover:scale-[1.02] hover:shadow-teal-400/30 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
+          {/* CTA — order 4 na mobile (po H2, przed social proof) */}
+          <div className="order-4 mt-6 flex w-full sm:mt-10 lg:order-none">
+            <Link
+              href="/konfigurator/InternetOrazTelewizja"
+              onClick={() => trackContact("hero_konfigurator_button")}
+              className="flex min-h-[60px] w-full items-center justify-between gap-4 rounded-2xl bg-teal-500 px-5 py-3 text-black shadow-lg shadow-teal-500/20 outline-none transition-all duration-150 hover:scale-[1.02] hover:shadow-teal-400/30 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D]"
             >
               <span className="flex items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
-                  <Phone size={16} />
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black/10">
+                  <Zap size={16} />
                 </span>
                 <span className="text-left">
                   <span className="block text-sm font-bold leading-tight">Sprawdź dostępność</span>
-                  <span className="block text-xs text-white/85">+48 887 843 260</span>
+                  <span className="block text-xs text-black/70">Skonfiguruj ofertę w 3 minuty</span>
                 </span>
               </span>
-              <ChevronRight size={18} className="shrink-0 text-white/70" />
-            </a>
-
-            {/* CTA secondary */}
-            <a
-              href={`sms:+48887843260?body=${encodeURIComponent(
-                "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
-              )}`}
-              onClick={() => trackContact("hero_sms_button")}
-              className="flex min-h-[60px] items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-white outline-none transition-all duration-150 hover:scale-[1.02] hover:bg-white/[0.08] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2A3D] sm:w-64"
-            >
-              <span className="flex items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">
-                  <MessageCircle size={16} />
-                </span>
-                <span className="text-sm font-bold">Wyślij SMS</span>
-              </span>
-              <ChevronRight size={18} className="shrink-0 text-white/50" />
-            </a>
+              <ChevronRight size={18} className="shrink-0 text-black/60" />
+            </Link>
           </div>
 
-          {/* Mikrocopy pod CTA — oparte na CTA #1 z decku: urgency (3 minuty)
-              plus redukcja ryzyka (bez zobowiązań), zamiast samego urgency */}
-          <div className="mx-auto mt-4 flex w-fit items-center justify-center gap-1.5 sm:mx-0">
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal-300/80" />
+          {/* Tekst pod CTA — order 7, na końcu */}
+          <div className="order-7 mx-auto mt-3 flex w-fit items-center justify-center sm:mt-4 sm:mx-0 lg:order-none">
             <span className="text-xs font-medium text-white/50 sm:text-sm">
               Sprawdzenie dostępności zajmuje 3 minuty i jest bez zobowiązań,
               oddzwonimy zanim znów o tym zapomnisz.
@@ -198,28 +166,3 @@ function Hero() {
 }
 
 export default Hero;
-
-/* ------------------------------------------------------------------ */
-/*  PROMPT DO WYGENEROWANIA ZDJĘCIA (testimonial-avatar.jpg)            */
-/*  Wklej do Midjourney / DALL-E / Ideogram itp.                        */
-/*                                                                      */
-/*  "Photorealistic close-up portrait of a Polish woman in her early    */
-/*  30s, sitting relaxed at home, natural warm smile, looking slightly  */
-/*  off-camera, soft natural window light, casual home clothing (knit   */
-/*  sweater), blurred cozy living room background, shot on 50mm lens,   */
-/*  shallow depth of field, authentic candid feel, not overly polished, */
-/*  looks like a real customer photo not a stock photo, square crop,    */
-/*  even lighting on face, no text, no logos, no watermark"             */
-/*                                                                      */
-/*  Uwagi:                                                              */
-/*  - Kwadratowy kadr (1:1), bo w karcie jest przycinane do koła 44px — */
-/*    twarz musi być wycentrowana i wypełniać kadr.                     */
-/*  - Warto wygenerować 2-3 warianty (różna płeć/wiek) i rotować je      */
-/*    losowo albo A/B testować — dopasowane do różnych segmentów        */
-/*    avatara (rodzic 28-45 vs młodszy singiel 20-30).                  */
-/*  - Unikaj efektu "stockowego" — zbyt idealne, symetryczne, uśmiechy   */
-/*    "korporacyjne" obniżają wiarygodność testimoniala bardziej niż    */
-/*    ich brak.                                                         */
-/*  - Skompresuj do WebP/AVIF przed wrzuceniem do /public/images, żeby  */
-/*    nie obciążać LCP hero (sekcja jest priority-loaded).              */
-/* ------------------------------------------------------------------ */

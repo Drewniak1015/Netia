@@ -92,10 +92,6 @@ export default function Oferty1k() {
           {/* [PRZEBUDOWANE] Najpierw cynizm (belief #2), potem mechanizm
               (belief #3) — zamiast od razu zakładać wiarę w monitoring
               i cenę w umowie. */}
-          <p className="mx-auto mt-4 max-w-xl text-sm italic leading-snug text-white/45 sm:text-base">
-            „Do X Mb/s” i „gwarantowana cena” słyszałeś już wszędzie — i wiesz,
-            ile są warte po sześciu miesiącach.
-          </p>
           <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-slate-400">
             Każda paczka ma tę samą gwarancję:{" "}
             <span className="font-semibold text-white">monitorowaną prędkość 24/7</span>,{" "}

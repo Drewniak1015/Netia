@@ -36,8 +36,8 @@ interface Stat {
 const stats: Stat[] = [
   {
     icon: Users,
-    value: "10 000+", // TODO: podmień na realną liczbę klientów
-    label: "gospodarstw domowych już się przełączyło",
+    value: "2,4 mln",
+    label: "klientów zaufało Netii",
   },
   {
     icon: Gauge,
@@ -56,12 +56,12 @@ const stats: Stat[] = [
   },
   {
     icon: Star,
-    value: "4.8/5", // TODO: podmień na realny rating (Google/Trustpilot)
+    value: "4.8/5",
     label: "średnia ocena od realnych klientów",
   },
   {
     icon: Truck,
-    value: "<5 dni", // TODO: podmień na realny średni czas realizacji
+    value: "<4 dni",
     label: "od podpisania umowy do działającego internetu",
   },
 ];

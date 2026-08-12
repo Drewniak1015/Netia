@@ -72,6 +72,42 @@ export default function RootLayout({
           />
         </noscript>
 
+        {/* Śledzenie kliknięć w numery telefonu (tel:) — GA4 + Meta Pixel */}
+        <Script
+          id="phone-click-tracking"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              document.addEventListener('click', function (e) {
+                var link = e.target.closest('a[href^="tel:"]');
+                if (!link) return;
+
+                var phoneNumber = link.getAttribute('href').replace('tel:', '');
+
+                if (typeof window.gtag === 'function') {
+                  window.gtag('event', 'phone_call_click', {
+                    event_category: 'contact',
+                    event_label: phoneNumber,
+                    phone_number: phoneNumber,
+                    value: 1
+                  });
+                } else if (Array.isArray(window.dataLayer)) {
+                  window.dataLayer.push({
+                    event: 'phone_call_click',
+                    event_category: 'contact',
+                    event_label: phoneNumber,
+                    phone_number: phoneNumber
+                  });
+                }
+
+                if (typeof window.fbq === 'function') {
+                  window.fbq('trackCustom', 'PhoneCallClick', { phone: phoneNumber });
+                }
+              }, true);
+            `,
+          }}
+        />
+
         <Analytics />
         <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />
       </body>
