@@ -15,17 +15,60 @@ import { trackContact } from "@/lib/meta-track";
 /* ------------------------------------------------------------------ */
 /*  HERO — [KOPIA] bez animacji wejścia.                                */
 /*                                                                      */
-/*  ZMIANY W TEJ WERSJI:                                                */
-/*  1. Kolejność na mobile: H1 -> zdjęcie -> H2 -> CTA -> social proof  */
-/*     -> trust badges -> tekst pod CTA (przez "contents" + order-*).   */
-/*  2. Mniejsze odstępy pionowe na mobile: py-4 (od sm: wraca py-12),   */
-/*     gap-6 (od sm: gap-10), mt-6 przy CTA (od sm: mt-10), oraz        */
-/*     drobne cięcia w mt-3/mt-4 dla social proof/trust badges.         */
-/*  3. Większy odstęp od góry na mobile przez padding-top: pt-28,       */
-/*     od sm: wraca pt-18.                                              */
-/*  4. W H2: wyróżnienia "monitoruje Twoje łącze 24/7" i "spokojny      */
-/*     wieczór już od 3. dnia po instalacji" zamienione z font-semibold */
-/*     na kolor teal-300 (bez pogrubienia).                             */
+/*  POPRAWKI W TEJ WERSJI:                                              */
+/*                                                                      */
+/*  [1] ALT TEXT — poprzedni opisywał "rodzinę oglądającą film", ale    */
+/*      MainHero.avif to split-screen z mężczyzną na wideorozmowie      */
+/*      (sfrustrowany po lewej / zadowolony po prawej). Alt niezgodny   */
+/*      z obrazem to problem dla czytników ekranu i dla SEO. Opis       */
+/*      zaktualizowany do faktycznej zawartości.                        */
+/*                                                                      */
+/*  [2] "Jedyny dostawca" -> "Dostawca". Twierdzenie o wyłączności to   */
+/*      superlatyw, który w razie skargi trzeba udowodnić (UOKiK,       */
+/*      ustawa o zwalczaniu nieuczciwej konkurencji). Jeśli macie na    */
+/*      to twarde źródło, możecie wrócić do "Jedyny" — ale świadomie.   */
+/*                                                                      */
+/*  [3] <h2> -> <p>. To zdanie nie jest nagłówkiem sekcji, tylko        */
+/*      podtytułem. H2 bez własnej sekcji psuje strukturę dokumentu     */
+/*      (outline) i myli czytniki ekranu. Wygląd bez zmian.             */
+/*                                                                      */
+/*  [4] Mikrocopy "zajmuje 3 minuty, bez zobowiązań" przeniesione       */
+/*      BEZPOŚREDNIO pod CTA (było order-7, czyli dwa bloki niżej —     */
+/*      za social proof i trust badges). Zdanie zbijające opór przed    */
+/*      kliknięciem musi być przy przycisku, nie na końcu sekcji.       */
+/*      Nowa kolejność mobile: H1 -> zdjęcie -> podtytuł -> CTA ->      */
+/*      mikrocopy -> social proof -> trust badges.                      */
+/*                                                                      */
+/*  [5] "spokojny wieczór już od 3. dnia po instalacji" -> "...już      */
+/*      trzeciego dnia od zamówienia". Poprzednie brzmienie sugerowało, */
+/*      że przez pierwsze dwa dni PO instalacji coś nie działa.         */
+/*                                                                      */
+/*  [6] Usunięty badge "Serwisant w 24h" — dublował statystykę "24h /   */
+/*      czas reakcji serwisu" stojącą 30px obok. W jego miejsce         */
+/*      "Bez opłaty za router" (informacja, której nigdzie w hero nie   */
+/*      było, a jest realnym argumentem zakupowym z kart oferty).       */
+/*      UWAGA: jeśli router NIE jest w cenie we wszystkich pakietach,   */
+/*      zmień ten tekst — w danych ofert widziałem go przy każdej,      */
+/*      ale zweryfikuj przed publikacją.                                */
+/*                                                                      */
+/*  [7] Trust badges: grid-cols-2 na mobile zamiast 3 (trzeci badge     */
+/*      na pełną szerokość). Przy 375px trzy kolumny dawały ~110px na   */
+/*      tekst "Umowa online w 5 min" — łamało się brzydko.              */
+/*                                                                      */
+/*  [8] <Image> dostał `sizes` — bez tego Next serwuje plik liczony     */
+/*      względem width=1600 także na mobile. To obraz LCP, więc realna  */
+/*      oszczędność transferu.                                          */
+/*                                                                      */
+/*  NIE ZMIENIAŁEM (wymaga Twojej decyzji — to zmiany w przekazie,      */
+/*  nie w implementacji):                                               */
+/*   - CTA mówi "Sprawdź dostępność", a prowadzi do konfiguratora       */
+/*     oferty. Rozjazd obietnicy z treścią docelową to typowy wyciek    */
+/*     konwersji. Albo etykieta "Skonfiguruj ofertę", albo pole adresu  */
+/*     jako pierwszy krok konfiguratora.                                */
+/*   - Brak ścieżki telefonicznej w hero, mimo że reszta strony mocno   */
+/*     pcha "ZADZWOŃ". Wart testu jako drugi, poboczny CTA.             */
+/*   - Podtytuł upycha 5 obietnic w jedno zdanie. Przy 44s średniego    */
+/*     czasu na "/" (dane z GA4) nikt tego nie doczyta.                 */
 /* ------------------------------------------------------------------ */
 function Hero() {
   return (
@@ -55,22 +98,23 @@ function Hero() {
             <span className="text-teal-300">znowu zwolnił</span>.
           </h1>
 
-          {/* H2 — order 3 na mobile (po zdjęciu) */}
-          <h2 className="order-3 mx-auto mt-3 max-w-xl text-base font-normal leading-snug text-white/75 sm:mt-4 sm:text-lg lg:order-none lg:mx-0">
-            Jedyny dostawca, który{" "}
+          {/* [3] Podtytuł — <p>, nie <h2>. Wygląd identyczny, semantyka
+              poprawna. Order 3 na mobile (po zdjęciu). */}
+          <p className="order-3 mx-auto mt-3 max-w-xl text-base font-normal leading-snug text-white/75 sm:mt-4 sm:text-lg lg:order-none lg:mx-0">
+            Dostawca, który{" "}
             <span className="text-teal-300">
               monitoruje Twoje łącze 24/7
             </span>{" "}
             i zapisuje cenę w umowie na stałe, żeby zagwarantować realną
             prędkość, stabilne wideorozmowy i{" "}
             <span className="text-teal-300">
-              spokojny wieczór już od 3. dnia po instalacji
+              spokojny wieczór już trzeciego dnia od zamówienia
             </span>
             .
-          </h2>
+          </p>
 
-          {/* Social proof — order 5 na mobile (po CTA) */}
-          <div className="order-5 mx-auto mt-4 grid max-w-xl grid-cols-3 divide-x divide-white/10 rounded-2xl border border-white/10 bg-white/[0.03] sm:mt-6 lg:order-none lg:mx-0">
+          {/* Social proof — order 6 na mobile (po CTA i mikrocopy) */}
+          <div className="order-6 mx-auto mt-4 grid max-w-xl grid-cols-3 divide-x divide-white/10 rounded-2xl border border-white/10 bg-white/[0.03] sm:mt-6 lg:order-none lg:mx-0">
             <div className="flex flex-col items-center gap-1.5 px-3 py-4 text-center">
               <Users size={18} className="text-teal-300" />
               <span className="text-lg font-bold leading-none text-white sm:text-xl">
@@ -100,17 +144,19 @@ function Hero() {
             </div>
           </div>
 
-          {/* Trust badges — order 6 na mobile (po social proof) */}
-          <div className="order-6 mx-auto mt-3 grid max-w-xl grid-cols-3 gap-2 sm:mt-4 lg:order-none lg:mx-0">
+          {/* [6][7] Trust badges — order 7, 2 kolumny na mobile (trzeci
+              badge na pełną szerokość), 3 od sm. Badge "Serwisant w 24h"
+              usunięty jako duplikat statystyki obok. */}
+          <div className="order-7 mx-auto mt-3 grid max-w-xl grid-cols-2 gap-2 sm:mt-4 sm:grid-cols-3 lg:order-none lg:mx-0">
             <span className="flex items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-center text-xs font-semibold text-white/90">
               <ShieldCheck size={14} className="shrink-0 text-teal-300" />
               Umowa online w 5 min
             </span>
             <span className="flex items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-center text-xs font-semibold text-white/90">
               <Zap size={14} className="shrink-0 text-teal-300" />
-              Serwisant w 24h
+              Bez opłaty za router
             </span>
-            <span className="flex items-center justify-center gap-1.5 rounded-full border border-teal-400/30 bg-teal-400/10 px-3 py-2 text-center text-xs font-semibold text-white/90">
+            <span className="col-span-2 flex items-center justify-center gap-1.5 rounded-full border border-teal-400/30 bg-teal-400/10 px-3 py-2 text-center text-xs font-semibold text-white/90 sm:col-span-1">
               <ShieldCheck size={14} className="shrink-0 text-teal-300" />
               Rezygnacja w 14 dni
             </span>
@@ -123,16 +169,20 @@ function Hero() {
           <div className="order-2 relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40 lg:order-none">
             <Image
               src="/images/MainHero.avif"
-              alt="Rodzina w salonie ogląda film bez przerywania dzięki stabilnemu połączeniu światłowodowemu"
+              /* [1] Alt zgodny z faktyczną zawartością obrazu. */
+              alt="Porównanie przed i po: po lewej mężczyzna sfrustrowany zrywającą się wideorozmową, po prawej ten sam mężczyzna na stabilnym połączeniu"
               width={1600}
               height={900}
               priority
               fetchPriority="high"
+              /* [8] Bez `sizes` Next liczy rozmiar względem width=1600
+                 również na mobile. To obraz LCP — warto zawęzić. */
+              sizes="(max-width: 1024px) 100vw, 45vw"
               className="h-auto w-full"
             />
           </div>
 
-          {/* CTA — order 4 na mobile (po H2, przed social proof) */}
+          {/* CTA — order 4 na mobile (po podtytule) */}
           <div className="order-4 mt-6 flex w-full sm:mt-10 lg:order-none">
             <Link
               href="/konfigurator/InternetOrazTelewizja"
@@ -152,8 +202,9 @@ function Hero() {
             </Link>
           </div>
 
-          {/* Tekst pod CTA — order 7, na końcu */}
-          <div className="order-7 mx-auto mt-3 flex w-fit items-center justify-center sm:mt-4 sm:mx-0 lg:order-none">
+          {/* [4] Mikrocopy — order 5, BEZPOŚREDNIO pod CTA (było order-7,
+              czyli za social proof i trust badges). */}
+          <div className="order-5 mx-auto mt-2 flex w-fit items-center justify-center sm:mt-3 sm:mx-0 lg:order-none">
             <span className="text-xs font-medium text-white/50 sm:text-sm">
               Sprawdzenie dostępności zajmuje 3 minuty i jest bez zobowiązań,
               oddzwonimy zanim znów o tym zapomnisz.

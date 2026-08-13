@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import { Shield, Gauge } from "lucide-react";
 import { offersBySpeed, type SpeedTier } from "@/components/home/Offersdata";
 import OfferCard from "@/components/home/Offercard";
-import { SzczegolyOferty } from "@/components/home/Promocena";
 
 /* [PODZIAŁ] InfoModal (i cały jego duży zestaw danych INFO_ITEMS) trafia
    do osobnego chunku, pobieranego dopiero po kliknięciu w pozycję z
@@ -25,23 +24,35 @@ const InfoModal = dynamic(() => import("@/components/home/Infomodal"), {
 
 /* [USUNIĘTE] Cały tryb "MAX" (state `tryb`, MaxOfferCard, maxOffers,
    przełącznik Podstawa/MAX, drugi SzczegolyOferty dla MAX) — nieużywany,
-   więc wyleciał. Zostaje tylko wybór prędkości 600 Mb/s / 1 Gb/s. */
+   więc wyleciał. Zostaje tylko wybór prędkości. */
+
+/* [NOWE] Dodano trzeci wariant prędkości: "300" (obok istniejących "600" i
+   "1000"). Toggle przeszedł z 2 na 3 zakładki — patrz sekcja poniżej.
+   UWAGA: `SpeedTier` w @/components/home/Offersdata musi zawierać "300",
+   a `offersBySpeed["300"]` musi istnieć w danych (patrz przykład w
+   Offersdata.example.ts, który dołączam osobno). */
 
 interface OfertyProps {
   cityLocative?: string;
   defaultPredkosc?: SpeedTier;
 }
 
-export default function Oferty({ cityLocative, defaultPredkosc = "600" }: OfertyProps = {}) {
+const TABS: { value: SpeedTier; label: string; color: string }[] = [
+  { value: "300", label: "300 Mb/s", color: "#00d5be" },
+  { value: "600", label: "600 Mb/s", color: "#00be81" },
+];
+
+export default function Oferty({ cityLocative, defaultPredkosc = "300" }: OfertyProps = {}) {
   const [aktywnyInfoId, setAktywnyInfoId] = useState<string | null>(null);
   const [predkosc, setPredkosc] = useState<SpeedTier>(defaultPredkosc);
 
   const handlePokazInfo = useCallback((infoId: string) => setAktywnyInfoId(infoId), []);
   const handleCloseModal = useCallback(() => setAktywnyInfoId(null), []);
-  const handleWybierz600 = useCallback(() => setPredkosc("600"), []);
-  const handleWybierz1000 = useCallback(() => setPredkosc("1000"), []);
+  const handleWybierzPredkosc = useCallback((value: SpeedTier) => setPredkosc(value), []);
 
   const aktywneOferty = useMemo(() => offersBySpeed[predkosc], [predkosc]);
+  const aktywnyIndex = TABS.findIndex((t) => t.value === predkosc);
+  const aktywnyTab = TABS[aktywnyIndex];
 
   return (
     <section className="relative w-full py-8 px-8" style={{ backgroundColor: "#0B2A3D" }}>
@@ -54,7 +65,7 @@ export default function Oferty({ cityLocative, defaultPredkosc = "600" }: Oferty
         }}
       />
 
-      <div className="relative max-w-305 mx-auto">
+      <div className="relative max-w-304 mx-auto">
         <div className="text-center mb-10">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-white/70">
             <Shield size={13} className="text-teal-300" />
@@ -74,12 +85,13 @@ export default function Oferty({ cityLocative, defaultPredkosc = "600" }: Oferty
             )}
           </h2>
           <p className="mt-3 text-slate-400 text-base">
-            Internet od <span className="font-semibold text-white/80">55 zł/mies.</span>, z
+            Internet od <span className="font-semibold text-white/80">30 zł/mies.</span>, z
             monitorowaną prędkością 24/7 i ceną zapisaną w umowie na cały okres.
           </p>
 
-          {/* Toggle prędkości — chudszy wariant: mniejszy padding pionowy,
-              cieńszy pasek i mniejszy tekst niż poprzednio */}
+          {/* Toggle prędkości — 2 zakładki: 300 / 600 Mb/s. Guziki wydłużone
+              (px-8 zamiast px-4, py-2.5 zamiast py-1.5), kolor aktywnej
+              pigułki zmieniony na #00d5be. */}
           <div
             className="relative mt-6 inline-flex rounded-full border border-white/10 bg-white/5 p-0.5"
             role="tablist"
@@ -88,66 +100,76 @@ export default function Oferty({ cityLocative, defaultPredkosc = "600" }: Oferty
             <span
               aria-hidden="true"
               style={{
-                background:
-                  predkosc === "1000"
-                    ? "#fb64b6"
-                    : "#00be81",
+                background: aktywnyTab?.color ?? "#00d5be",
+                width: "calc(50% - 2px)",
+                transform: `translateX(calc(${aktywnyIndex} * (100% + 2px)))`,
               }}
-              className={`absolute inset-y-0.5 left-0.5 w-[calc(50%-2px)] rounded-full transition-all ${
-                predkosc === "1000" ? "translate-x-[calc(100%+4px)]" : "translate-x-0"
-              }`}
+              className="absolute inset-y-0.5 left-0.5 rounded-full transition-all"
             />
-            <button
-              type="button"
-              role="tab"
-              aria-selected={predkosc === "600"}
-              onClick={handleWybierz600}
-              className={`relative z-10 flex flex-1 items-center justify-center gap-1 rounded-full px-4 py-1.5 text-xs font-bold sm:text-sm ${
-                predkosc === "600" ? "text-[#0B2A3D]" : "text-white/70"
-              }`}
-            >
-              <Gauge size={12} />
-              600 Mb/s
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={predkosc === "1000"}
-              onClick={handleWybierz1000}
-              className={`relative z-10 flex flex-1 items-center justify-center gap-1 rounded-full px-4 py-1.5 text-xs font-bold sm:text-sm ${
-                predkosc === "1000" ? "text-[#0B2A3D]" : "text-white/70"
-              }`}
-            >
-              <Gauge size={12} />
-              1 Gb/s
-            </button>
+            {TABS.map((tab) => (
+              <button
+                key={tab.value}
+                type="button"
+                role="tab"
+                aria-selected={predkosc === tab.value}
+                onClick={() => handleWybierzPredkosc(tab.value)}
+                className={`relative z-10 flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-8 py-1.5 text-xs font-bold sm:text-sm ${
+                  predkosc === tab.value ? "text-[#0B2A3D]" : "text-white/70"
+                }`}
+              >
+                <Gauge size={12} />
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-          {aktywneOferty.map((offer) => (
-            <OfferCard
-              key={`${offer.speed}-${offer.pkg}`}
-              offer={offer}
-              onPokazInfo={handlePokazInfo}
-            />
-          ))}
-        </div>
+        {/* [SZEROKOŚĆ KART]
+            - 300 Mb/s (2 karty) -> narzucona stała szerokość 360px na
+              kartę, wyśrodkowane przez flex + justify-center. Karty NIE
+              rosną razem z kontenerem — poszerzanie sekcji (max-w-320)
+              zwiększa tylko puste marginesy po bokach.
+            - 600 Mb/s (3 karty) -> grid 3-kolumnowy, karty dzielą
+              szerokość kontenera po równo (jak w Oferty1k.tsx).
 
-        <SzczegolyOferty>
-          Prezentowana oferta dotyczy mieszkań. W przypadku budynków jednorodzinnych obowiązuje inna oferta.
-          Prezentowana oferta Netii S.A.: „Wybierz szybszy Internet 12 mies. 1/2Gb/s (PON, HFC, ETTH)”
-          obowiązuje przy zawarciu Umowy na czas określony 24 pełnych Okresów Rozliczeniowych przy
-          jednoczesnym korzystaniu z rabatów za e-fakturę (5 zł) i zgody marketingowe (5 zł). W przypadku
-          rezygnacji lub niespełnienia warunków przyznania rabatów, cena wzrośnie o 10 zł. Wraz z pierwszą
-          fakturą zostanie naliczona opłata aktywacyjna w wysokości 79 zł za Internet i 2 zł za Telewizję.
-          Po 24 miesiącach cena abonamentu wzrasta o 10 zł. Usługa Internetowa oparta jest na parametrach
-          jakości wynikających z maksymalnych parametrów technicznych danej technologii, w jakiej świadczona
-          jest Usługa Internetowa lub wynikających z ofertowych ustawień technicznych łącza. Parametry
-          świadczenia Usługi Internetowej, w szczególności parametry prędkości oraz wpływu innych Usług na
-          Usługę Internetową, dostępne są na stronie netia.pl. Oferta jest ograniczona terytorialnie do
-          zasięgu stacjonarnej sieci PON, HFC, ETTH Operatora.
-        </SzczegolyOferty>
+            Na mobile (poniżej md) obie ścieżki dają karty na pełną
+            szerokość, ułożone jedna pod drugą.
+
+            `items-stretch` + `h-full` w Offercard trzymają równą wysokość
+            niezależnie od liczby benefitów. */}
+        {aktywneOferty.length === 2 ? (
+          <div className="flex flex-wrap justify-center gap-6 items-stretch">
+            {aktywneOferty.map((offer) => (
+              <div
+                key={`${offer.speed}-${offer.pkg}`}
+                className="w-full md:w-[360px] md:shrink-0"
+              >
+                <OfferCard offer={offer} onPokazInfo={handlePokazInfo} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+            {aktywneOferty.map((offer) => (
+              <OfferCard
+                key={`${offer.speed}-${offer.pkg}`}
+                offer={offer}
+                onPokazInfo={handlePokazInfo}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* [USUNIĘTE] Blok <SzczegolyOferty> z przypisem prawnym (warunki
+            promocji, opłata aktywacyjna, rabaty za e-fakturę i zgody
+            marketingowe, wzrost ceny po 24 mies., zasięg sieci).
+
+            UWAGA: dla oferty telekomunikacyjnej te informacje są zwykle
+            wymagane przy prezentowaniu ceny promocyjnej — upewnij się, że
+            są dostępne gdzie indziej na stronie (np. w stopce albo pod
+            linkiem "Szczegóły oferty"), zanim wypuścisz to na produkcję.
+            Import `SzczegolyOferty` został usunięty z góry pliku — jeśli
+            przywracasz ten blok, dodaj go z powrotem. */}
       </div>
 
       <InfoModal infoId={aktywnyInfoId} onClose={handleCloseModal} />

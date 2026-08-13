@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { LazyMotion, domAnimation, m, useReducedMotion, AnimatePresence } from "framer-motion";
 import {
   Phone,
   MessageCircle,
@@ -21,23 +20,79 @@ import {
   Smartphone,
   Sparkles,
   ThumbsUp,
-  Table2,
   Wifi,
   RotateCcw,
   Headset,
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
+/* ---------------------------------------------------------------------- */
+/*  LANDING "NAJLEPSZA CENA" — wersja pod ruch płatny z reklamy cenowej.   */
+/*                                                                         */
+/*  ZMIANY W TEJ WERSJI:                                                   */
+/*                                                                         */
+/*  [1] USUNIĘTY FRAMER MOTION — cały import (LazyMotion, domAnimation, m, */
+/*      AnimatePresence, useReducedMotion), wszystkie warianty `fadeUp`,   */
+/*      `initial/whileInView/viewport/transition`, `whileHover/whileTap`   */
+/*      oraz stan `reduceMotion`. Sekcja renderuje się od razu w finalnym  */
+/*      stanie. Efekty hover/tap na przyciskach odtworzone czystym CSS     */
+/*      (hover:scale/active:scale + transition-transform), więc wizualnie  */
+/*      przyciski nadal reagują na kliknięcie.                             */
+/*      Modal: AnimatePresence zastąpiony zwykłym `{item && ...}`.         */
+/*      Efekt uboczny: mniejszy bundle i szybszy LCP — istotne, bo to      */
+/*      strona docelowa reklamy, gdzie liczy się czas do pierwszego        */
+/*      renderu.                                                           */
+/*                                                                         */
+/*  [2] ŚLEDZENIE GA4 — `trackContact()` wysyłał zdarzenie WYŁĄCZNIE do    */
+/*      Meta Pixela (`fbq`). W GA4 nie było więc żadnej konwersji, stąd    */
+/*      kolumny "0,00" w Twoich raportach. Dodane `gtag('event', ...)`.    */
+/*      WAŻNE — samo to nie wystarczy: w GA4 trzeba jeszcze oznaczyć       */
+/*      zdarzenie `kontakt` jako ZDARZENIE KLUCZOWE                        */
+/*      (Administracja -> Zdarzenia -> przełącznik przy zdarzeniu).        */
+/*      Dopóki tego nie zrobisz, nadal nie zobaczysz konwersji w raportach.*/
+/*                                                                         */
+/*  [3] MESSAGE MATCH — nagłówek prowadzi teraz CENĄ (30 zł), bo to jest   */
+/*      obietnica z reklamy. Poprzedni ("Dwie najtańsze oferty Netii dla   */
+/*      nowych klientów") mówił o czymś innym niż kreacja, przez co        */
+/*      człowiek po kliknięciu w "30 zł" nie widział "30 zł" od razu.      */
+/*      To najczęstsza przyczyna odbić z płatnego ruchu.                   */
+/*                                                                         */
+/*  [4] WARUNKI CENY WIDOCZNE OD RAZU — pod ceną w hero dodana linijka     */
+/*      "przez 24 mies., potem 60 zł/mies.". Wymóg prawny przy            */
+/*      reklamowaniu ceny promocyjnej; schowanie tego wyłącznie w          */
+/*      rozwijanym disclaimerze jest ryzykowne (UOKiK, moderacja Meta).    */
+/*                                                                         */
+/*  [5] Usunięte nieużywane importy (Table2, ListOrdered zostaje — jest    */
+/*      w INFO_ITEMS; Table2 nie był używany nigdzie).                     */
+/*                                                                         */
+/*  CZEGO NIE ZMIENIAŁEM (wymaga Twojej decyzji):                          */
+/*   - Strona jest długa (hero + oferty + gwarancje + FAQ + CTA). Pod ruch */
+/*     płatny zwykle lepiej działa 3-4 ekrany. Skrócenie = usunięcie treści*/
+/*     merytorycznej, więc zostawiam Tobie.                                */
+/*   - Kwota opłaty aktywacyjnej: w FAQ jest "Netia informuje przy         */
+/*     podpisaniu umowy", a w disclaimerze konkretne "79 zł + 2 zł".       */
+/*     To niespójność — ujednolić.                                         */
+/* ---------------------------------------------------------------------- */
 
-/* [DODANO] Ten sam wzorzec trackingu co w pozostałych komponentach —
-   odpalanie zdarzenia Meta Pixel "Contact" przy kliknięciu w telefon/SMS. */
+/* [2] Tracking do OBU systemów naraz — Meta Pixel (remarketing, optymali- */
+/*     zacja kampanii) i GA4 (raportowanie, atrybucja źródła ruchu).       */
 function trackContact(contentName: string) {
-  if (typeof window !== "undefined" && (window as any).fbq) {
-    (window as any).fbq("track", "Contact", { content_name: contentName });
+  if (typeof window === "undefined") return;
+
+  const w = window as any;
+
+  // Meta Pixel — bez zmian względem poprzedniej wersji.
+  if (w.fbq) {
+    w.fbq("track", "Contact", { content_name: contentName });
+  }
+
+  // GA4 — tego brakowało. Nazwa zdarzenia "kontakt", parametr `metoda`
+  // pozwala rozdzielić telefon od SMS-a w raportach.
+  if (w.gtag) {
+    w.gtag("event", "kontakt", {
+      content_name: contentName,
+      metoda: contentName.includes("_sms") ? "sms" : "telefon",
+    });
   }
 }
 
@@ -78,7 +133,7 @@ const offers: Offer[] = [
     ],
     price: "30 zł",
     priceUnit: "/mies.",
-    priceNote: "Od 25. miesiąca: 60 zł/mies.",
+    priceNote: "Przez 24 mies. Od 25. miesiąca: 60 zł/mies.",
     resultLine: "Wystarczy do codziennej pracy, przeglądania i streamingu — bez dopłat za sprzęt.",
   },
   {
@@ -94,7 +149,7 @@ const offers: Offer[] = [
     ],
     price: "40 zł",
     priceUnit: "/mies.",
-    priceNote: "Od 25. miesiąca: 60 zł/mies.",
+    priceNote: "Przez 24 mies. Od 25. miesiąca: 60 zł/mies.",
     resultLine: "To samo, co WYBIERZ 30, plus telewizja 4K — bez osobnego abonamentu za dekoder.",
   },
 ];
@@ -108,7 +163,7 @@ const faqs = [
   {
     icon: <Wallet size={18} />,
     q: "Czy jest opłata aktywacyjna?",
-    a: "Wraz z pierwszą fakturą naliczana jest jednorazowa opłata aktywacyjna — Netia informuje o jej wysokości przy podpisaniu umowy, zależnie od aktualnej promocji.",
+    a: "Tak — wraz z pierwszą fakturą naliczana jest jednorazowa opłata aktywacyjna: 79 zł za Internet i 2 zł za Telewizję.",
   },
   {
     icon: <Gauge size={18} />,
@@ -503,8 +558,10 @@ function TrescSekcji({
   }
 }
 
+/* [1] Modal bez AnimatePresence — zwykły warunkowy render.
+   Zachowane: blokada scrolla body, zamykanie Escape, zamykanie klikiem
+   w tło i stopPropagation na treści. */
 function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => void }) {
-  const reduceMotion = useReducedMotion();
   const item = infoId ? INFO_ITEMS[infoId] : null;
 
   useEffect(() => {
@@ -524,132 +581,114 @@ function InfoModal({ infoId, onClose }: { infoId: string | null; onClose: () => 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item]);
 
+  if (!item) return null;
+
+  const akcent = BANNER_AKCENTY[item.bannerAkcent ?? "teal"];
+
   return (
-    <AnimatePresence>
-      {item && (
-        <m.div
-          key="info-modal-overlay"
-          initial={reduceMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm sm:p-8"
-          onClick={onClose}
-        >
-          <m.div
-            key="info-modal-content"
-            role="dialog"
-            aria-modal="true"
-            aria-label={item.model}
-            initial={reduceMotion ? false : { opacity: 0, y: 20, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.98 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            onClick={(e) => e.stopPropagation()}
-            className="relative flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/10 text-left sm:max-h-[88vh]"
-            style={{ backgroundColor: "#0B2A3D" }}
-          >
-            {(() => {
-              const akcent = BANNER_AKCENTY[item.bannerAkcent ?? "teal"];
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm sm:p-8"
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={item.model}
+        onClick={(e) => e.stopPropagation()}
+        className="relative flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/10 text-left sm:max-h-[88vh]"
+        style={{ backgroundColor: "#0B2A3D" }}
+      >
+        <div className="shrink-0 border-b border-white/10 px-6 pb-4 pt-6 sm:px-8 sm:pt-8">
+          <div className={`flex items-center gap-2 ${akcent.text}`}>
+            <Info size={18} />
+            <span className="text-xs font-bold uppercase tracking-wide">Szczegóły</span>
+          </div>
+          <h3 className="mt-2 text-2xl font-extrabold text-white sm:text-3xl">{item.model}</h3>
+          {item.podtytul && <p className="mt-1 text-sm text-white/60">{item.podtytul}</p>}
+        </div>
 
-              return (
-                <>
-                  <div className="shrink-0 border-b border-white/10 px-6 pb-4 pt-6 sm:px-8 sm:pt-8">
-                    <div className={`flex items-center gap-2 ${akcent.text}`}>
-                      <Info size={18} />
-                      <span className="text-xs font-bold uppercase tracking-wide">Szczegóły</span>
-                    </div>
-                    <h3 className="mt-2 text-2xl font-extrabold text-white sm:text-3xl">{item.model}</h3>
-                    {item.podtytul && <p className="mt-1 text-sm text-white/60">{item.podtytul}</p>}
-                  </div>
+        <div className="flex-1 overflow-y-auto px-6 py-5 sm:px-8">
+          {item.zdjecie && <IkonaProduktu zdjecie={item.zdjecie} model={item.model} />}
 
-                  <div className="flex-1 overflow-y-auto px-6 py-5 sm:px-8">
-                    {item.zdjecie && <IkonaProduktu zdjecie={item.zdjecie} model={item.model} />}
-
-                    {item.banner && (
-                      <div
-                        className={`mb-6 overflow-hidden rounded-2xl border ${akcent.border} px-5 py-7 text-center sm:px-8 sm:py-9`}
-                        style={{ background: akcent.background }}
-                      >
-                        <p className="text-xl font-extrabold leading-snug text-white sm:text-2xl">
-                          {item.banner}
-                        </p>
-                      </div>
-                    )}
-
-                    {item.sections.map((section, i) => {
-                      const Ikona = section.icon;
-
-                      if (section.content.type === "box") {
-                        return (
-                          <div
-                            key={section.title}
-                            className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4"
-                          >
-                            <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-white">
-                              <Ikona size={14} className={akcent.text} />
-                              {section.title}
-                            </h4>
-                            <p className="mt-1.5 text-sm text-white/75">{section.content.text}</p>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <div
-                          key={section.title}
-                          className={
-                            i === 0 && !item.zdjecie && !item.banner
-                              ? "mt-0"
-                              : "mt-6 border-t border-white/10 pt-6"
-                          }
-                        >
-                          <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white">
-                            <Ikona size={15} className={akcent.text} />
-                            {section.title}
-                          </h4>
-                          <TrescSekcji content={section.content} akcent={akcent} />
-                        </div>
-                      );
-                    })}
-
-                    {item.uwaga && (
-                      <p className="mt-6 border-t border-white/10 pt-4 text-[11px] leading-relaxed text-white/40">
-                        {item.uwaga}
-                      </p>
-                    )}
-
-                    {item.instrukcjaUrl && (
-                      <a
-                        href={item.instrukcjaUrl}
-                        download
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-6 flex items-center justify-between gap-2 rounded-xl border border-teal-300/30 bg-teal-300/10 px-4 py-3 text-sm font-semibold text-teal-200 transition-colors hover:bg-teal-300/20"
-                      >
-                        Instrukcja użytkownika {item.model}
-                        <ChevronRight size={16} />
-                      </a>
-                    )}
-                  </div>
-                </>
-              );
-            })()}
-
-            <div className="shrink-0 border-t border-white/10 px-6 py-4 sm:px-8">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-bold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-              >
-                <X size={16} />
-                Zamknij
-              </button>
+          {item.banner && (
+            <div
+              className={`mb-6 overflow-hidden rounded-2xl border ${akcent.border} px-5 py-7 text-center sm:px-8 sm:py-9`}
+              style={{ background: akcent.background }}
+            >
+              <p className="text-xl font-extrabold leading-snug text-white sm:text-2xl">
+                {item.banner}
+              </p>
             </div>
-          </m.div>
-        </m.div>
-      )}
-    </AnimatePresence>
+          )}
+
+          {item.sections.map((section, i) => {
+            const Ikona = section.icon;
+
+            if (section.content.type === "box") {
+              return (
+                <div
+                  key={section.title}
+                  className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4"
+                >
+                  <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-white">
+                    <Ikona size={14} className={akcent.text} />
+                    {section.title}
+                  </h4>
+                  <p className="mt-1.5 text-sm text-white/75">{section.content.text}</p>
+                </div>
+              );
+            }
+
+            return (
+              <div
+                key={section.title}
+                className={
+                  i === 0 && !item.zdjecie && !item.banner
+                    ? "mt-0"
+                    : "mt-6 border-t border-white/10 pt-6"
+                }
+              >
+                <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white">
+                  <Ikona size={15} className={akcent.text} />
+                  {section.title}
+                </h4>
+                <TrescSekcji content={section.content} akcent={akcent} />
+              </div>
+            );
+          })}
+
+          {item.uwaga && (
+            <p className="mt-6 border-t border-white/10 pt-4 text-[11px] leading-relaxed text-white/40">
+              {item.uwaga}
+            </p>
+          )}
+
+          {item.instrukcjaUrl && (
+            <a
+              href={item.instrukcjaUrl}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 flex items-center justify-between gap-2 rounded-xl border border-teal-300/30 bg-teal-300/10 px-4 py-3 text-sm font-semibold text-teal-200 transition-colors hover:bg-teal-300/20"
+            >
+              Instrukcja użytkownika {item.model}
+              <ChevronRight size={16} />
+            </a>
+          )}
+        </div>
+
+        <div className="shrink-0 border-t border-white/10 px-6 py-4 sm:px-8">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-bold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <X size={16} />
+            Zamknij
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -681,12 +720,11 @@ function SzczegolyOferty({ children }: { children: ReactNode }) {
 }
 
 export default function NajlepszaCenaOferty() {
-  const reduceMotion = useReducedMotion();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [aktywnyInfoId, setAktywnyInfoId] = useState<string | null>(null);
 
   return (
-    <LazyMotion features={domAnimation} strict>
+    <>
       <style>{`
         @keyframes najlepsza-cena-faq-pulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.45); }
@@ -704,14 +742,10 @@ export default function NajlepszaCenaOferty() {
 
       <section
         style={{ backgroundColor: "#0B2A3D" }}
-        className="relative overflow-hidden font-sans py-20 sm:py-24 "
+        className="relative overflow-hidden font-sans py-20 sm:py-24"
       >
         <div className="relative z-10 mx-auto max-w-320 px-5 sm:px-6 lg:px-8 pt-12">
-          <m.div
-            initial={reduceMotion ? false : { opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+          <div
             className="relative mx-auto flex max-w-310 flex-col items-center gap-3 overflow-hidden rounded-[20px] border border-white/[0.08] px-6 py-10 text-center sm:py-12"
             style={{
               background:
@@ -758,65 +792,39 @@ export default function NajlepszaCenaOferty() {
               <circle cx="15" cy="110" r="2" fill="#2DD4BF" opacity="0.5" />
             </svg>
 
-            <m.span
-              initial={reduceMotion ? false : { opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="relative z-10 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-teal-500 to-teal-400 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.06em] text-[#0B2A3D] shadow-[0_6px_16px_-6px_rgba(45,212,191,0.7)]"
-            >
+            <span className="relative z-10 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-teal-500 to-teal-400 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.06em] text-[#0B2A3D] shadow-[0_6px_16px_-6px_rgba(45,212,191,0.7)]">
               <Tag size={13} />
               Najlepsza cena
               <Tag size={13} />
-            </m.span>
+            </span>
 
-            <m.h1
-              initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="relative z-10 m-0 text-[clamp(28px,4.4vw,44px)] font-extrabold text-white"
-            >
-              Dwie najtańsze oferty Netii{" "} <br />
-              <span className="text-teal-300">dla nowych klientów</span>
-            </m.h1>
+            {/* [3] Nagłówek prowadzi CENĄ — to jest obietnica z reklamy.
+                Poprzednia wersja ("Dwie najtańsze oferty Netii dla nowych
+                klientów") mówiła o czymś innym niż kreacja. */}
+            <h1 className="relative z-10 m-0 text-[clamp(28px,4.4vw,44px)] font-extrabold text-white">
+              Internet 300 Mb/s + TV{" "}
+              <span className="text-teal-300">od 30 zł/mies.</span>
+            </h1>
 
-            <m.p
-              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.28 }}
-              className="relative z-10 mt-3 text-[clamp(18px,2.4vw,24px)] font-bold text-white/90"
-            >
-              Internet <span className="text-teal-300">300 Mb/s</span>
-            </m.p>
+            {/* [4] Warunki ceny widoczne od razu, bez rozwijania — wymóg przy
+                reklamowaniu ceny promocyjnej. */}
+            <p className="relative z-10 mt-1 text-sm text-white/55">
+              Cena przez 24 miesiące. Od 25. miesiąca 60 zł/mies.
+              Wymaga e-faktury i zgód marketingowych.
+            </p>
 
-            <m.p
-              initial={reduceMotion ? false : { opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.35 }}
-              className="relative z-10 mt-1 flex flex-wrap items-center justify-center gap-2 text-sm text-white/65 sm:text-base"
-            >
+            <p className="relative z-10 mt-3 flex flex-wrap items-center justify-center gap-2 text-sm text-white/65 sm:text-base">
               <Users size={15} className="text-teal-300" />
               Dwie oferty z najniższą ceną startową — sprawdzone przez{" "}
               <span className="font-semibold text-white">2,4 mln klientów</span>{" "}
               w całej Polsce.
-            </m.p>
+            </p>
 
-            <m.div
-              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.45 }}
-              className="relative z-10 mt-4 flex flex-col items-stretch gap-3 sm:flex-row"
-            >
-              <m.a
+            <div className="relative z-10 mt-4 flex flex-col items-stretch gap-3 sm:flex-row">
+              <a
                 href="tel:+48887843260"
                 onClick={() => trackContact("najlepsza_cena_hero_phone")}
-                whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-                whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                className="flex items-center justify-between gap-3 rounded-2xl bg-teal-500 px-5 py-3 text-white shadow-[0_8px_20px_-8px_rgba(45,212,191,0.6)] sm:w-64"
+                className="flex items-center justify-between gap-3 rounded-2xl bg-teal-500 px-5 py-3 text-white shadow-[0_8px_20px_-8px_rgba(45,212,191,0.6)] transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] sm:w-64"
               >
                 <span className="flex items-center gap-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
@@ -828,13 +836,11 @@ export default function NajlepszaCenaOferty() {
                   </span>
                 </span>
                 <ChevronRight size={16} className="shrink-0 text-white/70" />
-              </m.a>
-              <m.a
+              </a>
+              <a
                 href={`sms:+48887843260?body=${DEFAULT_SMS_BODY}`}
                 onClick={() => trackContact("najlepsza_cena_hero_sms")}
-                whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-                whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-white sm:w-64"
+                className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-white transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] sm:w-64"
               >
                 <span className="flex items-center gap-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">
@@ -843,24 +849,19 @@ export default function NajlepszaCenaOferty() {
                   <span className="text-sm font-bold">Wyślij SMS</span>
                 </span>
                 <ChevronRight size={16} className="shrink-0 text-white/50" />
-              </m.a>
-            </m.div>
-          </m.div>
+              </a>
+            </div>
+          </div>
 
-          <m.div
+          <div
             id="pakiety"
-            initial={reduceMotion ? false : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.6 }}
-            variants={fadeUp}
-            transition={{ duration: 0.6, ease: "easeOut" }}
             className="mt-14 mb-8 scroll-mt-[140px] text-center sm:mt-16 sm:mb-10"
           >
             <h2 className="text-[clamp(24px,3.4vw,34px)] font-extrabold text-white">
               Wybierz swoją <span className="text-teal-300">ofertę</span>
             </h2>
             <span className="mx-auto mt-3 block h-1 w-14 rounded-full bg-gradient-to-r from-teal-500 to-teal-300" />
-          </m.div>
+          </div>
 
           <div className="relative">
             <div className="absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
@@ -868,16 +869,10 @@ export default function NajlepszaCenaOferty() {
             </div>
 
             <div className="relative mx-auto grid w-full max-w-[1140px] grid-cols-1 items-stretch gap-6 px-4 sm:px-6 lg:grid-cols-2">
-              {offers.map((offer, i) => (
-                <m.div
+              {offers.map((offer) => (
+                <div
                   key={offer.id}
-                  initial={reduceMotion ? false : "hidden"}
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.3 }}
-                  variants={fadeUp}
-                  transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.08 }}
-                  whileHover={reduceMotion ? undefined : { y: -4 }}
-                  className={`relative flex h-full flex-col rounded-2xl border p-6 bg-[#183648] ${
+                  className={`relative flex h-full flex-col rounded-2xl border p-6 bg-[#183648] transition-transform duration-150 hover:-translate-y-1 ${
                     offer.highlighted ? "border-amber-400/60" : "border-white/10"
                   }`}
                 >
@@ -910,7 +905,7 @@ export default function NajlepszaCenaOferty() {
 
                   <div className="mt-5 border-t border-white/10" />
 
-             <ul className="mt-5 flex-1 grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2">
+                  <ul className="mt-5 flex-1 grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2">
                     <li className="flex items-center gap-2 text-xs text-white sm:text-sm">
                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-400/15 text-teal-300">
                         <Check size={12} />
@@ -949,12 +944,10 @@ export default function NajlepszaCenaOferty() {
                   </p>
 
                   <div className="mt-5 flex flex-wrap gap-3 sm:flex-row sm:flex-wrap">
-                    <m.a
+                    <a
                       href="tel:+48887843260"
                       onClick={() => trackContact(`najlepsza_cena_offer_${offer.id}_tel`)}
-                      whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-                      whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center justify-between gap-3 rounded-2xl border border-transparent bg-teal-500 px-4 py-3 text-white shadow-[0_8px_20px_-8px_rgba(45,212,191,0.6)]"
+                      className="inline-flex w-full flex-1 items-center justify-between gap-3 rounded-2xl border border-transparent bg-teal-500 px-4 py-3 text-white shadow-[0_8px_20px_-8px_rgba(45,212,191,0.6)] transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] sm:w-auto sm:min-w-[140px]"
                     >
                       <span className="flex items-center gap-3">
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
@@ -966,13 +959,11 @@ className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center jus
                         </span>
                       </span>
                       <ChevronRight size={16} className="shrink-0 text-white/70" />
-                    </m.a>
-                    <m.a
+                    </a>
+                    <a
                       href={`sms:+48887843260?body=${DEFAULT_SMS_BODY}`}
                       onClick={() => trackContact(`najlepsza_cena_offer_${offer.id}_sms`)}
-                      whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-                      whileTap={reduceMotion ? undefined : { scale: 0.98 }}
- className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-white"
+                      className="inline-flex w-full flex-1 items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-white transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] sm:w-auto sm:min-w-[140px]"
                     >
                       <span className="flex items-center gap-3">
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">
@@ -981,28 +972,18 @@ className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center jus
                         <span className="text-sm font-bold">Wyślij SMS</span>
                       </span>
                       <ChevronRight size={16} className="shrink-0 text-white/50" />
-                    </m.a>
+                    </a>
                   </div>
-                </m.div>
+                </div>
               ))}
             </div>
           </div>
 
-          <m.div
-            initial={reduceMotion ? false : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.4 }}
-            variants={fadeUp}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="mx-auto mt-8 grid max-w-4xl grid-cols-1 gap-2.5 sm:grid-cols-3"
-          >
+          <div className="mx-auto mt-8 grid max-w-4xl grid-cols-1 gap-2.5 sm:grid-cols-3">
             {GUARANTEES.map((g, i) => {
               const Icon = g.icon;
               return (
-                <div
-                  key={i}
-                  className="flex items-start gap-2.5 rounded-xl px-3.5 py-3"
-                >
+                <div key={i} className="flex items-start gap-2.5 rounded-xl px-3.5 py-3">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-white/70">
                     <Icon size={16} strokeWidth={2} />
                   </span>
@@ -1013,66 +994,54 @@ className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center jus
                 </div>
               );
             })}
-          </m.div>
+          </div>
 
           <SzczegolyOferty>
-  
             <p>
-                          Prezentowana oferta dotyczy mieszkań. W przypadku budynków
-              jednorodzinnych obowiązuje inna oferta.
- Prezentowana oferta Netii S.A.: „WYBIERZ 30” (Internet do 300 Mb/s + TV XS) w cenie 30 zł/mies. oraz „WYBIERZ 40” (Internet do 300 Mb/s + TV S) w cenie 40 zł/mies. obowiązuje przy zawarciu Umowy na czas określony 24 pełnych Okresów Rozliczeniowych przy jednoczesnym korzystaniu z rabatów za e-fakturę (5 zł) i zgody marketingowe (5 zł). W przypadku rezygnacji lub niespełnienia warunków przyznania rabatów, cena wzrośnie o 10 zł. Wraz z pierwszą fakturą zostanie naliczona opłata aktywacyjna w wysokości 79 zł za Internet i 2 zł za Telewizję. Po 24 miesiącach (od 25. miesiąca) cena abonamentu wzrasta do 60 zł/mies. Nazwy promocji oraz pakiety stanowią wyłącznie nazwy marketingowe. Usługa Internetowa oparta jest na parametrach jakości wynikających z maksymalnych parametrów technicznych danej technologii, w jakiej świadczona jest Usługa Internetowa lub wynikających z ofertowych ustawień technicznych łącza. Parametry świadczenia Usługi Internetowej, w szczególności parametry prędkości oraz wpływu innych Usług na Usługę Internetową, dostępne są na stronie netia.pl. Oferta jest ograniczona terytorialnie do zasięgu stacjonarnej sieci Operatora.
+              Prezentowana oferta dotyczy mieszkań. W przypadku budynków
+              jednorodzinnych obowiązuje inna oferta. Prezentowana oferta Netii S.A.:
+              „WYBIERZ 30” (Internet do 300 Mb/s + TV XS) w cenie 30 zł/mies. oraz
+              „WYBIERZ 40” (Internet do 300 Mb/s + TV S) w cenie 40 zł/mies. obowiązuje
+              przy zawarciu Umowy na czas określony 24 pełnych Okresów Rozliczeniowych
+              przy jednoczesnym korzystaniu z rabatów za e-fakturę (5 zł) i zgody
+              marketingowe (5 zł). W przypadku rezygnacji lub niespełnienia warunków
+              przyznania rabatów, cena wzrośnie o 10 zł. Wraz z pierwszą fakturą zostanie
+              naliczona opłata aktywacyjna w wysokości 79 zł za Internet i 2 zł za
+              Telewizję. Po 24 miesiącach (od 25. miesiąca) cena abonamentu wzrasta do
+              60 zł/mies. Nazwy promocji oraz pakiety stanowią wyłącznie nazwy
+              marketingowe. Usługa Internetowa oparta jest na parametrach jakości
+              wynikających z maksymalnych parametrów technicznych danej technologii, w
+              jakiej świadczona jest Usługa Internetowa lub wynikających z ofertowych
+              ustawień technicznych łącza. Parametry świadczenia Usługi Internetowej, w
+              szczególności parametry prędkości oraz wpływu innych Usług na Usługę
+              Internetową, dostępne są na stronie netia.pl. Oferta jest ograniczona
+              terytorialnie do zasięgu stacjonarnej sieci Operatora.
             </p>
           </SzczegolyOferty>
 
           <div className="mx-auto mt-16 max-w-310">
             <div className="text-center">
-              <m.div
-                initial={reduceMotion ? false : "hidden"}
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.6 }}
-                variants={fadeUp}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5"
-              >
+              <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
                 <span className="text-[11px] font-semibold uppercase tracking-wide text-white/70">
                   FAQ
                 </span>
-              </m.div>
-              <m.h3
-                initial={reduceMotion ? false : "hidden"}
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.6 }}
-                variants={fadeUp}
-                transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
-                className="text-xl font-extrabold text-white sm:text-2xl"
-              >
+              </div>
+              <h3 className="text-xl font-extrabold text-white sm:text-2xl">
                 Najczęstsze pytania
-              </m.h3>
-              <m.p
-                initial={reduceMotion ? false : "hidden"}
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.6 }}
-                variants={fadeUp}
-                transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-                className="mx-auto mt-3 max-w-md text-sm text-white/60"
-              >
+              </h3>
+              <p className="mx-auto mt-3 max-w-md text-sm text-white/60">
                 Odpowiedzi na to, co najczęściej pyta nas 2,4 mln klientów.
                 Coś jeszcze niejasne? Doradca odpowie w 3 minuty przez telefon.
-              </m.p>
+              </p>
             </div>
 
             <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 items-start">
               {faqs.map((item, i) => {
                 const isOpen = openFaq === i;
                 return (
-                  <m.div
+                  <div
                     key={i}
-                    initial={reduceMotion ? false : "hidden"}
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.3 }}
-                    variants={fadeUp}
-                    transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.05 }}
                     onClick={() => setOpenFaq(isOpen ? null : i)}
                     role="button"
                     tabIndex={0}
@@ -1092,9 +1061,7 @@ className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center jus
                     <div className="flex w-full items-center gap-4 px-5 py-4 text-left sm:px-6 sm:py-5">
                       <div
                         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors duration-300 ${
-                          isOpen
-                            ? "bg-teal-400/15 text-teal-300"
-                            : "bg-white/10 text-white/60"
+                          isOpen ? "bg-teal-400/15 text-teal-300" : "bg-white/10 text-white/60"
                         }`}
                       >
                         {item.icon}
@@ -1124,20 +1091,13 @@ className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center jus
                         </p>
                       </div>
                     </div>
-                  </m.div>
+                  </div>
                 );
               })}
             </div>
           </div>
 
-          <m.div
-            initial={reduceMotion ? false : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.5 }}
-            variants={fadeUp}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="mx-auto mt-16 max-w-2xl rounded-3xl border border-white/10 bg-white/5 px-6 py-8 text-center sm:px-10 sm:py-10"
-          >
+          <div className="mx-auto mt-16 max-w-2xl rounded-3xl border border-white/10 bg-white/5 px-6 py-8 text-center sm:px-10 sm:py-10">
             <h4 className="text-xl font-bold text-white sm:text-2xl">
               Gotowy/a do zamówienia?
             </h4>
@@ -1146,57 +1106,45 @@ className="inline-flex w-full sm:min-w-[140px] sm:w-auto flex-1 items-center jus
             </p>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-              <m.a
+              <a
                 href="tel:+48887843260"
                 onClick={() => trackContact("najlepsza_cena_faq_closing_phone")}
-                whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-                whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                className="najlepsza-cena-faq-cta-pulse flex items-center justify-between gap-4 rounded-2xl bg-teal-500 px-5 py-3.5 text-white shadow-[0_8px_20px_-8px_rgba(45,212,191,0.6)] sm:min-w-60"
+                className="najlepsza-cena-faq-cta-pulse flex items-center justify-between gap-4 rounded-2xl bg-teal-500 px-5 py-3.5 text-white shadow-[0_8px_20px_-8px_rgba(45,212,191,0.6)] transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] sm:min-w-60"
               >
                 <span className="flex items-center gap-3">
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
                     <Phone size={16} />
                   </span>
                   <span className="text-left">
-                    <span className="block text-sm font-bold leading-tight">
-                      Zadzwoń
-                    </span>
-                    <span className="block text-xs text-white/85">
-                      +48 887 843 260
-                    </span>
+                    <span className="block text-sm font-bold leading-tight">Zadzwoń</span>
+                    <span className="block text-xs text-white/85">+48 887 843 260</span>
                   </span>
                 </span>
                 <ChevronRight size={18} className="text-white/70" />
-              </m.a>
+              </a>
 
-              <m.a
+              <a
                 href={`sms:+48887843260?body=${DEFAULT_SMS_BODY}`}
                 onClick={() => trackContact("najlepsza_cena_faq_closing_sms")}
-                whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-                whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                className="flex items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/5 px-5 py-3.5 text-white sm:min-w-60"
+                className="flex items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/5 px-5 py-3.5 text-white transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] sm:min-w-60"
               >
                 <span className="flex items-center gap-3">
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
                     <MessageCircle size={16} />
                   </span>
                   <span className="text-left">
-                    <span className="block text-sm font-bold leading-tight">
-                      Wyślij SMS
-                    </span>
-                    <span className="block text-xs text-white/70">
-                      Oddzwonimy w kilka minut
-                    </span>
+                    <span className="block text-sm font-bold leading-tight">Wyślij SMS</span>
+                    <span className="block text-xs text-white/70">Oddzwonimy w kilka minut</span>
                   </span>
                 </span>
                 <ChevronRight size={18} className="text-white/50" />
-              </m.a>
+              </a>
             </div>
-          </m.div>
+          </div>
         </div>
 
         <InfoModal infoId={aktywnyInfoId} onClose={() => setAktywnyInfoId(null)} />
       </section>
-    </LazyMotion>
+    </>
   );
 }
