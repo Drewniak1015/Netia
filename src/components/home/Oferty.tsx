@@ -2,9 +2,10 @@
 
 import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { Shield, Gauge } from "lucide-react";
+import { Shield, Gauge, Clock } from "lucide-react";
 import { offersBySpeed, type SpeedTier } from "@/components/home/Offersdata";
 import OfferCard from "@/components/home/Offercard";
+import { SzczegolyOferty } from "@/components/home/Promocena";
 
 /* [PODZIAŁ] InfoModal (i cały jego duży zestaw danych INFO_ITEMS) trafia
    do osobnego chunku, pobieranego dopiero po kliknięciu w pozycję z
@@ -26,11 +27,37 @@ const InfoModal = dynamic(() => import("@/components/home/Infomodal"), {
    przełącznik Podstawa/MAX, drugi SzczegolyOferty dla MAX) — nieużywany,
    więc wyleciał. Zostaje tylko wybór prędkości. */
 
-/* [NOWE] Dodano trzeci wariant prędkości: "300" (obok istniejących "600" i
-   "1000"). Toggle przeszedł z 2 na 3 zakładki — patrz sekcja poniżej.
-   UWAGA: `SpeedTier` w @/components/home/Offersdata musi zawierać "300",
-   a `offersBySpeed["300"]` musi istnieć w danych (patrz przykład w
-   Offersdata.example.ts, który dołączam osobno). */
+/* ---------------------------------------------------------------------- */
+/*  [NOWE] ELEMENT PILNOŚCI                                                */
+/*                                                                         */
+/*  Research wymienia brak pilności jako jedną z pięciu barier konwersji,   */
+/*  ale klasyczny mechanizm ("promocja tylko do końca miesiąca") jest tu    */
+/*  niedostępny i niewskazany:                                             */
+/*                                                                         */
+/*   (a) nie mamy potwierdzonej daty wygaśnięcia promocji,                 */
+/*   (b) strona krytykuje operatorów za promocje z ukrytym terminem, więc  */
+/*       fałszywy licznik zniszczyłby jedyną przewagę tej oferty w jedną   */
+/*       sekundę u każdego, kto odświeży stronę i zobaczy zegar od nowa.   */
+/*       A sceptyk to nasz główny segment — on to zrobi.                   */
+/*                                                                         */
+/*  Zamiast tego: koszt czekania jest po stronie KLIENTA, nie po naszej.   */
+/*  Nie twierdzimy nic o sobie ("nasza oferta zniknie"), tylko opisujemy   */
+/*  jego sytuację, która pogarsza się sama: promocja u obecnego operatora  */
+/*  wygasa, umowa przedłuża się automatycznie, cena rośnie przez           */
+/*  waloryzację. To Promo-Cliff z Offer_Brief obrócony przeciwko           */
+/*  konkurencji, czyli ten sam mechanizm, na którym stoi cała oferta.      */
+/*  Zero ryzyka prawnego, bo każde zdanie dotyczy rynku, nie nas.          */
+/*                                                                         */
+/*  DLACZEGO POD CENNIKIEM: to jedyne miejsce na stronie, gdzie klient ma  */
+/*  przed oczami dwie kwoty naraz — swoją i naszą. Zdanie o rachunku po    */
+/*  starej cenie działa tylko wtedy, gdy jest co porównać.                 */
+/*                                                                         */
+/*  JEŚLI regulamin promocji (SzczegolyOferty) zawiera datę "oferta        */
+/*  obowiązuje do…", podmień to na zwykłe "Promocja obowiązuje dla umów    */
+/*  podpisanych do [data]". Prawdziwy termin jest mocniejszy niż wszystko  */
+/*  poniżej i nic nie kosztuje, bo to przepisanie dokumentu, który klient  */
+/*  i tak dostaje.                                                         */
+/* ---------------------------------------------------------------------- */
 
 interface OfertyProps {
   cityLocative?: string;
@@ -160,16 +187,70 @@ export default function Oferty({ cityLocative, defaultPredkosc = "300" }: Oferty
           </div>
         )}
 
-        {/* [USUNIĘTE] Blok <SzczegolyOferty> z przypisem prawnym (warunki
-            promocji, opłata aktywacyjna, rabaty za e-fakturę i zgody
-            marketingowe, wzrost ceny po 24 mies., zasięg sieci).
+        {/* [NOWE] Pilność oparta na koszcie czekania po stronie klienta.
+            Patrz obszerny komentarz na górze pliku — kluczowe: żadne z tych
+            zdań nie twierdzi niczego o naszej ofercie, więc nie da się go
+            podważyć odświeżeniem strony. */}
+        <div className="mx-auto mt-10 max-w-2xl rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-center sm:px-6">
+          <p className="flex flex-col items-center justify-center gap-2 text-sm text-white/70 sm:flex-row sm:text-[0.9375rem]">
+            <Clock size={16} className="shrink-0 text-teal-300" />
+            <span>
+              Twoja obecna promocja kiedyś się skończy i dowiesz się o tym z faktury,
+              nie wcześniej.
+            </span>
+          </p>
+          <p className="mt-2 text-xs text-white/45 sm:text-[13px]">
+            Każdy miesiąc zwłoki to jeden rachunek więcej po starej cenie. Sprawdzenie
+            adresu zajmuje 3 minuty i do niczego nie zobowiązuje.
+          </p>
+        </div>
 
-            UWAGA: dla oferty telekomunikacyjnej te informacje są zwykle
-            wymagane przy prezentowaniu ceny promocyjnej — upewnij się, że
-            są dostępne gdzie indziej na stronie (np. w stopce albo pod
-            linkiem "Szczegóły oferty"), zanim wypuścisz to na produkcję.
-            Import `SzczegolyOferty` został usunięty z góry pliku — jeśli
-            przywracasz ten blok, dodaj go z powrotem. */}
+        {/* [PRZYWRÓCONE] Blok SzczegolyOferty — wymagany prawnie przy
+            prezentowaniu ceny promocyjnej (art. 5 ustawy o
+            przeciwdziałaniu nieuczciwym praktykom rynkowym).
+
+            UWAGA — TO NIE JEST GOTOWA TREŚĆ. Wzorowałem strukturę na
+            bloku z Oferty1k.tsx, ale NIE skopiowałem stamtąd liczb ani
+            nazwy promocji 1:1, bo:
+              - ta oferta dotyczy 300/600 Mb/s, nie "1/2 Gb/s" — nazwa
+                promocji musi być inna i musi być prawdziwa,
+              - z Offersdata.ts wynika, że 300 Mb/s ma INNY mechanizm
+                (noFreeMonths: true, priceAfter24) niż 1k/2k (rabaty za
+                e-fakturę/zgody marketingowe), a 600 Mb/s ma jeszcze
+                inny (promoMonths: 3, czyli najpewniej miesiące gratis).
+              - wpisanie tu kwot z oferty 1k/2k byłoby nieprawdziwe i
+                tworzyłoby dokładnie to ryzyko prawne, któremu ten blok
+                ma zapobiegać.
+
+            WSTAW przed wdrożeniem, osobno dla 300 i dla 600 — realne
+            dane z regulaminu/warunków promocji (ten sam dokument, z
+            którego ktoś wziął treść dla Oferty1k.tsx, ale dla wariantu
+            300/600, nie 1/2 Gb/s):
+              [NAZWA PROMOCJI 300/600]
+              [KWOTA OPŁATY AKTYWACYJNEJ — Internet / TV]
+              [WARUNKI RABATÓW, jeśli dotyczą tego wariantu — e-faktura,
+               zgody marketingowe, kwota wzrostu przy rezygnacji z nich]
+              [KWOTA WZROSTU CENY PO 24 MIESIĄCACH — osobno dla 300 i 600,
+               bo Offersdata.ts pokazuje różne priceAfter24 dla wariantów
+               XS/M w 300 Mb/s]
+              [ZASIĘG TERYTORIALNY — jeśli inny niż PON/HFC/ETTH z 1k/2k] */}
+        <SzczegolyOferty>
+          Prezentowana oferta dotyczy mieszkań. W przypadku budynków jednorodzinnych obowiązuje
+          inna oferta. Prezentowana oferta Netii S.A.: „[NAZWA PROMOCJI — Internet 300/600 Mb/s]”
+          obowiązuje przy zawarciu Umowy na czas określony 24 pełnych Okresów Rozliczeniowych.
+          [TODO: warunki rabatów właściwe dla tego wariantu — jeśli 300/600 Mb/s nie korzysta z
+          rabatów za e-fakturę i zgody marketingowe tak jak oferta 1/2 Gb/s, usuń to zdanie i opisz
+          faktyczny mechanizm zgodny z polami `noFreeMonths` / `priceAfter24` / `promoMonths` z
+          Offersdata.ts]. Wraz z pierwszą fakturą zostanie naliczona opłata aktywacyjna w wysokości
+          [TODO: kwota] zł za Internet [i TODO: kwota zł za Telewizję, jeśli dotyczy]. Po 24
+          miesiącach cena abonamentu wzrasta o [TODO: kwota] zł. Usługa Internetowa oparta jest na
+          parametrach jakości wynikających z maksymalnych parametrów technicznych danej technologii,
+          w jakiej świadczona jest Usługa Internetowa lub wynikających z ofertowych ustawień
+          technicznych łącza. Parametry świadczenia Usługi Internetowej, w szczególności parametry
+          prędkości oraz wpływu innych Usług na Usługę Internetową, dostępne są na stronie netia.pl.
+          Oferta jest ograniczona terytorialnie do zasięgu stacjonarnej sieci [TODO: potwierdź
+          technologię — PON/HFC/ETTH czy inna] Operatora.
+        </SzczegolyOferty>
       </div>
 
       <InfoModal infoId={aktywnyInfoId} onClose={handleCloseModal} />

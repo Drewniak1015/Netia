@@ -8,6 +8,7 @@ import {
   Zap,
   Users,
   Clock,
+  Activity,
 } from "lucide-react";
 import DottedBackground from "@/components/ui/DottedBackground";
 import { trackContact } from "@/lib/meta-track";
@@ -23,10 +24,32 @@ import { trackContact } from "@/lib/meta-track";
 /*      z obrazem to problem dla czytników ekranu i dla SEO. Opis       */
 /*      zaktualizowany do faktycznej zawartości.                        */
 /*                                                                      */
-/*  [2] "Jedyny dostawca" -> "Dostawca". Twierdzenie o wyłączności to   */
-/*      superlatyw, który w razie skargi trzeba udowodnić (UOKiK,       */
-/*      ustawa o zwalczaniu nieuczciwej konkurencji). Jeśli macie na    */
-/*      to twarde źródło, możecie wrócić do "Jedyny" — ale świadomie.   */
+/*  [2] NAGŁÓWEK — wariant C z listy wariantów.                         */
+/*      Było: "Przestań sprawdzać, czy internet znowu zwolnił."         */
+/*      Jest: "Odzyskaj spokojny wieczór w domu, z prędkością mierzoną  */
+/*      codziennie."                                                    */
+/*                                                                      */
+/*      Poprzedni był wyłącznie negatywny: mówił "przestań", ale nie    */
+/*      mówił, co klient ZYSKA. Wariant C łączy stan emocjonalny        */
+/*      (spokojny wieczór) z mechanizmem (prędkość mierzona), czyli     */
+/*      trzyma formułę z promptu na nagłówki.                           */
+/*                                                                      */
+/*      CELOWO BEZ TERMINU. Oryginalny wariant C brzmiał "...w 4 dni,   */
+/*      z prędkością mierzoną codziennie". Wycięte, bo wzór umowy Netii */
+/*      mówi o aktywacji w terminie 21 dni od podpisania — a H1 to      */
+/*      najbardziej eksponowane miejsce na stronie i ostatnie, w którym */
+/*      wolno postawić liczbę bez pokrycia. Jeśli zbierzecie własne     */
+/*      dane z realizacji, termin można dopisać z powrotem.             */
+/*                                                                      */
+/*      Wariant A ("Przestań sprawdzać…") warto zachować do testu A/B — */
+/*      jest mocniejszy emocjonalnie, ale słabszy w obietnicy.          */
+/*      Wariant B ("Miej internet, który działa też w szóstym miesiącu, */
+/*      nie tylko w dniu montażu") najmocniej trafia w Promo-Cliff.     */
+/*                                                                      */
+/*  [2b] PODTYTUŁ przepisany, bo powtarzał to, co nowy H1 już mówi      */
+/*      (monitoring). Teraz niesie trzy rzeczy, których H1 nie zmieści: */
+/*      kontrę wobec "do X Mb/s", cenę w umowie i ujawnienie            */
+/*      technologii przed podpisaniem (punkt 3 z audytu).               */
 /*                                                                      */
 /*  [3] <h2> -> <p>. To zdanie nie jest nagłówkiem sekcji, tylko        */
 /*      podtytułem. H2 bez własnej sekcji psuje strukturę dokumentu     */
@@ -39,9 +62,18 @@ import { trackContact } from "@/lib/meta-track";
 /*      Nowa kolejność mobile: H1 -> zdjęcie -> podtytuł -> CTA ->      */
 /*      mikrocopy -> social proof -> trust badges.                      */
 /*                                                                      */
-/*  [5] "spokojny wieczór już od 3. dnia po instalacji" -> "...już      */
-/*      trzeciego dnia od zamówienia". Poprzednie brzmienie sugerowało, */
-/*      że przez pierwsze dwa dni PO instalacji coś nie działa.         */
+/*  [5] TERMIN URUCHOMIENIA USŁUGI. Na stronie krążyło PIĘĆ różnych    */
+/*      obietnic (3 dni / następny dzień roboczy / <4 dni / trzeciego   */
+/*      dnia od zamówienia / 1-3 dni roboczych w FAQ) i dwa różne       */
+/*      punkty startu. Weryfikacja wzoru umowy Netii: aktywacja usługi  */
+/*      w terminie 21 dni od podpisania. Żadna z tych liczb nie miała   */
+/*      pokrycia w dokumencie, który klient podpisuje.                  */
+/*      Rozwiązanie: obietnicę przenosimy z DŁUGOŚCI czekania na        */
+/*      KONTROLĘ nad terminem — to jest prawdziwe niezależnie od liczby */
+/*      i trafia w realną skargę z researchu (ludzie nie wiedzą, kiedy  */
+/*      i czy technik przyjdzie). Brzmienie: lib/guarantees.ts.         */
+/*      JEŚLI masz własne dane z realizacji, wróć do wariantu z liczbą  */
+/*      i dopisz źródło — liczba sprawdzalna bije obietnicę.            */
 /*                                                                      */
 /*  [6] Usunięty badge "Serwisant w 24h" — dublował statystykę "24h /   */
 /*      czas reakcji serwisu" stojącą 30px obok. W jego miejsce         */
@@ -58,6 +90,42 @@ import { trackContact } from "@/lib/meta-track";
 /*  [8] <Image> dostał `sizes` — bez tego Next serwuje plik liczony     */
 /*      względem width=1600 także na mobile. To obraz LCP, więc realna  */
 /*      oszczędność transferu.                                          */
+/*                                                                      */
+/*  [9a] ATRYBUCJA: "2,4 mln obsłużonych klientów" -> "klientów sieci    */
+/*      Netia". Poprzednie brzmienie sugerowało, że to partner obsłużył  */
+/*      2,4 mln osób. Liczba jest operatorska i musi być podpisana       */
+/*      operatorem — patrz ATTRIBUTION w lib/guarantees.ts.              */
+/*                                                                      */
+/*  [10] PASEK STATYSTYK: "15 lat doświadczenia na rynku" zamienione na */
+/*      "24/7 monitoring łącza, dzwonimy pierwsi".                      */
+/*                                                                      */
+/*      Powód: staż na rynku i liczba klientów to argumenty, które ma   */
+/*      każdy duży operator, więc nie różnicują — czytelnik przewija je */
+/*      jak każdy inny pasek zaufania. Monitoring łącza to jedyna rzecz */
+/*      w tym pasku, której konkurencja NIE komunikuje; research nazywa */
+/*      to największą białą plamą komunikacyjną w kategorii.            */
+/*      Dodatkowo pasek zyskuje spójność z nowym H1 ("prędkością        */
+/*      mierzoną codziennie") — nagłówek stawia tezę, kafelek ją        */
+/*      natychmiast uzasadnia.                                          */
+/*                                                                      */
+/*      UWAGA NA KOLIZJĘ: dwa sąsiednie kafelki zaczynają się teraz od  */
+/*      "24" (24/7 monitoring i 24h serwis). To dwie różne obietnice —  */
+/*      obserwacja łącza vs czas dojazdu technika — ale wizualnie mogą  */
+/*      się zlewać. Rozróżniają je ikony (Activity vs Clock) i podpisy. */
+/*      Jeśli po wdrożeniu nadal będzie się zlewać, alternatywa dla     */
+/*      trzeciego kafelka: wartość "Serwis" + podpis "na miejscu w 24 h */
+/*      od zgłoszenia".                                                 */
+/*                                                                      */
+/*      DO SPRAWDZENIA: identyczny kafelek "24/7 monitoring" stoi też   */
+/*      w SocialProofStats. Jeśli obie sekcje zostaną na stronie po     */
+/*      przebudowie kolejności, usuń go z jednej z nich.                */
+/*                                                                      */
+/*  [9] Statystyka serwisowa: "czas reakcji serwisu" -> "serwisant na   */
+/*      miejscu od zgłoszenia". Poprzednie brzmienie było mylone przez  */
+/*      czytelnika z czasem instalacji, bo obie obietnice mówiły tylko  */
+/*      o "reakcji" i "dniach". Teraz są to dwie rozłączne obietnice:   */
+/*      URUCHOMIENIE (termin ustalany z klientem) i SERWIS              */
+/*      (24 h od zgłoszenia awarii).                                    */
 /*                                                                      */
 /*  NIE ZMIENIAŁEM (wymaga Twojej decyzji — to zmiany w przekazie,      */
 /*  nie w implementacji):                                               */
@@ -94,23 +162,22 @@ function Hero() {
         <div className="contents text-center lg:flex lg:flex-col lg:text-left">
           {/* H1 — order 1 na mobile */}
           <h1 className="order-1 text-3xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-4xl lg:order-none lg:text-5xl xl:text-6xl">
-            Przestań sprawdzać, czy internet{" "}
-            <span className="text-teal-300">znowu zwolnił</span>.
+            Odzyskaj spokojny wieczór w domu, z prędkością{" "}
+            <span className="text-teal-300">mierzoną codziennie</span>.
           </h1>
 
           {/* [3] Podtytuł — <p>, nie <h2>. Wygląd identyczny, semantyka
-              poprawna. Order 3 na mobile (po zdjęciu). */}
+              poprawna. Order 3 na mobile (po zdjęciu).
+              [5] Termin: obietnica o kontroli nad terminem montażu. */}
           <p className="order-3 mx-auto mt-3 max-w-xl text-base font-normal leading-snug text-white/75 sm:mt-4 sm:text-lg lg:order-none lg:mx-0">
-            Dostawca, który{" "}
+            Nie „do X Mb/s” w reklamie, tylko{" "}
             <span className="text-teal-300">
-              monitoruje Twoje łącze 24/7
+              realna prędkość sprawdzana w godzinach szczytu
             </span>{" "}
-            i zapisuje cenę w umowie na stałe, żeby zagwarantować realną
-            prędkość, stabilne wideorozmowy i{" "}
-            <span className="text-teal-300">
-              spokojny wieczór już trzeciego dnia od zamówienia
-            </span>
-            .
+            i cena zapisana w umowie na cały okres. Technologię dostępną pod
+            Twoim adresem podamy Ci{" "}
+            <span className="text-teal-300">przed podpisaniem</span>, nie w dniu
+            montażu.
           </p>
 
           {/* Social proof — order 6 na mobile (po CTA i mikrocopy) */}
@@ -121,25 +188,28 @@ function Hero() {
                 2,4 mln
               </span>
               <span className="text-[11px] font-medium leading-tight text-white/50 sm:text-xs">
-                obsłużonych klientów
+                klientów sieci Netia
               </span>
             </div>
+            {/* [10] Środkowy kafelek: "15 lat doświadczenia" -> monitoring.
+                Uzasadnienie w komentarzu na górze pliku. */}
             <div className="flex flex-col items-center gap-1.5 px-3 py-4 text-center">
-              <ShieldCheck size={18} className="text-teal-300" />
+              <Activity size={18} className="text-teal-300" />
               <span className="text-lg font-bold leading-none text-white sm:text-xl">
-                15 lat
+                24/7
               </span>
               <span className="text-[11px] font-medium leading-tight text-white/50 sm:text-xs">
-                doświadczenia na rynku
+                monitoring łącza, dzwonimy pierwsi
               </span>
             </div>
+            {/* [9] Opis rozróżnia SERWIS od URUCHOMIENIA usługi. */}
             <div className="flex flex-col items-center gap-1.5 px-3 py-4 text-center">
               <Clock size={18} className="text-teal-300" />
               <span className="text-lg font-bold leading-none text-white sm:text-xl">
                 24h
               </span>
               <span className="text-[11px] font-medium leading-tight text-white/50 sm:text-xs">
-                czas reakcji serwisu
+                serwisant na miejscu od zgłoszenia
               </span>
             </div>
           </div>

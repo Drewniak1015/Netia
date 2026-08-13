@@ -28,6 +28,13 @@ import DottedBackground from "../ui/DottedBackground";
 /*  [FIX] Linki wskazywały na localhost:3000 — zamienione na ścieżki      */
 /*  względne, żeby działały poprawnie na produkcji.                       */
 /*                                                                        */
+/*  [FIX — równe karty] Grid domyślnie rozciąga kolumny do tej samej      */
+/*  wysokości (align-items: stretch), ale wewnątrz kart nie było layoutu  */
+/*  flex — więc przy różnej długości opisu CTA i mikrocopy lądowały na    */
+/*  różnej wysokości w obu kartach. Karta jest teraz h-full + flex        */
+/*  flex-col, opis ma flex-1, więc CTA + mikrocopy zawsze przyklejone do  */
+/*  dołu i wyrównane między kartami niezależnie od długości tekstu.       */
+/*                                                                        */
 /*  UWAGA: obrazy w tle to placeholdery (/images/offer-internet.jpg,      */
 /*  /images/offer-internet-tv.jpg) — podmień na docelowe zdjęcia.         */
 /*  Bez animacji.                                                        */
@@ -76,7 +83,7 @@ export default function AdditionalOffers() {
           return (
           <div
             key={offer.title}
-            className="relative overflow-hidden rounded-2xl border border-white/10 p-8"
+            className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 p-8"
           >
             <div
               className="absolute inset-0 bg-cover bg-center"
@@ -84,7 +91,7 @@ export default function AdditionalOffers() {
             />
             <div className="absolute inset-0 bg-[#0d1f31]/80" />
 
-            <div className="relative">
+            <div className="relative flex h-full flex-col">
               <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-teal-400/15">
                 <Icon className="h-5 w-5 text-teal-300" strokeWidth={2.25} />
               </span>
@@ -97,7 +104,7 @@ export default function AdditionalOffers() {
                 {offer.title}{" "}
                 <span className="text-teal-300">od {offer.priceFrom} zł/mies.</span>
               </h1>
-              <p className="mt-3 text-sm text-slate-200 leading-relaxed">
+              <p className="mt-3 flex-1 text-sm text-slate-200 leading-relaxed">
                 {offer.description}
               </p>
 

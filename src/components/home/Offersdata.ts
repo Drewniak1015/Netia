@@ -1,31 +1,31 @@
 /* ------------------------------------------------------------------ */
-/*  Offersdata.ts — dane dla kart oferty (sekcja Oferty)                */
+/*  Offersdata.ts — dane dla kart oferty (sekcja Oferty, 300/600 Mb/s)  */
 /*                                                                      */
-/*  ZMIANA: etykiety features poprawione na dokładne brzmienie z         */
-/*  Twojego realnego screena ("Router z Wi-Fi 6 w cenie", nie "Router    */
-/*  Wi-Fi 6 w cenie" — brakowało "z"). Reszta bez zmian względem         */
-/*  poprzedniej wersji (promoMonths, featured, PHONE_HREF bez "tel:").  */
+/*  FIX (ten commit): ujednolicono infoId z Oferty1kdata.ts, żeby obie   */
+/*  sekcje (Oferty.tsx dla 300/600 i Oferty1k.tsx dla 1/2 Gb/s) trafiały */
+/*  w te same klucze w jednym, współdzielonym INFO_ITEMS w              */
+/*  Infomodal.tsx:                                                      */
 /*                                                                      */
-/*  FIX (build error TS2305): dodano alias `MaxOffer = Offer` na końcu   */
-/*  pliku, bo inny plik importował `type MaxOffer`, którego tu nie      */
-/*  było. Zero zmian w kształcie danych — tylko dodatkowa nazwa typu.    */
+/*    - "dekoder-4k" -> "dekoder-evobox"                                */
+/*      W Oferty1kdata.ts dekoder ma infoId "dekoder-evobox" — to        */
+/*      najpewniej ten sam sprzęt (Netia EvoBox 4K, wspomniany też w     */
+/*      researchu), więc klucz powinien być identyczny, inaczej          */
+/*      Infomodal.tsx pokaże pusty/martwy popup dla połowy ofert w       */
+/*      serwisie. JEŚLI to faktycznie DWA różne urządzenia (inny model    */
+/*      dekodera dla 300/600 niż dla 1/2 Gb/s) — cofnij tę zmianę i       */
+/*      zamiast tego dodaj OSOBNY wpis w INFO_ITEMS z innym kluczem i     */
+/*      inną treścią. Nie mam wglądu w Twoją ofertę sprzętową, więc       */
+/*      zakładam, że to ten sam dekoder — sprawdź to.                    */
 /*                                                                      */
-/*  [NOWE] Dodano wariant "300" (300 Mb/s) — UWAGA: ten wariant ma       */
-/*  INNY kształt promocji niż 600/1000. Tam promoMonths = liczba          */
-/*  miesięcy ZA DARMO (0 zł), a cena docelowa jest stała od 4. do 24.     */
-/*  miesiąca. Tu, wg zrzutu ekranu, nie ma darmowego okresu — cena        */
-/*  obowiązuje od 1. miesiąca, a PO 24 miesiącach ROŚNIE do innej,        */
-/*  wyższej kwoty (np. 30 zł -> 60 zł od 25. miesiąca). To wymaga         */
-/*  osobnego pola `priceAfter24`, bo `promoMonths` (miesiące za darmo)    */
-/*  nie ma tu zastosowania — ustawiam je na 0.                           */
+/*    - "giganagrywarka-maxi" — literówka z poprzedniej wersji           */
+/*      ("gignagrywarka-maxi") już poprawiona i teraz zgadza się 1:1      */
+/*      z Oferty1kdata.ts.                                               */
 /*                                                                      */
-/*  WAŻNE: nie mam wglądu w Offercard.tsx, więc nie wiem na pewno, jak    */
-/*  komponent renderuje label ceny. Jeśli Offercard.tsx liczy etykietę    */
-/*  WYŁĄCZNIE z promoMonths (np. zawsze pokazuje "X miesiące za 0 zł"),   */
-/*  to dla wariantu 300 trzeba będzie dodać w Offercard.tsx osobną        */
-/*  gałąź renderowania dla `noFreeMonths === true`, bo inaczej pokaże     */
-/*  się nieprawdziwy komunikat o darmowym okresie. Sprawdź to przed       */
-/*  wdrożeniem.                                                          */
+/*    - "router-wifi6", "netia-go" — bez zmian, już zgodne z              */
+/*      Oferty1kdata.ts.                                                 */
+/*                                                                      */
+/*  Reszta bez zmian względem poprzedniej wersji (promoMonths, featured, */
+/*  PHONE_HREF bez "tel:", wariant 300 z priceAfter24/noFreeMonths).      */
 /* ------------------------------------------------------------------ */
 
 export interface OfferBenefit {
@@ -57,17 +57,10 @@ export interface Offer {
   /** [NOWE] Kolor akcentu dla karty oznaczonej jako `featured` (obramowanie,
    *  badge, ewentualnie kolor przycisku CTA) — np. "#00d5be". WAŻNE: to
    *  pole samo w sobie NIC nie zrobi, dopóki Offercard.tsx go nie odczyta
-   *  i nie użyje (np. style={{ borderColor: offer.accentColor }}). Nie mam
-   *  wglądu w Offercard.tsx, więc nie mogę zagwarantować, że kolor faktycznie
-   *  się zmieni bez edycji tamtego pliku — sprawdź, czy karta featured ma
-   *  tam obecnie zahardkodowany kolor (np. klasę Tailwind typu
-   *  border-teal-400) i podmień go na odczyt z tego pola. */
+   *  i nie użyje (np. style={{ borderColor: offer.accentColor }}). */
   accentColor?: string;
   /** [NOWE, opcjonalne] Badge nad kartą, np. "NAJLEPSZY STOSUNEK CENY
-   *  DO PAKIETU" (widoczny na zrzucie dla WYBIERZ 40). Jeśli Offercard.tsx
-   *  już ma pole na to pod inną nazwą (np. `featured` renderuje własny
-   *  stały tekst badge'a), zmień/scal z tamtym mechanizmem zamiast
-   *  dodawać kolejne pole. */
+   *  DO PAKIETU". */
   badgeLabel?: string;
   features: OfferBenefit[];
 }
@@ -82,20 +75,16 @@ export const PHONE_HREF = "+48887843260";
 /* Benefity są identyczne dla obu prędkości poza etykietą samej prędkości —
    wspólna definicja, żeby nie duplikować "monitorowana prędkość 24/7" i
    "cena zapisana w umowie" cztery razy. Etykiety dopasowane do realnego
-   brzmienia z Twojego screena. */
+   brzmienia z Twojego screena. infoId ujednolicone z Oferty1kdata.ts. */
 function buildFeatures(pkg: "XS" | "M" | "L"): OfferBenefit[] {
   const base: OfferBenefit[] = [
     { id: "router", label: "Router z Wi-Fi 6 w cenie", infoId: "router-wifi6" },
-    { id: "dekoder", label: "Dekoder 4K w cenie", infoId: "dekoder-4k" },
+    { id: "dekoder", label: "Dekoder 4K w cenie", infoId: "dekoder-evobox" },
     { id: "go", label: "Netia GO w cenie", infoId: "netia-go" },
   ];
   if (pkg === "L") {
-    base.push({ id: "nagrywarka", label: "GigaNagrywarka Maxi w cenie", infoId: "gignagrywarka-maxi" });
+    base.push({ id: "nagrywarka", label: "GigaNagrywarka Maxi w cenie", infoId: "giganagrywarka-maxi" });
   }
-  base.push(
-    { id: "monitoring", label: "Monitorowana prędkość 24/7", infoId: "monitoring-24-7" },
-    { id: "cena-lock", label: "Cena zapisana w umowie", infoId: "cena-zapisana-w-umowie" }
-  );
   return base;
 }
 
@@ -113,7 +102,13 @@ function buildFeatures300(pkg: "XS" | "M"): OfferBenefit[] {
     ];
   }
   return [
-    { id: "player", label: "Netia Player/Evobox 4K", infoId: "player-4k" },
+    /* [FIX] "player-4k" -> "dekoder-evobox": to najpewniej ten sam
+       Netia Player/EvoBox 4K, który w Oferty1kdata.ts ma infoId
+       "dekoder-evobox" — ujednolicone, żeby jeden wpis w INFO_ITEMS
+       obsługiwał wszystkie warianty tego dekodera w serwisie. Jeśli
+       "Netia Player" i "EvoBox" to jednak dwa różne urządzenia,
+       cofnij tę zmianę i zostaw osobny klucz "player-4k". */
+    { id: "player", label: "Netia Player/Evobox 4K", infoId: "dekoder-evobox" },
     { id: "router", label: "Router w cenie abonamentu", infoId: "router-wifi6" },
     { id: "go", label: "Aplikacja Netia GO w cenie", infoId: "netia-go" },
   ];
@@ -162,7 +157,10 @@ export const offersBySpeed: Record<SpeedTier, Offer[]> = {
      { speed: "1 Gb/s", pkg: "XS", price: 70, promoMonths: 6, features: buildFeatures("XS") },
      { speed: "1 Gb/s", pkg: "M", price: 80, promoMonths: 6, featured: true, features: buildFeatures("M") },
      { speed: "1 Gb/s", pkg: "L", price: 110, promoMonths: 6, features: buildFeatures("L") },
-     — dodaj z powrotem "1000" do SpeedTier i do TABS w Oferty.tsx. */
+     — dodaj z powrotem "1000" do SpeedTier i do TABS w Oferty.tsx.
+     UWAGA: sekcja Oferty1k.tsx / Oferty1kdata.ts już obsługuje 1 Gb/s
+     (i 2 Gb/s) osobno — sprawdź, czy przywracanie "1000" tutaj nie
+     zdubluje tej samej prędkości w dwóch miejscach na stronie. */
 };
 
 /* Zachowane dla wstecznej kompatybilności, gdyby coś jeszcze importowało
@@ -178,24 +176,59 @@ export const offers = offersBySpeed["600"];
 export type MaxOffer = Offer;
 
 /* ------------------------------------------------------------------ */
-/*  INFO_ITEMS DO DODANIA w Infomodal.tsx (bez zmian względem           */
-/*  poprzedniej wersji, treść nie zależy od paczki prędkości):          */
-/*                                                                      */
-/*  "monitoring-24-7": {                                                */
-/*    title: "Monitorowana prędkość 24/7",                              */
-/*    body: "Nie musisz zgłaszać awarii, żeby ktoś się dowiedział, że    */
-/*           coś nie działa. Monitorujemy Twoje łącze non-stop — jeśli   */
-/*           prędkość spadnie poniżej gwarantowanego minimum, wiemy o    */
-/*           tym najczęściej zanim Ty zadzwonisz."                       */
-/*  },                                                                   */
+/*  INFO_ITEMS — jeden wspólny słownik dla Oferty.tsx (300/600) I        */
+/*  Oferty1k.tsx (1/2 Gb/s), bo obie sekcje importują ten sam            */
+/*  Infomodal.tsx. Poniższe klucze muszą istnieć w INFO_ITEMS TAM, nie    */
+/*  tutaj — ten plik ich nie definiuje, tylko z nich korzysta przez       */
+/*  infoId.                                                              */
+/*                                                                        */
+/*  Wymagane klucze używane w TYM pliku (Offersdata.ts):                 */
+/*    - "router-wifi6"                                                   */
+/*    - "dekoder-evobox"   [ZMIENIONE z "dekoder-4k" / "player-4k" —      */
+/*                           dopisz ten klucz w INFO_ITEMS, jeśli go       */
+/*                           jeszcze nie ma; jeśli MASZ tam wciąż          */
+/*                           "dekoder-4k", zmień nazwę klucza albo dodaj   */
+/*                           alias, inaczej dekoder w kartach 600/300      */
+/*                           znów będzie martwy]                          */
+/*    - "netia-go"                                                       */
+/*    - "giganagrywarka-maxi"                                            */
+/*                                                                        */
+/*  Dodatkowe klucze używane w Oferty1kdata.ts, ale NIE w tym pliku       */
+/*  (dla porównania / spójności całego INFO_ITEMS):                      */
+/*    - "router-wifi7" (tylko warianty 2 Gb/s)                           */
+/*                                                                        */
+/*  Opcjonalne (odkomentowane w buildFeatures300, jeśli chcesz spójność   */
+/*  300 Mb/s z resztą oferty):                                           */
+/*    - "monitoring-24-7"                                                */
+/*    - "cena-zapisana-w-umowie"                                         */
+/*                                                                        */
+/*  Przykładowe treści (skopiuj do INFO_ITEMS w Infomodal.tsx, jeśli      */
+/*  jeszcze ich nie masz):                                               */
+/*                                                                        */
+/*  "dekoder-evobox": {                                                  */
+/*    title: "Dekoder EvoBox 4K",                                        */
+/*    body: "Aktualny model dekodera z obsługą 4K — bez powracających     */
+/*           problemów z zawieszaniem się obrazu czy koniecznością        */
+/*           restartowania urządzenia przez wyciąganie z prądu."          */
+/*  },                                                                    */
+/*  "giganagrywarka-maxi": {                                             */
+/*    title: "GigaNagrywarka Maxi",                                     */
+/*    body: "Dekoder z dużym dyskiem nagrywa programy TV automatycznie   */
+/*           lub na żądanie — nagrywasz mecz czy serial i oglądasz,      */
+/*           kiedy Ci pasuje, nawet gdy nikogo nie ma w domu w trakcie   */
+/*           emisji."                                                    */
+/*  },                                                                    */
+/*  "monitoring-24-7": {                                                 */
+/*    title: "Monitorowana prędkość 24/7",                               */
+/*    body: "Nie musisz zgłaszać awarii, żeby ktoś się dowiedział, że     */
+/*           coś nie działa. Monitorujemy Twoje łącze non-stop — jeśli    */
+/*           prędkość spadnie poniżej gwarantowanego minimum, wiemy o     */
+/*           tym najczęściej zanim Ty zadzwonisz."                        */
+/*  },                                                                    */
 /*  "cena-zapisana-w-umowie": {                                          */
 /*    title: "Cena zapisana w umowie",                                  */
 /*    body: "Kwota, którą widzisz teraz, to kwota, którą zapłacisz za    */
 /*           12 i za 24 miesiąc. Żadnych klauzul waloryzacyjnych ani     */
 /*           cichych podwyżek po okresie promocyjnym."                   */
-/*  },                                                                   */
-/*  [NOWE] "router-wifi6" oraz "netia-go" (i "player-4k") są już          */
-/*  używane w innych wariantach, więc powinny istnieć w INFO_ITEMS —      */
-/*  nie trzeba dodawać nowych wpisów dla wariantu 300, jeśli infoId       */
-/*  się pokrywają z tymi z 600/1000.                                     */
+/*  },                                                                    */
 /* ------------------------------------------------------------------ */

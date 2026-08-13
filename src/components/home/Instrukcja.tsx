@@ -1,6 +1,7 @@
 "use client";
 
 import { Phone, MonitorSmartphone, PhoneCall, SearchCheck, Wrench } from "lucide-react";
+import { INSTALL_TIMING, SERVICE_SLA } from "@/lib/guarantees";
 
 type Step = {
   number: string;
@@ -9,12 +10,25 @@ type Step = {
   Icon: React.ElementType;
 };
 
+/* KROK 1 — opis mówił wyłącznie o telefonie i SMS-ie, mimo że główny
+   przycisk pod sekcją to "Skonfiguruj online". Ścieżka online jest teraz
+   wymieniona jako pierwsza, żeby etykieta przycisku nie zaprzeczała
+   opisowi kroku.
+
+   KROK 3 — usunięte "nawet następnego dnia roboczego". Dwa powody:
+   (a) "nawet" to ta sama konstrukcja co "do X Mb/s", którą strona
+   krytykuje w sekcji porównawczej, więc podważała własny przekaz;
+   (b) wzór umowy Netii mówi o aktywacji w terminie 21 dni od podpisania,
+   więc obietnica jednego dnia nie miała pokrycia w dokumencie, który
+   klient podpisuje. Obietnica przeniesiona na kontrolę nad terminem.
+   Serwis to osobna, ROZŁĄCZNA obietnica: 24 h od zgłoszenia awarii.
+   Brzmienie obu pochodzi z lib/guarantees.ts — nie wpisuj go tutaj. */
 const steps: Step[] = [
   {
     number: "1",
     title: "Skontaktuj się z nami",
     description:
-      "Zadzwoń albo napisz SMS-a, a resztą się zajmiemy – zamówisz pakiet Internet Netia w kilka chwil.",
+      "Skonfiguruj ofertę online albo zadzwoń, a resztą się zajmiemy. Zamówisz pakiet Internet Netia w kilka chwil.",
     Icon: PhoneCall,
   },
   {
@@ -28,7 +42,7 @@ const steps: Step[] = [
     number: "3",
     title: "Instalacja i aktywacja",
     description:
-      "Technik zainstaluje usługę nawet następnego dnia roboczego. A jeśli coś się zepsuje — reagujemy w 24h, nie w tygodnie.",
+      `${INSTALL_TIMING.short} A jeśli coś się zepsuje, ${SERVICE_SLA.short.charAt(0).toLowerCase()}${SERVICE_SLA.short.slice(1)}`,
     Icon: Wrench,
   },
 ];

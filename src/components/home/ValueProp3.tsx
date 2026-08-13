@@ -26,8 +26,9 @@ import DottedBackground from "../ui/DottedBackground";
 /*  pokrycia — dokładnie to, przed czym ostrzega beliefes.docx w          */
 /*  przekonaniu #3.                                                       */
 /*                                                                        */
-/*  UWAGA: <img src="/images/value-prop-3.jpg" .../> to placeholder —     */
-/*  podmień na docelową ścieżkę. Prompt do zdjęcia AI jest pod kodem.     */
+/*  [GRAFIKA] Zdjęcie stockowe zamienione na wektorową ilustrację (flat   */
+/*  design, paleta navy/teal/amber) spójną z resztą strony. Plik          */
+/*  skonwertowany do .avif — sama nazwa bez zmian względem .webp.         */
 /* ---------------------------------------------------------------------- */
 
 interface Benefit {
@@ -98,10 +99,10 @@ export default function ValueProp3() {
           </a>
         </div>
 
-        {/* Prawa kolumna: zdjęcie/wideo — patrz prompt AI w wiadomości pod kodem */}
+        {/* Prawa kolumna: zdjęcie/wideo */}
         <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0d1f31]">
           <img
-            src="/images/value-prop-3.webp"
+            src="/images/value-prop-3.avif"
             alt="Spokojny wieczór w domu z działającym internetem — rodzina online razem, bez stresu"
             className="h-full w-full object-cover"
           />

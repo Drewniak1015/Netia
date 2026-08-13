@@ -3,6 +3,8 @@
 import { Phone, MessageCircle, ChevronRight, Check } from "lucide-react";
 
 import { useEffect, useState } from "react";
+import { SPEED_GUARANTEE } from "@/lib/guarantees";
+
 type ContactSectionProps = {
   phoneNumber?: string;
 };
@@ -29,10 +31,22 @@ type ContactSectionProps = {
    4. ŚWIADOMIE bez fałszywej presji (fake scarcity, zmyślone limity
       czasowe/miejsc) — urgency opiera się wyłącznie na prawdziwych
       mechanizmach z researchu (promo-cliff, auto-przedłużenie umowy),
-      nie na wymyślonych deadline'ach. */
+      nie na wymyślonych deadline'ach.
+   5. [GWARANCJA PRĘDKOŚCI] Pierwszy punkt recapu brał wcześniej brzmienie
+      "Gwarancja min. 50% deklarowanej prędkości" — czyli ustawowe minimum
+      podane jako przewaga. Teraz pochodzi z lib/guarantees.ts, tak jak
+      w pozostałych sześciu miejscach na stronie. To ostatni ekran przed
+      telefonem, więc rozjazd akurat tutaj kosztuje najwięcej: klient
+      dzwoni z jedną liczbą w głowie, a w umowie widzi inną.
+   6. Treść SMS-a zmieniona z "INTERNET" na pełne zdanie — spójnie
+      z NetiaSocialProof.tsx, i poprawnie zakodowana dla polskich znaków.
+
+   [GRAFIKA] Zdjęcie stockowe zamienione na wektorową ilustrację (flat
+   design, paleta navy/teal/amber) spójną z resztą strony. Plik
+   skonwertowany do .avif — sama nazwa bez zmian względem .webp. */
 
 const recapPoints = [
-  "Gwarancja min. 50% deklarowanej prędkości",
+  SPEED_GUARANTEE.bullet,
   "Cena zapisana w umowie na cały okres",
   "14 dni na zmianę zdania, zero pytań",
 ];
@@ -56,13 +70,15 @@ export default function ContactSection({
 }: ContactSectionProps) {
   const isDesktop = useIsDesktop();
 
+  const smsBody = encodeURIComponent(
+    "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
+  );
+
   return (
     <section
       style={{ backgroundColor: "#0B2A3D" }}
       className="relative overflow-hidden font-sans"
     >
-
-
       <div className="relative z-10 mx-auto grid max-w-320 grid-cols-1 items-center gap-10 px-5 py-16 sm:px-6 sm:py-20 lg:grid-cols-[0.9fr_1.1fr] lg:gap-8 lg:px-8 lg:py-16">
         {/* Kolumna tekstowa */}
         <div className="relative z-10 text-center lg:text-left">
@@ -112,7 +128,7 @@ export default function ContactSection({
             </a>
 
             <a
-              href={`sms:${phoneNumber.replace(/\s+/g, "")}?body=INTERNET`}
+              href={`sms:${phoneNumber.replace(/\s+/g, "")}?body=${smsBody}`}
               className="group flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/10 active:translate-y-0 sm:min-w-60"
             >
               <span className="flex items-center gap-3">
@@ -150,7 +166,7 @@ export default function ContactSection({
 
               <div className="relative overflow-hidden rounded-2xl border border-white/10">
                 <img
-                  src="/images/final-cta-wieczor.webp"
+                  src="/images/final-cta-wieczor.avif"
                   alt="Rodzina spokojnie ogląda film wieczorem, internet działa bez zacięć"
                   className="aspect-4/5 w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />

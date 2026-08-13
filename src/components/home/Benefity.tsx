@@ -1,13 +1,19 @@
 "use client";
 
 import { Gauge, Lock, ShieldCheck } from "lucide-react";
+import {
+  SPEED_GUARANTEE,
+  INSTALL_TIMING,
+  SERVICE_SLA,
+  TECH_DISCLOSURE,
+} from "@/lib/guarantees";
 
 /* [POWRÓT DO 2] Zamiast osobnych rzędów na instalację i rezygnację —
    wcisnąłem oba argumenty jako trzeci bullet w każdym z dwóch istniejących
    propów, żeby równanie Hormoziego (Dream Outcome × Prawdopodobieństwo)
    / (Czas × Wysiłek) było nadal pokryte w 4 punktach, tylko bez dokładania
    kolejnych sekcji na stronie:
-   - Row 1 (prędkość) dostaje bullet o instalacji w 3 dni -> atakuje "Czas".
+   - Row 1 (prędkość) dostaje bullet o terminie instalacji -> atakuje "Czas".
    - Row 2 (cena) dostaje bullet o 14 dniach na rezygnację -> atakuje
      "Wysiłek/Ryzyko".
 
@@ -16,20 +22,46 @@ import { Gauge, Lock, ShieldCheck } from "lucide-react";
    niekorzystnie w 2-3 linijki z ciasnym leading. Dodane pośrednie stopnie
    (text-2xl sm:text-3xl md:text-4xl), luźniejszy leading-tight na
    nagłówkach h2/h3, i zmniejszony padding sekcji na mobile
-   (px-5 sm:px-8 zamiast sztywnego px-8). */
+   (px-5 sm:px-8 zamiast sztywnego px-8).
+
+   [GWARANCJA PRĘDKOŚCI] Bullet "Prawna gwarancja min. 50% deklarowanej
+   prędkości" stał w sprzeczności z kafelkiem "100% zgłoszonej prędkości"
+   w SocialProofStats (jeden scroll dalej). Teraz oba miejsca biorą tekst
+   z lib/guarantees.ts. Nie wpisuj tego zdania ręcznie.
+
+   [TERMIN INSTALACJI] Bullet "Instalacja w 3 dni, serwisant na miejscu
+   w 24h" łączył DWIE rozłączne obietnice w jednym zdaniu i podawał liczbę
+   bez pokrycia we wzorze umowy (21 dni).
+
+   [TECHNOLOGIA POD ADRESEM] Nagłówek "2 Gb/s, które nie spadają wieczorem"
+   + "sieć światłowodowa od podstaw" obiecywał FTTH pod każdym adresem,
+   podczas gdy sekcja porównawcza przyznawała, że obsługujemy też łącza
+   kablowe i mobilne. Dwie sprzeczne obietnice o jeden scroll od siebie,
+   uruchamiające najdrażliwszy lęk z researchu (#19: "światłowód, który
+   okazuje się hybrydą"). Nagłówek jest teraz warunkowy ("tam, gdzie sięga
+   światłowód"), a ujawnienie technologii weszło jako PIERWSZY bullet —
+   z ograniczenia robimy dowód uczciwości. Bullet o terminie montażu
+   ustąpił mu miejsca, bo ta sama obietnica stoi już w kroku 3 sekcji
+   "Jak zamówić" i w FAQ. Brzmienie: lib/guarantees.ts.
+
+   [GRAFIKI] Zdjęcia stockowe zamienione na spójne ilustracje wektorowe
+   (flat design, paleta navy/teal/amber) wygenerowane pod styl hero.
+   Pliki skonwertowane do .avif (mniejszy rozmiar, ta sama jakość wizualna
+   przy płaskich kolorach). Nazwy plików bez zmian względem poprzednich
+   .webp — tylko rozszerzenie. */
 
 const valueProps = [
   {
     eyebrow: "Sieć światłowodowa Netii",
     icon: Gauge,
-    title: "2 Gb/s, które nie spadają wieczorem.",
-    body: "Większość dostawców łata mieszaną, przestarzałą infrastrukturę — dlatego prędkość zjeżdża, gdy cała ulica wraca z pracy. My korzystamy z sieci światłowodowej od podstaw, więc deklarowana prędkość to liczba, nie marketing.",
+    title: "2 Gb/s tam, gdzie sięga światłowód.",
+    body: "Większość dostawców łata mieszaną, przestarzałą infrastrukturę — dlatego prędkość zjeżdża, gdy cała ulica wraca z pracy. Netia buduje własną sieć światłowodową i tam, gdzie ona dochodzi, dostajesz pełne parametry. A tam, gdzie pod Twoim adresem jest inna technologia, powiemy Ci to wprost przed podpisaniem umowy, nie w dniu montażu.",
     bullets: [
-      "Prawna gwarancja min. 50% deklarowanej prędkości",
-      "Monitoring łącza 24/7, zanim zadzwonisz",
-      "Instalacja w 3 dni, serwisant na miejscu w 24h",
+      TECH_DISCLOSURE.bullet,
+      SPEED_GUARANTEE.bullet,
+      SERVICE_SLA.bullet,
     ],
-    image: "/images/value-prop-siec.webp",
+    image: "/images/value-prop-siec.avif",
     imageAlt: "Technik instaluje światłowodowe łącze ONT w nowoczesnym mieszkaniu",
   },
   {
@@ -42,7 +74,7 @@ const valueProps = [
       "Pełna kwota po promocji widoczna od razu, bez ukrywania",
       "14 dni na rezygnację bez podania przyczyny",
     ],
-    image: "/images/value-prop-cena.webp",
+    image: "/images/value-prop-cena.avif",
     imageAlt: "Osoba spokojnie sprawdza stały rachunek za internet przy porannej kawie",
   },
 ];

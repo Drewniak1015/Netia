@@ -16,13 +16,26 @@ import {
 import DottedBackground from "@/components/ui/DottedBackground";
 import { REVIEWS } from "./homeReviewsData";
 import { trackContact } from "@/lib/meta-track";
+import {
+  SPEED_GUARANTEE,
+  INSTALL_TIMING,
+  SERVICE_SLA,
+  ATTRIBUTION,
+} from "@/lib/guarantees";
 
 // UWAGA: dodaj pole `photoUrl`, `pakiet` oraz `stat` do każdego wpisu w homeReviewsData.ts
 // (np. photoUrl: "/images/person1.webp", pakiet: "Internet 600 Mb/s",
 //  stat: "Zgłoszenie 20:14 → naprawa 20:47").
 // Poniższe tablice to fallbacki na wypadek, gdyby dane nie miały jeszcze tych pól.
-const FALLBACK_PHOTOS = ["/images/person4.webp", "/images/person1.webp", "/images/person3.webp"];
 const FALLBACK_PAKIETY = ["Internet 300 Mb/s", "Internet 600 Mb/s", "Internet 1 Gb/s"];
+// Kolory teł dla awatarów z inicjałami — rotowane po indeksie recenzji,
+// żeby kolumna nie wyglądała monotonnie przy samych literach.
+const INITIALS_BG = [
+  "bg-teal-400/15 text-teal-300",
+  "bg-sky-400/15 text-sky-300",
+  "bg-amber-400/15 text-amber-300",
+  "bg-violet-400/15 text-violet-300",
+];
 // Konkretne liczby > ogólniki typu "szybko" / "kilkanaście minut".
 const FALLBACK_STATS = [
   "Zgłoszenie 19:52 → kontakt w 4 min",
@@ -42,21 +55,25 @@ type Review = {
   stat?: string;
 };
 
+/* Brzmienie gwarancji prędkości, terminu instalacji i SLA serwisu
+   pochodzi z lib/guarantees.ts. NIE wpisuj tych zdań tutaj ręcznie —
+   te same teksty stoją w siedmiu miejscach na stronie i rozjeżdżały się
+   już raz (termin instalacji miał pięć różnych wariantów). */
 const GUARANTEES = [
   {
     icon: Gauge,
-    title: "Prędkość zgodna z umową",
-    desc: "Gwarantujemy minimum 50% deklarowanej prędkości, zgodnie z prawem. Monitorujemy łącze 24/7.",
+    title: SPEED_GUARANTEE.title,
+    desc: SPEED_GUARANTEE.descFull,
   },
   {
     icon: Headset,
     title: "Wsparcie zawsze pod ręką",
-    desc: "Infolinia i serwis techniczny gotowe pomóc, gdy coś się zdarzy.",
+    desc: `Infolinia i serwis techniczny gotowe pomóc, gdy coś się zdarzy. ${SERVICE_SLA.short}`,
   },
   {
     icon: Wrench,
     title: "Profesjonalny montaż",
-    desc: "Technik podłączy i skonfiguruje wszystko na miejscu.",
+    desc: `Technik podłączy i skonfiguruje wszystko na miejscu. ${INSTALL_TIMING.short}`,
   },
   {
     icon: RotateCcw,
@@ -70,8 +87,8 @@ const GUARANTEES = [
 const BOTTOM_TRUST_STRIP = [
   {
     icon: Gauge,
-    title: "Prędkość zgodna z umową",
-    desc: "Minimum 50% deklarowanej prędkości, zgodnie z prawem.",
+    title: SPEED_GUARANTEE.title,
+    desc: SPEED_GUARANTEE.descShort,
   },
   {
     icon: RotateCcw,
@@ -102,7 +119,7 @@ type AdvisorInfo = {
 export default function NetiaSocialProof({
   advisorName = "Jarosław Sitek",
   advisorRole = "Twój doradca w sprawie internetu",
-  advisorBio = "Pomagam klientom bezstresowo zmienić dostawcę internetu.",
+  advisorBio = "Autoryzowany partner Netii. Pomagam bezstresowo zmienić dostawcę internetu.",
   // TODO: podmień ścieżkę, jeśli plik leży gdzie indziej niż /public.
   advisorPhotoUrl = "/images/Jaroslaw.webp",
   advisorEmail = "jaroslaw.sitek@przedstawiciel.netia.pl",
@@ -131,9 +148,9 @@ export default function NetiaSocialProof({
         </div>
 
         <h2 className="text-center font-extrabold text-white text-2xl sm:text-3xl lg:text-4xl tracking-tight mb-2">
-          Dołącz do <span className="text-teal-400">2,4 mln klientów</span>, którzy{" "}
+          Dołącz do <span className="text-teal-400">2,4 mln klientów sieci Netia</span>,{" "}
           <br className="hidden sm:block" />
-          przestali martwić się o internet
+          którzy przestali martwić się o internet
         </h2>
 
         {/* Podtytuł przejęty z dawnej osobnej sekcji kontaktowej */}
@@ -153,13 +170,12 @@ export default function NetiaSocialProof({
                 >
                   {/* Kolumna ze zdjęciem — na mobile zdjęcie po lewej, opis po prawej; od sm: zdjęcie na górze, opis wyśrodkowany pod spodem; od lg: wyrównanie do góry */}
                   <div className="flex flex-row items-center gap-4 w-full sm:w-28 md:w-32 sm:flex-col sm:items-center shrink-0">
-                    <Image
-                      src={r.photoUrl ?? FALLBACK_PHOTOS[i % FALLBACK_PHOTOS.length]}
-                      alt={r.name}
-                      width={96}
-                      height={96}
-                      className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 rounded-xl object-cover border border-white/15 shrink-0"
-                    />
+                    <div
+                      className={`flex h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 shrink-0 items-center justify-center rounded-xl border border-white/15 font-bold text-lg sm:text-xl md:text-2xl tracking-wide ${INITIALS_BG[i % INITIALS_BG.length]}`}
+                      aria-hidden="true"
+                    >
+                      {r.initials}
+                    </div>
                     <div className="flex flex-col items-start text-left sm:items-center sm:text-center">
                       <p className="text-white text-[13px] font-semibold leading-tight m-0 sm:mt-2">
                         {r.name}
@@ -299,6 +315,14 @@ export default function NetiaSocialProof({
               Jeśli po podpisaniu umowy zmienisz zdanie, masz 14 dni na odstąpienie od umowy
               zawartej poza lokalem firmy. Późniejsze rozwiązanie umowy odbywa się zgodnie z jej
               warunkami.
+            </p>
+
+            {/* [ATRYBUCJA] Panel łączy gwarancje w pierwszej osobie
+                ("monitorujemy", "oddzwaniamy") z liczbami operatorskimi
+                w nagłówku sekcji. Ta nota mówi wprost, kto za co odpowiada —
+                patrz ATTRIBUTION w lib/guarantees.ts. */}
+            <p className="pt-4 mt-4 border-t border-white/10 text-white/40 text-[12px] leading-relaxed">
+              {ATTRIBUTION.advisorNote}
             </p>
           </div>
         </div>

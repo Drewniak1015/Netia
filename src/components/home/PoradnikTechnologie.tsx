@@ -18,7 +18,22 @@ import DottedBackground from "../ui/DottedBackground";
    3. "W najgorszym możliwym momencie" zamienione na konkretną scenę
       (call, mecz, bajka dzieci) — zgodnie z Offer_Brief (Discovery Story:
       "mid-work-call, mid-movie-night, mid-match") i Avatar_Sheet
-      (scenario-based pain, nie ogólniki). */
+      (scenario-based pain, nie ogólniki).
+
+   [GWARANCJA PRĘDKOŚCI — POPRAWKA]:
+   4. "prawną gwarancją minimum 50% deklarowanej prędkości" zamienione na
+      "umownym minimum 50% deklarowanej prędkości, pokazanym przed
+      podpisaniem". To ta sama liczba, ale przesunięty ciężar: z samego
+      progu (który jest ustawowy i który ma każdy operator) na moment
+      ujawnienia (który jest naszą realną przewagą). Bez tej zmiany kolumna
+      "Z Netią" obiecuje w tym punkcie dokładnie to samo, co kolumna "Stary
+      sposób" — czyli sama sobie zaprzecza.
+   5. Usunięte "Każde łącze, światłowodowe, kablowe czy mobilne" jako
+      OTWARCIE zdania. To przyznanie, że pod częścią adresów nie ma
+      światłowodu, stało obok nagłówka "2 Gb/s światłowód" w sekcji obok
+      i uruchamiało lęk przed hybrydą (odkrycie #19 z researchu). Teraz
+      technologia jest zaadresowana wprost i jako atut przejrzystości,
+      a nie jako wtrącenie w środku obietnicy. */
 
 const sectionBgStyle = { backgroundColor: "#0B2A3D" } as const;
 
@@ -57,22 +72,28 @@ export default function PoradnikTechnologie() {
               Z Netią
             </p>
             <p className="text-base md:text-lg text-white/85 leading-relaxed">
-              Każde łącze, światłowodowe, kablowe czy mobilne, obejmujemy{" "}
-              <span className="text-white font-semibold">tym samym monitoringiem 24/7</span>,{" "}
+              Twoje łącze obejmujemy{" "}
+              <span className="text-white font-semibold">monitoringiem 24/7</span> i dzwonimy
+              pierwsi, gdy prędkość spada. W umowie stoi{" "}
               <span className="text-white font-semibold">
-                prawną gwarancją minimum 50% deklarowanej prędkości
+                minimum 50% deklarowanej prędkości
               </span>{" "}
-              i <span className="text-white font-semibold">ceną zapisaną w umowie na stałe</span>.
+              oraz <span className="text-white font-semibold">cena zapisana na cały okres</span> —
+              oba zapisy pokazujemy Ci przed podpisaniem, razem z technologią dostępną pod Twoim
+              adresem.
             </p>
 
             {/* [NOWE] Dowód społeczny — te trzy deklaracje wyżej nie stoją
                 już same, tylko obok liczby klientów i oceny, poza głosem
                 samej firmy. */}
-            <div className="mt-4 flex items-center gap-2 text-sm text-white/60">
-              <span className="flex items-center gap-0.5" aria-hidden="true">
-                {"★★★★★"}
-              </span>
-              <span>4.8/5 od 2,4 mln klientów po zmianie dostawcy</span>
+            {/* [ATRYBUCJA + ŹRÓDŁO] Było: "4.8/5 od 2,4 mln klientów po zmianie
+                dostawcy" — sklejenie dwóch niepowiązanych liczb, czytane jako
+                "2,4 mln osób wystawiło ocenę 4.8". Ocena usunięta w całości,
+                bo nie ma platformy, na którą można się powołać. Zostaje sama
+                liczba klientów, podpisana operatorem. Patrz komentarz
+                o ocenach w lib/guarantees.ts. */}
+            <div className="mt-4 text-sm text-white/60">
+              Ponad 2,4 mln klientów w sieci Netia
             </div>
           </div>
         </div>

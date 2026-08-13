@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { Star, Phone } from "lucide-react";
 import { PHONE, PHONE_HREF } from "@/components/home/Offersdata";
 import DottedBackground from "../ui/DottedBackground";
@@ -17,13 +16,16 @@ import DottedBackground from "../ui/DottedBackground";
 /*  weryfikacji, którego nie da się obronić przy fikcyjnej treści.        */
 /*                                                                        */
 /*  Zanim to trafi na produkcję: podmień na prawdziwe opinie realnych     */
-/*  klientów (imię, miasto, zdjęcie za zgodą). Publikacja fikcyjnych      */
+/*  klientów (imię, miasto, ew. zdjęcie za zgodą). Publikacja fikcyjnych  */
 /*  recenzji jako prawdziwych to ryzyko prawne (nieuczciwa praktyka       */
 /*  rynkowa), nie tylko kwestia etyki.                                    */
 /*                                                                        */
-/*  Zdjęcia: testimonial-michal.webp / testimonial-ania.webp /            */
-/*  testimonial-kasia.webp — wygenerowane AI, ten sam powód co wyżej:     */
-/*  placeholder do podmiany, nie gotowa treść.                            */
+/*  [AWATARY] Wcześniej: wygenerowane AI zdjęcia (testimonial-*.webp) —   */
+/*  placeholder do podmiany. Zamienione na kolorowe inicjały, spójnie     */
+/*  z sekcją NetiaSocialProof (ta sama logika: 2 litery, rotowana paleta  */
+/*  teal/sky/amber/violet). Dwa różne style awatarów w dwóch sekcjach z   */
+/*  tym samym typem treści (opinie klientów) czytały się jako niespójność */
+/*  — teraz obie sekcje pokazują ten sam wzorzec wizualny.                */
 /*                                                                        */
 /*  Styl spójny z resztą strony: tło #0B2A3D, karty #0d1f31, akcent teal, */
 /*  bez animacji.                                                        */
@@ -32,31 +34,41 @@ import DottedBackground from "../ui/DottedBackground";
 interface Testimonial {
   quote: string;
   name: string;
+  initials: string;
   location: string;
-  photo: string;
 }
+
+// Ta sama paleta i logika rotacji co w NetiaSocialProof.tsx — nie zmieniaj
+// niezależnie od tamtego pliku, żeby kolory inicjałów nie rozjechały się
+// między sekcjami.
+const INITIALS_BG = [
+  "bg-teal-400/15 text-teal-300",
+  "bg-sky-400/15 text-sky-300",
+  "bg-amber-400/15 text-amber-300",
+  "bg-violet-400/15 text-violet-300",
+];
 
 const testimonials: Testimonial[] = [
   {
     quote:
       "Przez rok miałem spadki z 600 do 40 Mb/s w każdy wieczór — dokładnie wtedy, gdy dzieciaki chciały oglądać bajkę. Tu monitoring pokazuje realną prędkość i faktycznie taka jest, nawet gdy cała rodzina jest online naraz.",
     name: "Michał K.",
+    initials: "MK",
     location: "Warszawa",
-    photo: "/images/testimonial-michal.webp",
   },
   {
     quote:
       "Dekoder u poprzedniego dostawcy zawieszał się w połowie meczu, za każdym razem. Tutaj zgłosiłam awarię wieczorem, serwisant był u mnie następnego dnia rano — pierwszy raz w życiu ktoś dotrzymał słowa co do czasu naprawy.",
     name: "Ania W.",
+    initials: "AW",
     location: "Poznań",
-    photo: "/images/testimonial-ania.webp",
   },
   {
     quote:
       "Najbardziej bałam się, że cena znowu wystrzeli po promocji jak u poprzedniego operatora. Minęło pół roku, płacę co do złotówki tyle, ile było w umowie — pierwszy raz nie czuję się oszukana przez dostawcę internetu.",
     name: "Kasia N.",
+    initials: "KN",
     location: "Szczecin",
-    photo: "/images/testimonial-kasia.webp",
   },
 ];
 
@@ -75,14 +87,14 @@ export default function Testimonials() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimonials.map((t) => (
+          {testimonials.map((t, i) => (
             <div
               key={t.name}
               className="flex flex-col rounded-2xl border border-white/10 bg-[#0d1f31] p-6"
             >
               <div className="flex gap-0.5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-teal-400 text-teal-400" />
+                {Array.from({ length: 5 }).map((_, j) => (
+                  <Star key={j} className="h-4 w-4 fill-teal-400 text-teal-400" />
                 ))}
               </div>
 
@@ -91,14 +103,11 @@ export default function Testimonials() {
               </p>
 
               <div className="mt-5 flex items-center gap-3">
-                <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/10">
-                  <Image
-                    src={t.photo}
-                    alt={`${t.name}, ${t.location}`}
-                    fill
-                    sizes="36px"
-                    className="object-cover"
-                  />
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-xs font-bold tracking-wide ${INITIALS_BG[i % INITIALS_BG.length]}`}
+                  aria-hidden="true"
+                >
+                  {t.initials}
                 </span>
                 <div>
                   <p className="text-sm font-bold text-white">{t.name}</p>
