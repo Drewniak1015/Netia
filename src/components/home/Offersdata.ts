@@ -1,23 +1,30 @@
 /* ------------------------------------------------------------------ */
 /*  Offersdata.ts — dane dla kart oferty (sekcja Oferty, 300/600 Mb/s)  */
 /*                                                                      */
-/*  FIX (ten commit): pakiet nazywa się teraz "TV XS" / "TV M" / "TV L"  */
-/*  zamiast samego "XS" / "M" / "L" — w typie, w danych i na liście      */
-/*  benefitów. Nigdzie w tym pliku nie zostało już gołe "XS".            */
+/*  FIX (ten commit): wariant 300 Mb/s za 40 zł to teraz "TV S", nie     */
+/*  "TV M". Zmiana obejmuje union type PackageName, sygnaturę            */
+/*  buildFeatures300() i samą definicję oferty.                          */
 /*                                                                      */
-/*  Powód: karta 300 Mb/s + XS za 30 zł nie mówiła nigdzie, że zawiera   */
-/*  telewizję — ani w tytule ("+ XS" nic nie znaczy dla kogoś z          */
-/*  zewnątrz), ani na liście benefitów (były tam tylko router i Netia    */
-/*  GO). Jednocześnie kreacja reklamowa obiecuje "300 Mb/s + TV za       */
-/*  30 zł", a sekcja AdditionalOffers mówiła "Sam internet od 30 zł".    */
-/*  Trzy różne komunikaty o tej samej paczce.                            */
+/*  UWAGA — do sprawdzenia poza tym plikiem:                             */
+/*   • AdditionalOffers.tsx mówi "Internet 300 Mb/s + TV M od 55 zł" —   */
+/*     ta karta to teraz TV S za 40 zł. Dwa różne pakiety i dwie różne   */
+/*     ceny dla tej samej prędkości na jednej stronie.                   */
+/*   • Kreacje w Google Ads mówią "300 Mb/s + TV M za 40 zł" — trzeba    */
+/*     podmienić na TV S, inaczej reklama obiecuje wyższy pakiet niż     */
+/*     ten, który klient zobaczy na landingu.                            */
+/*   • INFO_ITEMS w Infomodal.tsx potrzebuje klucza "tv-s".              */
+/*                                                                      */
+/*  Poprzedni commit: pakiet nazywa się "TV XS" / "TV S" / "TV M" /      */
+/*  "TV L" zamiast gołego "XS" / "S" / "M" / "L" — w typie, w danych     */
+/*  i na liście benefitów. Powód: karta 300 Mb/s + XS za 30 zł nie       */
+/*  mówiła nigdzie, że zawiera telewizję.                                */
 /*                                                                      */
 /*  Zmiana jest w SAMEJ WARTOŚCI `pkg`, nie w dodatkowym polu — dzięki   */
 /*  temu Offercard.tsx nie wymaga żadnej zmiany: jeśli renderuje         */
-/*  `{offer.speed} + {offer.pkg}`, od razu pokaże "300 Mb/s + TV XS".    */
+/*  `{offer.speed} + {offer.pkg}`, od razu pokaże "300 Mb/s + TV S".     */
 /*                                                                      */
 /*  UWAGA — BREAKING CHANGE. Union type zmienił się z                    */
-/*    "XS" | "M" | "L"  ->  "TV XS" | "TV M" | "TV L"                    */
+/*    "XS" | "M" | "L"  ->  "TV XS" | "TV S" | "TV M" | "TV L"           */
 /*  Jeśli GDZIEKOLWIEK poza tym plikiem porównujesz pakiet po wartości   */
 /*  (np. `offer.pkg === "L"`, filtrowanie, sortowanie, warunkowe         */
 /*  renderowanie GigaNagrywarki), TypeScript to wyłapie przy buildzie —  */
@@ -29,7 +36,7 @@
 /*  w każdym wariancie ("Telewizja TV XS w cenie"). To ważniejsze niż    */
 /*  tytuł — user skanuje checkboxy, a tam telewizji nie było w ogóle.    */
 /*                                                                      */
-/*  Trzecia: infoId "tv-xs" / "tv-m" / "tv-l" — dopisz je do             */
+/*  Trzecia: infoId "tv-xs" / "tv-s" / "tv-m" / "tv-l" — dopisz je do    */
 /*  INFO_ITEMS w Infomodal.tsx (przykładowe treści na końcu pliku).      */
 /*                                                                      */
 /*  Zachowane z poprzedniego commita: ujednolicone infoId z              */
@@ -47,8 +54,9 @@ export interface OfferBenefit {
 
 /** [ZMIENIONE] Nazwa pakietu telewizyjnego. Wartości zawierają prefiks
  *  "TV", bo trafiają wprost do tytułu karty — samo "XS" nie komunikowało,
- *  że w abonamencie jest telewizja. */
-export type PackageName = "TV XS" | "TV M" | "TV L";
+ *  że w abonamencie jest telewizja.
+ *  [NOWE] Dodane "TV S" — wariant 300 Mb/s za 40 zł. */
+export type PackageName = "TV XS" | "TV S" | "TV M" | "TV L";
 
 export interface Offer {
   speed: string;
@@ -91,7 +99,7 @@ export const PHONE_HREF = "+48887843260";
 
 /* [NOWE] Benefit telewizyjny — pierwsza pozycja na liście w każdym
    wariancie. Bez tego pakiet TV XS wyglądał na ofertę bez telewizji.
-   infoId budowany z nazwy pakietu: "TV XS" -> "tv-xs". */
+   infoId budowany z nazwy pakietu: "TV XS" -> "tv-xs", "TV S" -> "tv-s". */
 function tvFeature(pkg: PackageName): OfferBenefit {
   return {
     id: "tv",
@@ -119,7 +127,7 @@ function buildFeatures(pkg: PackageName): OfferBenefit[] {
 
 /* [NOWE] Osobna funkcja dla wariantu 300 Mb/s — zestaw cech jest węższy
    niż w buildFeatures() dla 600/1000 (brak "Dekoder 4K" w pakiecie TV XS,
-   "Netia Player/Evobox 4K" zamiast "Dekoder 4K w cenie" w pakiecie TV M,
+   "Netia Player/Evobox 4K" zamiast "Dekoder 4K w cenie" w pakiecie TV S,
    brak sekcji "Monitorowana prędkość 24/7" / "Cena zapisana w umowie"
    na samym zrzucie — jeśli te dwie pozycje MAJĄ się pojawiać też tutaj
    dla spójności z resztą oferty, odkomentuj blok na końcu funkcji).
@@ -134,7 +142,7 @@ function buildFeatures(pkg: PackageName): OfferBenefit[] {
    do TV XS — X zł/mies."), bo inaczej klient dowie się o dopłacie dopiero
    przez telefon, a to najgorszy moment na taką informację. Nie mam
    wglądu w Twój cennik sprzętowy. */
-function buildFeatures300(pkg: "TV XS" | "TV M"): OfferBenefit[] {
+function buildFeatures300(pkg: "TV XS" | "TV S"): OfferBenefit[] {
   if (pkg === "TV XS") {
     return [
       tvFeature("TV XS"),
@@ -143,7 +151,7 @@ function buildFeatures300(pkg: "TV XS" | "TV M"): OfferBenefit[] {
     ];
   }
   return [
-    tvFeature("TV M"),
+    tvFeature("TV S"),
     /* [FIX] "player-4k" -> "dekoder-evobox": to najpewniej ten sam
        Netia Player/EvoBox 4K, który w Oferty1kdata.ts ma infoId
        "dekoder-evobox" — ujednolicone, żeby jeden wpis w INFO_ITEMS
@@ -174,8 +182,10 @@ export const offersBySpeed: Record<SpeedTier, Offer[]> = {
       features: buildFeatures300("TV XS"),
     },
     {
+      /* [ZMIENIONE] Było "TV M" — ten wariant to pakiet TV S za 40 zł.
+         Pamiętaj o podmianie w AdditionalOffers.tsx i w kreacjach Ads. */
       speed: "300 Mb/s",
-      pkg: "TV M",
+      pkg: "TV S",
       price: 40,
       promoMonths: 0,
       priceAfter24: 60,
@@ -183,11 +193,12 @@ export const offersBySpeed: Record<SpeedTier, Offer[]> = {
       featured: true,
       accentColor: "#00d5be",
       badgeLabel: "NAJLEPSZY STOSUNEK CENY DO PAKIETU",
-      features: buildFeatures300("TV M"),
+      features: buildFeatures300("TV S"),
     },
-    /* TODO: brak trzeciej oferty (pkg "TV L") dla 300 Mb/s — na zrzucie są
-       tylko 2 karty, a grid w Oferty.tsx jest 3-kolumnowy. Dodaj tu
-       wariant TV L albo dostosuj grid warunkowo dla tej prędkości. */
+    /* TODO: brak trzeciej oferty (pkg "TV M" lub "TV L") dla 300 Mb/s — na
+       zrzucie są tylko 2 karty, a grid w Oferty.tsx jest 3-kolumnowy.
+       Dodaj tu trzeci wariant albo dostosuj grid warunkowo dla tej
+       prędkości. */
   ],
   "600": [
     { speed: "600 Mb/s", pkg: "TV XS", price: 55, promoMonths: 3, features: buildFeatures("TV XS") },
@@ -228,12 +239,15 @@ export type MaxOffer = Offer;
 /*  2. Oferty1kdata.ts — ta sama zmiana dla 1/2 Gb/s, inaczej połowa    */
 /*     strony mówi "TV XS", a połowa "XS".                              */
 /*                                                                      */
-/*  3. AdditionalOffers.tsx — kafel "Sam internet od 30 zł" jest         */
-/*     sprzeczny z tą kartą (ta sama paczka, dwa różne opisy).           */
+/*  3. AdditionalOffers.tsx — kafel "Internet 300 Mb/s + TV M od 55 zł"  */
+/*     jest sprzeczny z tą kartą: ta sama prędkość, ale tutaj TV S za    */
+/*     40 zł. Jedna prędkość, dwa różne pakiety i dwie różne ceny na     */
+/*     jednej stronie to gotowy powód do odrzucenia reklamy przez        */
+/*     Google przy porównaniu reklamy z landingiem.                      */
 /*                                                                      */
-/*  4. Kreacja reklamowa — "Internet 300 Mb/s + TV" powinno brzmieć      */
-/*     "+ TV XS", żeby obietnica z reklamy i tytuł karty zgadzały się    */
-/*     co do znaku.                                                     */
+/*  4. Kreacja reklamowa — nagłówek "Netia 300 Mb/s + TV za 40 zł"       */
+/*     powinien brzmieć "+ TV S", a wcześniejsze warianty mówiące        */
+/*     "+ TV M za 40 zł" trzeba wycofać.                                 */
 /* ------------------------------------------------------------------ */
 
 /* ------------------------------------------------------------------ */
@@ -244,9 +258,9 @@ export type MaxOffer = Offer;
 /*  infoId.                                                              */
 /*                                                                        */
 /*  Wymagane klucze używane w TYM pliku (Offersdata.ts):                 */
-/*    - "tv-xs", "tv-m", "tv-l"   [NOWE — dopisz, inaczej kliknięcie w    */
-/*                                  pozycję "Telewizja TV XS w cenie"     */
-/*                                  otworzy pusty modal]                  */
+/*    - "tv-xs", "tv-s", "tv-m", "tv-l"                                  */
+/*      ["tv-s" NOWE — dopisz, inaczej kliknięcie w pozycję              */
+/*       "Telewizja TV S w cenie" otworzy pusty modal]                   */
 /*    - "router-wifi6"                                                   */
 /*    - "dekoder-evobox"                                                 */
 /*    - "netia-go"                                                       */
@@ -268,15 +282,20 @@ export type MaxOffer = Offer;
 /*    body: "Podstawowy pakiet telewizyjny wliczony w cenę abonamentu —   */
 /*           nie płacisz za niego osobno. [UZUPEŁNIJ: ile kanałów, czy    */
 /*           dekoder jest w cenie, czy działa też w Netia GO.] Bez tych   */
-/*           konkretów user nie wie, czym TV XS różni się od TV M, a to   */
+/*           konkretów user nie wie, czym TV XS różni się od TV S, a to   */
 /*           jest dokładnie ta różnica, za którą ma dopłacić 10 zł."      */
 /*  },                                                                    */
-/*  "tv-m": {                                                            */
-/*    title: "Pakiet TV M",                                              */
+/*  "tv-s": {                                                            */
+/*    title: "Pakiet TV S",                                              */
 /*    body: "[UZUPEŁNIJ: ile kanałów więcej niż TV XS i jakich — sport,   */
 /*           filmy, dla dzieci.] Napisz to jako różnicę względem TV XS,   */
 /*           nie jako osobną listę: człowiek porównuje dwie karty obok    */
-/*           siebie i szuka jednego powodu, żeby wybrać droższą."         */
+/*           siebie i szuka jednego powodu, żeby wybrać droższą.          */
+/*           W tym wariancie dochodzi też Netia Player/EvoBox 4K."        */
+/*  },                                                                    */
+/*  "tv-m": {                                                            */
+/*    title: "Pakiet TV M",                                              */
+/*    body: "[UZUPEŁNIJ: co dochodzi ponad TV S.]"                       */
 /*  },                                                                    */
 /*  "tv-l": {                                                            */
 /*    title: "Pakiet TV L",                                              */

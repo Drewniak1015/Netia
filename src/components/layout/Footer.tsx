@@ -17,18 +17,32 @@ interface FooterLink {
 
 const FOOTER_LINKS: FooterLink[] = [
   { label: "Polityka Prywatności", href: "/polityka-prywatnosci" },
+  { label: "Regulamin promocji", href: "/regulamin-promocji" },
   { label: "Pomoc", href: "/pomoc/faq" },
   { label: "Blog", href: "/blog" },
   { label: "Kontakt", href: "/pomoc/awarie" },
-
 ];
 
 const CURRENT_YEAR = new Date().getFullYear();
+
+// Dane osoby prowadzącej serwis. Usługę telekomunikacyjną świadczy
+// Netia S.A. — ta strona jest prowadzona przez autoryzowanego
+// przedstawiciela handlowego, który zajmuje się sprzedażą i obsługą
+// zgłoszenia.
+//
+// Rozdzielenie tych dwóch podmiotów jest wymagane przez zasady Google Ads
+// (sekcja o wprowadzaniu w błąd co do tożsamości reklamodawcy) —
+// wcześniejsza stopka "© Netia. Wszelkie prawa zastrzeżone." sugerowała,
+// że jest to serwis samego operatora, co grozi zawieszeniem konta
+// reklamowego bez ostrzeżenia.
+const REP_NAME = "Jarosław Sitek";
+const REP_EMAIL = "jaroslaw.sitek@przedstawiciel.netia.pl";
 
 // Ten sam numer i domyślna treść SMS-a co w Hero.tsx — wcześniej Header/
 // Footer wskazywały na inny numer (+48 883 334 124) niż reszta strony
 // (+48 887 843 260), co rozjeżdżało tracking i myliło użytkowników, którzy
 // dzwonili z różnych miejsc na stronie pod różne numery.
+const PHONE = "+48 887 843 260";
 const PHONE_HREF = "+48887843260";
 const SMS_BODY = encodeURIComponent(
   "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
@@ -52,14 +66,17 @@ const underlineVariants: Variants = {
   hover: { scaleX: 1, opacity: 1 },
 };
 
-
 /* ------------------------------------------------------------------ */
 /* Elementy pomocnicze                                                 */
 /* ------------------------------------------------------------------ */
 
 function Logo() {
   return (
-    <Link href="/" className="flex items-center shrink-0" aria-label="Netia — strona główna">
+    <Link
+      href="/"
+      className="flex items-center shrink-0"
+      aria-label={`${REP_NAME} — autoryzowany przedstawiciel Netia, strona główna`}
+    >
       {/*
         FIX (CLS): tak samo jak w Header.tsx — brakowało width/height,
         więc przeglądarka nie rezerwowała miejsca na obrazek przed jego
@@ -69,10 +86,14 @@ function Logo() {
         atrybutów, więc responsywne klasy (sm:h-14 lg:h-16) nadal działają
         poprawnie — width się przelicza automatycznie na każdym breakpoincie,
         nie trzeba osobnych wartości na każdy rozmiar.
+
+        UWAGA: samo alt nie wystarczy, jeśli wizualnie widnieje wyłącznie
+        logo operatora. Dlatego pod logo dochodzi podpis "Autoryzowany
+        przedstawiciel" — patrz blok w footerze poniżej.
       */}
       <img
         src="/images/Placeholder.svg"
-        alt="Netia"
+        alt={`Netia — oferta autoryzowanego przedstawiciela ${REP_NAME}`}
         width={122}
         height={48}
         className="h-12 w-auto sm:h-14 lg:h-16"
@@ -117,8 +138,12 @@ export default function NetiaFooter() {
               viewport={{ once: true, amount: 0.4 }}
               custom={0}
               variants={fadeUp}
+              className="flex flex-col items-center gap-1.5 lg:items-start"
             >
               <Logo />
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
+                Autoryzowany przedstawiciel
+              </span>
             </m.div>
 
             <m.nav
@@ -183,17 +208,50 @@ export default function NetiaFooter() {
             className="my-6 h-px w-full bg-white/10 sm:my-7 lg:my-8"
           />
 
-          {/* Dolny rząd: copyright */}
+          {/* Dolny rząd: copyright + informacja o statusie przedstawiciela */}
           <m.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.4 }}
             custom={3}
             variants={fadeUp}
-            className="flex flex-col items-center gap-1.5 text-center"
+            className="flex flex-col items-center gap-2 text-center"
           >
             <p className="text-xs text-white/70 sm:text-sm">
-              © {CURRENT_YEAR} Netia. Wszelkie prawa zastrzeżone.
+              © {CURRENT_YEAR} {REP_NAME} — autoryzowany przedstawiciel Netia S.A.
+            </p>
+
+            <p className="max-w-3xl text-[11px] leading-relaxed text-white/55 sm:text-xs">
+              Serwis prowadzi {REP_NAME}, autoryzowany przedstawiciel handlowy
+              Netia S.A. Usługi telekomunikacyjne świadczy Netia S.A. z siedzibą
+              w Warszawie — ja zajmuję się sprzedażą, doradztwem i obsługą
+              Twojego zgłoszenia. Netia oraz logo Netia są znakami towarowymi
+              Netia S.A. i wykorzystywane są za zgodą właściciela.
+            </p>
+
+            <p className="max-w-3xl text-[11px] leading-relaxed text-white/45 sm:text-xs">
+              Prezentowane ceny i parametry mają charakter informacyjny i nie
+              stanowią oferty w rozumieniu art. 66 § 1 Kodeksu cywilnego.
+              Wiążące warunki, w tym dostępna technologia pod danym adresem,
+              określa umowa oraz regulamin promocji. Dostępność usługi
+              i maksymalne prędkości zależą od infrastruktury w lokalizacji.
+            </p>
+
+            <p className="text-[11px] text-white/40 sm:text-xs">
+              Kontakt:{" "}
+              <a
+                href={`tel:${PHONE_HREF}`}
+                className="underline underline-offset-2 transition-colors hover:text-white/70"
+              >
+                {PHONE}
+              </a>{" "}
+              ·{" "}
+              <a
+                href={`mailto:${REP_EMAIL}`}
+                className="underline underline-offset-2 transition-colors hover:text-white/70"
+              >
+                {REP_EMAIL}
+              </a>
             </p>
           </m.div>
         </div>
