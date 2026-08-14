@@ -115,7 +115,7 @@ const NAV: NavItem[] = [
   },
   {
     key: "konfigurator",
-    label: "Dopasuj Ofertę",
+    label: "Oferty",
     panel: {
       type: "simple",
       columns: [
