@@ -13,11 +13,15 @@ type Step = {
 };
 
 /* ---------------------------------------------------------------------- */
-/*  [ONE PAGE] Ta sekcja obsługuje DWIE pozycje z Headera:                 */
-/*    • id="jak-zamowic"  na <section>  — kroki zamawiania,                */
-/*    • id="kontakt"      na bloku CTA  — przyciski telefon / SMS.         */
-/*  Obie mają scroll-mt-[96px], zgodnie ze stałą SCROLL_OFFSET w Headerze. */
-/*  Jeśli zmienisz wysokość paska, zmień oba miejsca razem.                */
+/*  [ONE PAGE] Ta sekcja obsługuje JEDNĄ pozycję z Headera:                */
+/*    • id="jak-zamowic" na <section> — kroki zamawiania.                  */
+/*  scroll-mt-[96px] zgodne ze stałą SCROLL_OFFSET w Headerze; zmieniasz   */
+/*  wysokość paska — zmień oba miejsca razem.                              */
+/*                                                                         */
+/*  Kotwica "Kontakt" NIE jest tutaj. Prowadzi do ContactSection na dole   */
+/*  strony, czyli do finalnego CTA z pełnym domknięciem (recap gwarancji,  */
+/*  14 dni na odstąpienie). Blok z przyciskami poniżej to skrót dla kogoś, */
+/*  kto jest gotowy już po przeczytaniu trzech kroków — nie cel nawigacji. */
 /*                                                                         */
 /*  [USUNIĘTE] Przycisk "Skonfiguruj online" -> /konfigurator. Ta podstrona */
 /*  na one-page nie istnieje, więc główny, wyróżniony kolorem przycisk     */
@@ -114,14 +118,19 @@ export default function HowToOrderSection() {
           ))}
         </div>
 
-        {/* [KOTWICA #kontakt] Blok CTA jest celem pozycji "Kontakt" z
-            Headera — klik ma lądować na przyciskach, nie na nagłówku
-            sekcji, bo człowiek klikający "Kontakt" chce numeru, a nie
-            opisu procesu. Nagłówek nad przyciskami jest po to, żeby po
-            przeskoku było widać, gdzie się wylądowało. */}
-        <div id="kontakt" className="mt-12 scroll-mt-[96px] sm:mt-14">
+        {/* [BEZ KOTWICY] Ten blok NIE ma już `id="kontakt"` — kotwica z
+            Headera prowadzi do ContactSection na dole strony, czyli do
+            finalnego CTA. Dwa elementy z tym samym id to niepoprawny HTML,
+            a przeglądarka skakałaby do pierwszego, czyli tutaj: w środek
+            strony, z pominięciem całego domknięcia.
+
+            Przyciski zostają, bo człowiek gotowy po przeczytaniu trzech
+            kroków nie powinien musieć scrollować dalej, żeby zadzwonić.
+            Zmieniony jest tylko nagłówek — dwa razy "Kontakt" na jednej
+            stronie kazałoby się zastanawiać, który jest tym właściwym. */}
+        <div className="mt-12 sm:mt-14">
           <h3 className="text-center text-lg font-extrabold text-white sm:text-xl">
-            Kontakt
+            Zacznij od telefonu
           </h3>
           <p className="mx-auto mt-2 max-w-md text-center text-pretty text-[0.9375rem] leading-relaxed text-white/65">
             Odbieramy w godzinach 8:00–20:00. Jeśli wolisz SMS — napisz adres,
