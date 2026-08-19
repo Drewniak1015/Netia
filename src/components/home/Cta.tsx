@@ -1,49 +1,47 @@
 "use client";
 
 import { Phone, MessageCircle, ChevronRight, Check } from "lucide-react";
-
 import { useEffect, useState } from "react";
 import { SPEED_GUARANTEE } from "@/lib/guarantees";
+import { trackContact } from "@/lib/meta-track";
+import { PHONE, PHONE_HREF } from "@/components/home/Offersdata";
+
+/* ---------------------------------------------------------------------- */
+/*  Finalne CTA — wersja mobile-first.                                     */
+/*                                                                         */
+/*  1. [KOTWICA #kontakt] Ta sekcja przejmuje kotwicę "Kontakt" z Headera. */
+/*     UWAGA: usuń wtedy `id="kontakt"` z HowToOrderSection.tsx — dwa      */
+/*     elementy z tym samym id to niepoprawny HTML, a przeglądarka i tak   */
+/*     skoczy do pierwszego, czyli w środek strony zamiast na finalne CTA. */
+/*     Zostaw tam samo `id="jak-zamowic"`.                                 */
+/*                                                                         */
+/*  2. [BRAK ŚLEDZENIA KLIKNIĘĆ — FIX] To jedyna sekcja z CTA, w której    */
+/*     linki `tel:` i `sms:` NIE odpalały zdarzenia Meta Pixel. Ostatni    */
+/*     ekran przed telefonem, więc akurat tu brak danych boli najbardziej: */
+/*     kampania nie widziała konwersji z domknięcia strony.                */
+/*                                                                         */
+/*  3. [NUMER] `phoneNumber` jako prop z domyślną wartością wpisaną na     */
+/*     sztywno zastąpiony importem PHONE/PHONE_HREF z Offersdata.ts —      */
+/*     jedno źródło numeru dla całej strony. Prop nadal działa, ale jego   */
+/*     domyślna wartość idzie już ze wspólnej stałej.                      */
+/*                                                                         */
+/*  4. [PADDINGI] px-5 -> px-4, py-16/20 -> py-12 na telefonie.            */
+/*                                                                         */
+/*  5. [PRZYCISKI] `min-h-[64px]`, pełna szerokość na telefonie, równe     */
+/*     szerokości od `sm` (flex-1 basis-0). `hover:-translate-y` schowany  */
+/*     za `sm:` — na dotyku hover przykleja się po tapnięciu.              */
+/*     Strzałka ChevronRight zostaje: przy dwóch linijkach tekstu w        */
+/*     przycisku sygnalizuje, że to akcja, a nie etykieta.                 */
+/*                                                                         */
+/*  6. [KOLUMNA ZE ZDJĘCIEM] `useIsDesktop` zostaje — dzięki temu obrazek  */
+/*     w ogóle nie montuje się na telefonie i nie kosztuje transferu.      */
+/*     To jest tu ważniejsze niż zwykłe `hidden lg:block`, które i tak     */
+/*     pobrałoby plik.                                                      */
+/* ---------------------------------------------------------------------- */
 
 type ContactSectionProps = {
   phoneNumber?: string;
 };
-
-/* [KOPIA] Zamiast zdjęcia doradcy — wizualizacja "gwarancji na piśmie".
-   Pasuje bezpośrednio do treści (recap 3 value propów + redukcja FUD
-   na dole), więc obraz robi tę samą robotę co tekst: "to nie slogan,
-   to zapisane warunki". Bez animacji wejścia — sekcja renderuje się od
-   razu w pełnej formie (useIsDesktop zostaje, bo steruje tym, czy
-   kolumna ze zdjęciem w ogóle się montuje, nie animacją).
-
-   [POPRAWKI — najmocniejsze możliwe CTA na końcu strony]:
-   1. Podnagłówek rozszerzony o trzy konkretne triggery z Avatar_Sheet
-      ("Quotes on Motivation & Urgency Around Success"): awaria/spadek
-      prędkości, koniec promocji, nowa potrzeba w domu. To jedyne miejsce
-      na stronie, gdzie wszystkie trzy triggery są wymienione razem —
-      to ostatnia szansa, żeby trafić w ten, który dotyczy czytelnika.
-   2. "Oddzwonimy w kilka minut" -> "w 3 minuty" — wcześniej niespójne
-      z resztą strony (Hero.tsx i inne sekcje mówią konkretnie "3 minuty").
-   3. Domknięcie klamrą z Hero.tsx — ostatnie zdanie przed CTA nawiązuje
-      wprost do linii "zanim znów o tym zapomnisz" z góry strony, więc
-      ktoś, kto przeczytał całość, dostaje spójne zamknięcie pętli, nie
-      kolejny, oderwany argument.
-   4. ŚWIADOMIE bez fałszywej presji (fake scarcity, zmyślone limity
-      czasowe/miejsc) — urgency opiera się wyłącznie na prawdziwych
-      mechanizmach z researchu (promo-cliff, auto-przedłużenie umowy),
-      nie na wymyślonych deadline'ach.
-   5. [GWARANCJA PRĘDKOŚCI] Pierwszy punkt recapu brał wcześniej brzmienie
-      "Gwarancja min. 50% deklarowanej prędkości" — czyli ustawowe minimum
-      podane jako przewaga. Teraz pochodzi z lib/guarantees.ts, tak jak
-      w pozostałych sześciu miejscach na stronie. To ostatni ekran przed
-      telefonem, więc rozjazd akurat tutaj kosztuje najwięcej: klient
-      dzwoni z jedną liczbą w głowie, a w umowie widzi inną.
-   6. Treść SMS-a zmieniona z "INTERNET" na pełne zdanie — spójnie
-      z NetiaSocialProof.tsx, i poprawnie zakodowana dla polskich znaków.
-
-   [GRAFIKA] Zdjęcie stockowe zamienione na wektorową ilustrację (flat
-   design, paleta navy/teal/amber) spójną z resztą strony. Plik
-   skonwertowany do .avif — sama nazwa bez zmian względem .webp. */
 
 const recapPoints = [
   SPEED_GUARANTEE.bullet,
@@ -66,9 +64,10 @@ function useIsDesktop() {
 }
 
 export default function ContactSection({
-  phoneNumber = "+48 887 843 260",
+  phoneNumber = PHONE,
 }: ContactSectionProps) {
   const isDesktop = useIsDesktop();
+  const telHref = phoneNumber === PHONE ? PHONE_HREF : phoneNumber.replace(/\s+/g, "");
 
   const smsBody = encodeURIComponent(
     "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
@@ -76,29 +75,35 @@ export default function ContactSection({
 
   return (
     <section
+      id="kontakt"
       style={{ backgroundColor: "#0B2A3D" }}
-      className="relative overflow-hidden font-sans"
+      className="relative overflow-hidden scroll-mt-[96px] font-sans"
     >
-      <div className="relative z-10 mx-auto grid max-w-320 grid-cols-1 items-center gap-10 px-5 py-16 sm:px-6 sm:py-20 lg:grid-cols-[0.9fr_1.1fr] lg:gap-8 lg:px-8 lg:py-16">
+      <div className="relative z-10 mx-auto grid max-w-320 grid-cols-1 items-center gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[0.9fr_1.1fr] lg:gap-8 lg:px-8">
         {/* Kolumna tekstowa */}
         <div className="relative z-10 text-center lg:text-left">
-          <h2 className="text-2xl font-extrabold leading-tight text-white sm:text-3xl lg:text-4xl">
+          <h2 className="text-balance text-[26px] font-extrabold leading-tight text-white sm:text-3xl lg:text-4xl">
             Dziś wieczorem internet może{" "}
             <span className="text-teal-300">znowu zwolnić.</span> Albo już nie.
           </h2>
 
-          <h3 className="mx-auto mt-2.5 max-w-xl text-sm font-normal text-white/65 sm:text-base lg:mx-0">
+          {/* [SEMANTYKA] <h3> zamienione na <p>. To podtytuł, nie nagłówek
+              podsekcji — <h3> bez własnej sekcji psuje strukturę dokumentu
+              i myli czytniki ekranu. Ten sam błąd był naprawiony w Hero. */}
+          <p className="mx-auto mt-2.5 max-w-xl text-pretty text-[0.9375rem] font-normal leading-relaxed text-white/65 sm:text-base lg:mx-0">
             Ostatnia awaria w złym momencie, koniec promocji za kilka miesięcy,
             a może po prostu ktoś nowy zacznie pracować albo uczyć się zdalnie
             w Twoim domu — to zwykle wtedy ludzie w końcu sprawdzają inną
             opcję. Rozmowa zajmuje 3 minuty, a doradca odbiera od razu.
-          </h3>
+          </p>
 
-          {/* Recap 3 value propów */}
           <ul className="mx-auto mt-6 flex max-w-xl flex-col gap-2.5 text-left lg:mx-0">
             {recapPoints.map((point) => (
-              <li key={point} className="flex items-center gap-3 text-sm text-white/80">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-400/15">
+              <li
+                key={point}
+                className="flex items-start gap-3 text-pretty text-sm leading-snug text-white/80"
+              >
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-400/15">
                   <Check className="h-3 w-3 text-teal-400" strokeWidth={3} />
                 </span>
                 {point}
@@ -106,33 +111,34 @@ export default function ContactSection({
             ))}
           </ul>
 
-          {/* CTA */}
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
+          {/* CTA — na telefonie jeden pod drugim na pełną szerokość. */}
+          <div className="mx-auto mt-7 flex max-w-xl flex-col gap-2.5 sm:flex-row lg:mx-0">
             <a
-              href={`tel:${phoneNumber.replace(/\s+/g, "")}`}
-              className="group flex items-center justify-between gap-4 rounded-xl bg-teal-500 px-5 py-3.5 text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-teal-400 hover:shadow-lg hover:shadow-teal-500/30 active:translate-y-0 sm:min-w-60"
+              href={`tel:${telHref}`}
+              onClick={() => trackContact("final_cta_phone_button")}
+              className="group flex min-h-[64px] flex-1 basis-0 items-center justify-between gap-3 rounded-xl bg-teal-500 px-4 text-white transition-all duration-200 active:scale-[0.98] sm:px-5 sm:hover:-translate-y-0.5 sm:hover:bg-teal-400 sm:hover:shadow-lg sm:hover:shadow-teal-500/30"
             >
               <span className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 transition-transform duration-300 group-hover:scale-110">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
                   <Phone size={16} />
                 </span>
                 <span className="text-left">
                   <span className="block text-sm font-bold leading-tight">ZADZWOŃ</span>
-                  <span className="block text-xs text-white/85">{phoneNumber}</span>
+                  <span className="block whitespace-nowrap text-xs tabular-nums text-white/85">
+                    {phoneNumber}
+                  </span>
                 </span>
               </span>
-              <ChevronRight
-                size={18}
-                className="text-white/70 transition-transform duration-300 group-hover:translate-x-1"
-              />
+              <ChevronRight size={18} className="shrink-0 text-white/70" />
             </a>
 
             <a
-              href={`sms:${phoneNumber.replace(/\s+/g, "")}?body=${smsBody}`}
-              className="group flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-white transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/10 active:translate-y-0 sm:min-w-60"
+              href={`sms:${telHref}?body=${smsBody}`}
+              onClick={() => trackContact("final_cta_sms_button")}
+              className="group flex min-h-[64px] flex-1 basis-0 items-center justify-between gap-3 rounded-xl border border-white/15 bg-white/5 px-4 text-white transition-all duration-200 active:scale-[0.98] sm:px-5 sm:hover:-translate-y-0.5 sm:hover:border-white/25 sm:hover:bg-white/10"
             >
               <span className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 transition-transform duration-300 group-hover:scale-110">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">
                   <MessageCircle size={16} />
                 </span>
                 <span className="text-left">
@@ -140,22 +146,19 @@ export default function ContactSection({
                   <span className="block text-xs text-white/70">Oddzwonimy w 3 minuty</span>
                 </span>
               </span>
-              <ChevronRight
-                size={18}
-                className="text-white/50 transition-transform duration-300 group-hover:translate-x-1"
-              />
+              <ChevronRight size={18} className="shrink-0 text-white/50" />
             </a>
           </div>
 
-          {/* Redukcja FUD + domknięcie klamrą z Hero.tsx */}
-          <p className="mx-auto mt-6 max-w-xl text-xs text-white/50 lg:mx-0">
+          <p className="mx-auto mt-5 max-w-xl text-pretty text-xs leading-relaxed text-white/50 lg:mx-0">
             Jeśli po zmianie okaże się gorzej niż u obecnego dostawcy, masz 14 dni na
             odstąpienie i pełny zwrot, bez pytań. Sprawdzenie dostępności zajmuje 3 minuty —
             zrób to teraz, zanim znów o tym zapomnisz.
           </p>
         </div>
 
-        {/* Kolumna wizualna — zdjęcie zamiast powielania treści z lewej kolumny */}
+        {/* [6] Kolumna wizualna montowana tylko na desktopie — na telefonie
+            plik nie jest w ogóle pobierany. */}
         {isDesktop && (
           <div className="relative z-10 flex justify-center lg:justify-end">
             <div className="group relative w-full max-w-[460px] transition-transform duration-500 hover:-translate-y-1">
@@ -163,11 +166,14 @@ export default function ContactSection({
                 aria-hidden
                 className="absolute inset-0 -z-10 translate-y-6 scale-95 rounded-2xl bg-teal-500/20 blur-2xl transition-opacity duration-500 group-hover:opacity-80"
               />
-
               <div className="relative overflow-hidden rounded-2xl border border-white/10">
                 <img
                   src="/images/final-cta-wieczor.avif"
                   alt="Rodzina spokojnie ogląda film wieczorem, internet działa bez zacięć"
+                  width={920}
+                  height={1150}
+                  loading="lazy"
+                  decoding="async"
                   className="aspect-4/5 w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0B2A3D]/70 via-transparent to-transparent" />

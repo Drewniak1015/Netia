@@ -20,6 +20,7 @@ import Gwarancja from "@/components/home/Gwarancja";
 import Testimonials from "@/components/home/testimonials";
 import FinalCTA from "@/components/home/finalcta";
 import AdditionalOffers from "@/components/home/Additionaloffers";
+import ListaKanalow from "@/components/ListaKanalow/ListaKanalow";
 
 const organizationSchema = {
   "@context": "https://schema.org",
@@ -61,23 +62,23 @@ export default function HomePage() {
       {/* <EntryGate/> */}
       <MainHero />
       <Oferty />
-      <Opinie />
-      <Benefity />
-   
-      <Oferty1k/>
+      {/* <Opinie /> */}
+      {/* <Benefity /> */}
+   <ListaKanalow/>
+      {/* <Oferty1k/> */}
       <Instrukcja />
-      <PoradnikTechnologie />
-      <SocialProofStats/>
+      {/* <PoradnikTechnologie /> */}
+      {/* <SocialProofStats/> */}
       {/* <MaxxBanner /> */}
-      <ValueProp3/>
-        <Gwarancja/>
-      <Testimonials/>
+      {/* <ValueProp3/> */}
+        {/* <Gwarancja/> */}
+      {/* <Testimonials/> */}
       <NetiaFAQ />
-      <AdditionalOffers/>
+      {/* <AdditionalOffers/> */}
       {/* <FinalCTA/> */}
       {/* <OfertyInternet /> */}
       <CTA />
-      <Miasta />
+      {/* <Miasta /> */}
     </>
   );
 }

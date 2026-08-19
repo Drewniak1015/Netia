@@ -1,260 +1,54 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
-import {
-  ChevronDown,
-  MessageCircle,
-  Phone,
-  Search,
-  Wifi,
-  Tv,
-  Smartphone,
-  Wrench,
-  Menu,
-  X,
-  Sparkles,
-  Tag,
-  Newspaper,
-  type LucideIcon,
-} from "lucide-react";
+import { MessageCircle, Phone, Menu, X } from "lucide-react";
 import { trackContact } from "@/lib/meta-track";
 
 /* ------------------------------------------------------------------ */
-/* Typy                                                                 */
+/* Kontakt                                                              */
 /* ------------------------------------------------------------------ */
 
-interface SimpleItem {
-  title: string;
-  desc?: string;
-  icon?: LucideIcon;
-  badge?: string;
-  accent?: boolean;
-  href?: string;
-}
-
-interface SimpleColumn {
-  heading: string;
-  items: SimpleItem[];
-}
-
-type PanelConfig = { type: "simple"; columns: SimpleColumn[] };
-
-interface NavItem {
-  key: string;
-  label: string;
-  highlight?: boolean;
-  href?: string; // used when the item has NO dropdown panel (links straight to a page)
-  panel?: PanelConfig;
-}
-
-/* ------------------------------------------------------------------ */
-/* Dane — edytuj / podmieniaj swobodnie                                 */
-/* ------------------------------------------------------------------ */
-
-// Ten sam numer i domyślna treść SMS-a co w Hero.tsx — wcześniej Header/
-// Footer wskazywały na inny numer (+48 883 334 124) niż reszta strony
-// (+48 887 843 260), co rozjeżdżało tracking i myliło użytkowników, którzy
-// dzwonili z różnych miejsc na stronie pod różne numery.
 const PHONE_HREF = "+48887843260";
 const PHONE_DISPLAY = "+48 887 843 260";
 const SMS_BODY = encodeURIComponent(
   "Jestem wstępnie zainteresowany/a ofertami, proszę o kontakt."
 );
 
-const DOT_COLORS: string[] = ["#EC4899", "#F59E0B", "#22C55E", "#0EA5E9", "#8B5CF6", "#14B8A6"];
-const underlineVariants = {
-  rest: { scaleX: 0, opacity: 0 },
-  hover: { scaleX: 1, opacity: 1 },
-};
-const NAV: NavItem[] = [
-  {
-    key: "oferty",
-    label: "Specjalne Oferty",
-    highlight: true,
-    panel: {
-      type: "simple",
-      columns: [
-        {
-          heading: "Wyróżnione",
-         items: [
- {
-  title: "12 Miesięcy za 0 zł",
-  desc: "Internet do 1000/2000 Mb/s + TV 4K — cała rodzina online bez kompromisów.",
-  icon: Sparkles,
-  badge: "NOWOŚĆ",
-  accent: true,
-  // Kotwica #pakiety-max: klik z headera ma lądować od razu w sekcji z
-  // kartami pakietów (MAX 1000 / MAX 2000) na stronie /oferty/max, a nie
-  // na samej górze (hero banner). Patrz OfferMaxSection.tsx — id + scroll-mt
-  // dodane na kontenerze tej sekcji.
-  href: "/oferty/max#pakiety-max",
-},
-{
-  title: "6 Miesięcy za 0 zł",
-  desc: "Internet + router i dekoder w cenie — szybki start bez dopłat do sprzętu.",
-  icon: Wifi,
-  // Kotwica #pakiety: analogicznie do #pakiety-max powyżej — klik z headera
-  // ma lądować bezpośrednio przy kartach ofertowych na /oferty/popularne,
-  // a nie na samej górze (hero banner). Patrz PopularneOferty.tsx — id
-  // "pakiety" + scroll-mt dodane na kontenerze siatki kart.
-  href: "/oferty/popularne#pakiety",
-},
-{
-  title: "Najlepsza Cena",
-  desc: "Internet i TV bez zbędnych dodatków — płacisz tylko za to, czego potrzebujesz.",
-  icon: Tag,
-  href: "/oferty/NajlepszaCena#pakiety",
-},
-          ],
-        },
-      ],
-    },
-  },
-  {
-    key: "konfigurator",
-    label: "Oferty",
-    panel: {
-      type: "simple",
-      columns: [
-        {
-          heading: "Wybierz długość umowy",
-          items: [
-            {
-              title: "Internet",
-              desc: "Szybki internet + TV XS w pakiecie. Od 30 zł/mies.",
-              icon: Wifi,
-              href: "/konfigurator/Internet#pakiety-internet-tv",
-            },
-            {
-              title: "Internet + Telewizja",
-              desc: "Dwa razy więcej, jedna opłata. Pełny wybór kanałów, realnie oszczędzasz na wspólnym pakiecie.",
-              icon: Tv,
-              href: "/konfigurator/InternetOrazTelewizja",
-            },
-            {
-              title: "Stwórz Własną Oferte",
-              desc: "Twoje zasady, Twoja cena. Płacisz tylko za to, czego potrzebujesz.",
-              icon: Wifi,
-              // Kotwica #pakiety-internet: klik z headera ma lądować od razu
-              // w sekcji z kartami pakietów internetowych na /konfigurator,
-              // a nie na samej górze (hero banner konfiguratora). Patrz
-              // Konfigurator.tsx — id="pakiety-internet" + scroll-mt-[140px]
-              // dodane na kontenerze tej sekcji (ten sam wzorzec co
-              // #pakiety-max i #pakiety powyżej).
-              href: "/konfigurator#pakiety-internet",
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    key: "kanaly",
-    label: "Lista Kanałów",
-    panel: {
-      type: "simple",
-      columns: [
-        {
-          heading: "Pakiety telewizyjne",
-          items: [
-            { title: "Pakiet XS", desc: "Najbardziej podstawowy pakiet kanałów.", icon: Tv, href: "/kanaly?tier=xs" },
-            { title: "Pakiet S", desc: "Kanały podstawowe.", icon: Tv, href: "/kanaly?tier=s" },
-            { title: "Pakiet M", desc: "Więcej rozrywki i sportu.", icon: Tv, href: "/kanaly?tier=m" },
-            { title: "Pakiet L", desc: "Pełna oferta, kanały premium.", icon: Tv, href: "/kanaly?tier=l" },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    key: "pomoc",
-    label: "Pomoc",
-    panel: {
-      type: "simple",
-      columns: [
-        {
-          heading: "Pomoc",
-          items: [
-            {
-              title: "Najczęstsze Pytania",
-              desc: "Znajdź odpowiedzi na najczęstsze pytania.",
-              icon: Search,
-              href: "/pomoc/faq",
-            },
-            {
-              title: "Telewizja",
-              desc: "Znajdź odpowiedzi na najczęstsze pytania.",
-              icon: Tv,
-              href: "/pomoc/Telewizja",
-            },
-            {
-              title: "Internet",
-              desc: "Pomoc dotycząca usług internetowych.",
-              icon: Wifi,
-              href: "/pomoc/internet",
-            },
-            {
-              title: "Usługi Telefoniczne",
-              desc: "Pomoc dotycząca usług telefonicznych.",
-              icon: Smartphone,
-              href: "/pomoc/telefon",
-            },
-            {
-              title: "Zgłoś Awarię",
-              desc: "Kroki naprawcze i kontakt z działem technicznym.",
-              icon: Wrench,
-              href: "/pomoc/awarie",
-            },
-            {
-              title: "Blog",
-              desc: "Poradniki i aktualności Netia.",
-              icon: Newspaper,
-              href: "/blog",
-            },
-          ],
-        },
-      ],
-    },
-  },
-];
-
 /* ------------------------------------------------------------------ */
-/* Elementy pomocnicze                                                  */
+/* Nawigacja                                                            */
 /* ------------------------------------------------------------------ */
 
-function DotCluster({ size = 22 }: { size?: number }) {
-  const positions: [number, number][] = [
-    [0, 0], [1, 0.4], [0.3, 1], [1.1, 1.2], [-0.4, 0.8], [0.7, -0.4],
-  ];
+// Strona jest one-page: pozycje menu to kotwice do sekcji na "/".
+// KAŻDA sekcja na stronie musi mieć te id + scroll-mt (patrz SCROLL_OFFSET
+// niżej), inaczej klik z headera schowa nagłówek sekcji pod paskiem.
+const SECTIONS = [
+  { id: "pakiety", label: "Pakiety" },
+  { id: "programy-tv", label: "Programy TV" },
+  { id: "jak-zamowic", label: "Jak zamówić" },
+  { id: "kontakt", label: "Kontakt" },
+] as const;
+
+// Jedyna podstrona, jaka zostaje poza one-page.
+const PRIVACY = { href: "/polityka-prywatnosci", label: "Polityka prywatności" };
+
+// Wysokość paska + oddech. Trzymaj zgodne z scroll-mt na sekcjach.
+const SCROLL_OFFSET = 96;
+
+/* ------------------------------------------------------------------ */
+/* Logo                                                                 */
+/* ------------------------------------------------------------------ */
+
+function Logo({ onClick }: { onClick?: () => void }) {
   return (
-    <span
-      className="relative inline-block shrink-0"
-      style={{ width: size, height: size }}
-      aria-hidden="true"
+    <Link
+      href="/"
+      onClick={onClick}
+      className="flex items-center shrink-0"
+      aria-label="Netia — strona główna"
     >
-      {positions.map(([x, y], i) => (
-        <span
-          key={i}
-          className="absolute rounded-full"
-          style={{
-            width: size * 0.34,
-            height: size * 0.34,
-            left: `${(x + 0.4) * (size * 0.4)}px`,
-            top: `${(y + 0.2) * (size * 0.4)}px`,
-            backgroundColor: DOT_COLORS[i % DOT_COLORS.length],
-          }}
-        />
-      ))}
-    </span>
-  );
-}
-
-function Logo() {
-  return (
-    <Link href="/" className="flex items-center shrink-0" aria-label="Netia — strona główna">
       <img
         src="/images/Placeholder.svg"
         alt="Netia"
@@ -267,238 +61,19 @@ function Logo() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Panel: prosta lista (jedna kolumna, wyświetlana po kliknięciu)      */
-/* ------------------------------------------------------------------ */
-
-function SimplePanel({
-  columns,
-  pathname,
-  onItemClick,
-}: {
-  columns: SimpleColumn[];
-  pathname: string | null;
-  onItemClick?: () => void;
-}) {
-  return (
-    <div
-      className="grid gap-10"
-      style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0,1fr))` }}
-    >
-      {columns.map((col, i) => (
-        <div key={i}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-4">
-            {col.heading}
-          </p>
-          <div className="flex flex-col gap-2 py-1">
-            {col.items.map((item, j) => {
-              const Icon: LucideIcon | undefined = item.icon;
-              const isSelected = !!item.href && item.href === pathname;
-              return (
-                <m.div
-                  key={j}
-                  whileHover={{ x: 4 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                >
-                  <Link
-                    href={item.href ?? "#"}
-                    onClick={onItemClick}
-                    className={`group relative flex items-start gap-4 rounded-xl px-4 py-4 transition-all duration-200 border border-transparent hover:border-slate-200  ${
-                      isSelected
-                        ? "bg-teal-50 ring-1 ring-inset ring-teal-200"
-                        : item.accent
-                        ? "bg-pink-50/60 hover:bg-pink-100"
-                        : "hover:bg-slate-50"
-                    }`}
-                  >
-                    {isSelected && (
-                      <span className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-full bg-teal-500" />
-                    )}
-                    <m.span
-                      whileHover={{ scale: 1.12, rotate: -4 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-shadow duration-200 group-hover:shadow-md ${
-                        isSelected
-                          ? "bg-teal-500 text-white"
-                          : item.accent
-                          ? "bg-pink-500 text-white group-hover:bg-pink-600"
-                          : "bg-teal-50 text-teal-600 group-hover:bg-teal-500 group-hover:text-white"
-                      }`}
-                    >
-                      {Icon ? <Icon size={17} /> : <DotCluster size={18} />}
-                    </m.span>
-                    <span className="min-w-0 pt-0.5">
-                      <span className="flex items-center gap-2">
-                        <span
-                          className={`text-sm font-semibold transition-colors duration-200 ${
-                            isSelected ? "text-teal-800" : "text-slate-800 group-hover:text-teal-700"
-                          }`}
-                        >
-                          {item.title}
-                        </span>
-                        {item.badge && (
-                          <span className="rounded-full bg-pink-500 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
-                            {item.badge}
-                          </span>
-                        )}
-                      </span>
-                      {item.desc && (
-                        <span className="mt-1 block text-xs leading-relaxed text-slate-500">
-                          {item.desc}
-                        </span>
-                      )}
-                    </span>
-                  </Link>
-                </m.div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function Panel({
-  item,
-  pathname,
-  onItemClick,
-}: {
-  item: NavItem;
-  pathname: string | null;
-  onItemClick?: () => void;
-}) {
-  if (!item.panel) return null;
-  return <SimplePanel columns={item.panel.columns} pathname={pathname} onItemClick={onItemClick} />;
-}
-
-/* ------------------------------------------------------------------ */
-/* Mobile accordion item                                               */
-/* ------------------------------------------------------------------ */
-
-function MobileNavItem({
-  item,
-  open,
-  onToggle,
-  active,
-  pathname,
-  onNavigate,
-}: {
-  item: NavItem;
-  open: boolean;
-  onToggle: () => void;
-  active?: boolean;
-  pathname: string | null;
-  onNavigate?: () => void;
-}) {
-  if (!item.panel) {
-    return (
-      <div className="border-b border-white/10">
-        <Link
-          href={item.href ?? "#"}
-          onClick={onNavigate}
-          className={`relative block rounded-lg py-3.5 pl-3 text-sm font-semibold transition-colors duration-200 ${
-            active ? "bg-white/10 text-teal-300" : "text-white hover:text-teal-300"
-          } ${!active && item.highlight ? "text-pink-300" : ""}`}
-        >
-          {active && (
-            <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-teal-400" />
-          )}
-          {item.label}
-        </Link>
-      </div>
-    );
-  }
-
-  return (
-    <div className="border-b border-white/10">
-      <button
-        type="button"
-        onClick={onToggle}
-        className={`relative flex w-full items-center justify-between rounded-lg py-3.5 pl-3 pr-2 text-left text-sm font-semibold transition-colors duration-200 ${
-          open ? "bg-white/10 text-teal-300" : "text-white hover:text-teal-300"
-        }`}
-      >
-        {open && (
-          <m.span
-            layoutId="mobile-active-bar"
-            transition={{ type: "spring", stiffness: 500, damping: 35 }}
-            className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-teal-400"
-          />
-        )}
-        <span className={!open && item.highlight ? "text-pink-300" : ""}>{item.label}</span>
-        <m.span
-          animate={{ rotate: open ? 180 : 0 }}
-          transition={{ duration: 0.25, ease: "easeInOut" }}
-          className={open ? "text-teal-300" : "text-white/60"}
-        >
-          <ChevronDown size={16} />
-        </m.span>
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <m.div
-            key="content"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="overflow-hidden pt-4"
-          >
-            <div className="rounded-xl bg-white p-5 mb-3">
-              <Panel item={item} pathname={pathname} onItemClick={onNavigate} />
-            </div>
-          </m.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-function isSectionActive(item: NavItem, pathname: string | null): boolean {
-  if (!pathname) return false;
-  if (item.href) return pathname === item.href;
-  // sprawdza czy ścieżka zaczyna się od klucza sekcji, np. "/konfigurator"
-  return pathname.startsWith(`/${item.key}`);
-}
-
-/* ------------------------------------------------------------------ */
-/* Header główny                                                       */
+/* Header                                                               */
 /* ------------------------------------------------------------------ */
 
 export default function NetiaHeader() {
   const pathname = usePathname();
-  const [activeKey, setActiveKey] = useState<string | null>(null);
+  const isHome = pathname === "/";
+
   const [scrolled, setScrolled] = useState<boolean>(false);
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
-  const [mobileActiveKey, setMobileActiveKey] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const headerRef = useRef<HTMLElement>(null);
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const openMenu = (key: string) => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    setActiveKey(key);
-  };
-
-  const scheduleClose = () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setActiveKey(null), 150);
-  };
-  const toggleMenu = (key: string) => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    setActiveKey((prev) => (prev === key ? null : key));
-  };
-
-  // Zamykanie rozwinięcia po kliknięciu poza nagłówkiem
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
-        setActiveKey(null);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
+  /* Cień / rozmycie po odjechaniu od góry */
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -506,13 +81,53 @@ export default function NetiaHeader() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  /* Scroll-spy — podświetla sekcję, która aktualnie jest pod headerem */
   useEffect(() => {
-    return () => {
-      if (closeTimer.current) clearTimeout(closeTimer.current);
-    };
-  }, []);
+    if (!isHome) {
+      setActiveId(null);
+      return;
+    }
 
-  // Blokada scrolla przy otwartym mobilnym menu
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const line = window.scrollY + SCROLL_OFFSET + 8;
+      let current: string | null = null;
+
+      for (const section of SECTIONS) {
+        const el = document.getElementById(section.id);
+        if (!el) continue;
+        if (el.getBoundingClientRect().top + window.scrollY <= line) {
+          current = section.id;
+        }
+      }
+
+      // Na samym dole strony zawsze zaznacz ostatnią sekcję — inaczej krótka
+      // sekcja kontaktowa nigdy nie zdąży przejść przez linię odcięcia.
+      const atBottom =
+        window.innerHeight + window.scrollY >= document.body.scrollHeight - 2;
+      if (atBottom) current = SECTIONS[SECTIONS.length - 1].id;
+
+      setActiveId(current);
+    };
+
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(update);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    update();
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [isHome]);
+
+  /* Blokada scrolla przy otwartym menu mobilnym */
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => {
@@ -520,113 +135,85 @@ export default function NetiaHeader() {
     };
   }, [mobileOpen]);
 
-  // Zamykanie desktopowego dropdownu i mobilnego menu przy zmianie ścieżki
+  /* Zamknij menu przy zmianie ścieżki */
   useEffect(() => {
-    setActiveKey(null);
     setMobileOpen(false);
-    setMobileActiveKey(null);
   }, [pathname]);
+
+  /* Płynne przewijanie z offsetem; poza stroną główną zostawiamy nawigację Next */
+  const goToSection = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+      setMobileOpen(false);
+      if (!isHome) return;
+
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      e.preventDefault();
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({
+        top: el.getBoundingClientRect().top + window.scrollY - SCROLL_OFFSET,
+        behavior: reduce ? "auto" : "smooth",
+      });
+      window.history.replaceState(null, "", `#${id}`);
+      setActiveId(id);
+    },
+    [isHome]
+  );
+
+  // Z podstrony polityki kotwice muszą prowadzić na "/#sekcja", nie "#sekcja".
+  const hrefFor = (id: string) => (isHome ? `#${id}` : `/#${id}`);
 
   return (
     <LazyMotion features={domAnimation} strict>
       <div className="font-sans">
         <header
           ref={headerRef}
-          className={`fixed top-0 z-40 w-full border-b transition-all duration-300 ${
+          className={`fixed top-0 z-40 w-full border-b border-white/10 transition-all duration-300 ${
             scrolled
-              ? "border-white/10 shadow-lg shadow-black/20 backdrop-blur-xl backdrop-saturate-150"
-              : "border-white/10 shadow-none"
+              ? "shadow-lg shadow-black/20 backdrop-blur-xl backdrop-saturate-150"
+              : "shadow-none"
           }`}
-          style={{
-            backgroundColor: scrolled ? "rgba(11, 42, 61, 0.72)" : "#0B2A3D",
-          }}
+          style={{ backgroundColor: scrolled ? "rgba(11, 42, 61, 0.72)" : "#0B2A3D" }}
         >
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-10 px-8 py-4">
             <Logo />
 
-            <nav className="hidden lg:flex items-center gap-3">
-              {NAV.map((item) =>
-                item.panel ? (
-                  <div
-                    key={item.key}
-                    className="relative"
-                    onMouseEnter={() => openMenu(item.key)}
-                    onMouseLeave={scheduleClose}
-                  >
-                    <m.button
-                      type="button"
-                      onClick={() => toggleMenu(item.key)}
-                      initial={isSectionActive(item, pathname) ? "hover" : "rest"}
-                      whileHover="hover"
-                      animate={activeKey === item.key || isSectionActive(item, pathname) ? "hover" : "rest"}
-                      className={`relative flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm transition-all duration-200 hover:scale-[1.04] active:scale-[0.98]
-                        ${
-                          item.highlight
-                            ? "text-pink-300 hover:text-pink-200"
-                            : "text-white/85 hover:text-white"
-                        }
-                        ${isSectionActive(item, pathname) ? "font-bold" : "font-semibold"}
-                      `}
-                    >
-                      {item.highlight && <Sparkles size={14} />}
-                      {item.label}
-                      <m.span
-                        animate={{ rotate: activeKey === item.key ? 180 : 0 }}
-                        transition={{ duration: 0.2, ease: "easeInOut" }}
-                      >
-                        <ChevronDown size={14} />
-                      </m.span>
-
-                      <m.span
-                        variants={underlineVariants}
-                        transition={{ duration: 0.25, ease: "easeOut" }}
-                        style={{ originX: 0 }}
-                        className={`absolute left-4 right-4 -bottom-0.5 h-[2px] rounded-full ${
-                          item.highlight ? "bg-pink-300" : "bg-teal-400"
-                        }`}
-                      />
-                    </m.button>
-
-                    {/* Rozwijany panel — idealnie wyśrodkowany pod punktem, z którego został otwarty */}
-                    <AnimatePresence>
-                      {activeKey === item.key && (
-                        <m.div
-                          initial={{ opacity: 0, y: -8, scale: 0.98 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -8, scale: 0.98 }}
-                          transition={{ duration: 0.18, ease: "easeOut" }}
-                          className="absolute left-1/2 top-full mt-3 z-40 w-max min-w-[340px] max-w-md -translate-x-1/2 rounded-2xl border border-slate-100 bg-white shadow-2xl"
-                        >
-                          <div className="px-6 py-6">
-                            <Panel
-                              item={item}
-                              pathname={pathname}
-                              onItemClick={() => setActiveKey(null)}
-                            />
-                          </div>
-                        </m.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ) : (
-                  <Link
-                    key={item.key}
-                    href={item.href ?? "#"}
-                    className={`relative flex items-center gap-1 rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-200 hover:scale-[1.04] active:scale-[0.98] ${
-                      item.highlight ? "text-pink-300 hover:text-pink-200" : "text-white/85 hover:text-white"
-                    } ${
-                      pathname === item.href
-                        ? "bg-white/20 text-white shadow-inner"
-                        : "hover:bg-white/10"
+            <nav className="hidden lg:flex items-center gap-1">
+              {SECTIONS.map((section) => {
+                const active = isHome && activeId === section.id;
+                return (
+                  <a
+                    key={section.id}
+                    href={hrefFor(section.id)}
+                    onClick={(e) => goToSection(e, section.id)}
+                    aria-current={active ? "true" : undefined}
+                    className={`relative rounded-full px-4 py-2.5 text-sm transition-all duration-200 hover:scale-[1.04] active:scale-[0.98] ${
+                      active
+                        ? "font-bold text-white"
+                        : "font-semibold text-white/85 hover:text-white hover:bg-white/10"
                     }`}
                   >
-                    {item.label}
-                    {pathname === item.href && (
-                      <span className="absolute -bottom-1 left-3 right-3 h-[3px] rounded-full bg-teal-400" />
-                    )}
-                  </Link>
-                )
-              )}
+                    {section.label}
+                    <span
+                      className={`absolute left-4 right-4 -bottom-0.5 h-[2px] origin-left rounded-full bg-teal-400 transition-transform duration-250 ${
+                        active ? "scale-x-100" : "scale-x-0"
+                      }`}
+                    />
+                  </a>
+                );
+              })}
+
+              <Link
+                href={PRIVACY.href}
+                className={`rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-200 hover:scale-[1.04] active:scale-[0.98] ${
+                  pathname === PRIVACY.href
+                    ? "bg-white/15 text-white"
+                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                {PRIVACY.label}
+              </Link>
             </nav>
 
             <div className="hidden lg:flex items-center gap-2.5">
@@ -665,7 +252,7 @@ export default function NetiaHeader() {
           </div>
         </header>
 
-        {/* Mobile drawer — na telefonie zajmuje 100% szerokości (test) */}
+        {/* Menu mobilne */}
         <AnimatePresence>
           {mobileOpen && (
             <div className="fixed inset-0 z-50 lg:hidden">
@@ -686,7 +273,7 @@ export default function NetiaHeader() {
                 style={{ backgroundColor: "#0B2A3D" }}
               >
                 <div className="mb-4 flex items-center justify-between">
-                  <Logo />
+                  <Logo onClick={() => setMobileOpen(false)} />
                   <button
                     type="button"
                     onClick={() => setMobileOpen(false)}
@@ -697,20 +284,38 @@ export default function NetiaHeader() {
                   </button>
                 </div>
 
-                {NAV.map((item) => (
-                  <MobileNavItem
-                    key={item.key}
-                    item={item}
-                    open={mobileActiveKey === item.key}
-                    onToggle={() => setMobileActiveKey(mobileActiveKey === item.key ? null : item.key)}
-                    active={!item.panel && pathname === item.href}
-                    pathname={pathname}
-                    onNavigate={() => {
-                      setMobileOpen(false);
-                      setMobileActiveKey(null);
-                    }}
-                  />
-                ))}
+                <nav className="flex flex-col">
+                  {SECTIONS.map((section) => {
+                    const active = isHome && activeId === section.id;
+                    return (
+                      <a
+                        key={section.id}
+                        href={hrefFor(section.id)}
+                        onClick={(e) => goToSection(e, section.id)}
+                        className={`relative border-b border-white/10 py-3.5 pl-3 text-sm font-semibold transition-colors duration-200 ${
+                          active ? "text-teal-300" : "text-white hover:text-teal-300"
+                        }`}
+                      >
+                        {active && (
+                          <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-teal-400" />
+                        )}
+                        {section.label}
+                      </a>
+                    );
+                  })}
+
+                  <Link
+                    href={PRIVACY.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={`border-b border-white/10 py-3.5 pl-3 text-sm font-semibold transition-colors duration-200 ${
+                      pathname === PRIVACY.href
+                        ? "text-teal-300"
+                        : "text-white/70 hover:text-teal-300"
+                    }`}
+                  >
+                    {PRIVACY.label}
+                  </Link>
+                </nav>
 
                 <div className="mt-5 flex flex-col gap-2">
                   <m.a
