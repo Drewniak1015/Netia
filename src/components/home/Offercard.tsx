@@ -104,20 +104,18 @@ const OfferCard = memo(function OfferCard({
        tylko osłabiał komunikat. Jeśli rabaty jednak obowiązują, wróć z
        tym zastrzeżeniem — to warunek ceny, nie ozdobnik. */
     if (offer.noFreeMonths) {
-      /* [BRAK ETYKIETY] Warianty bez darmowych miesięcy (300 Mb/s) nie mają
-         czym wypełnić tego miejsca. Stało tu "CENA BEZ ZMIAN PRZEZ 24
-         MIESIĄCE", co dublowało notę w nagłówku grupy w Oferty.tsx, a przy
-         okazji brzmiało jak pocieszenie tam, gdzie sąsiednia karta krzyczy
-         "6 MIESIĘCY ZA 0 ZŁ!". Lepiej nic niż słabsza wersja tego samego
-         miejsca — cena mówi wtedy sama za siebie, a warunek 24 miesięcy
-         niesie `regularPriceNote` pod spodem.
+      /* [ETYKIETA] Warianty bez darmowych miesięcy dostają własny komunikat
+         w tym samym miejscu, w którym karty światłowodowe krzyczą
+         "6 MIESIĘCY ZA 0 ZŁ!". Ta sama waga wizualna, inna obietnica:
+         tam korzyść jest na starcie, tutaj polega na tym, że przez dwa lata
+         nic się nie zmieni.
 
-         UWAGA: nie widziałem Promocena.tsx. Jeśli PromoCena renderuje
-         `promoLabel` bezwarunkowo, pusty string zostawi pustą linię albo
-         margines nad ceną — wtedy trzeba dodać tam guard
-         (`{promoLabel && <span…>}`). Wrzuć mi ten plik, to poprawię. */
+         Formuła trzymana krótko i w tym samym rytmie co promocyjna, żeby
+         karty w rzędzie nie rozjeżdżały się w pionie. Konkretna kwota od
+         25. miesiąca leci linijkę niżej, w `regularPriceNote` — najpierw
+         obietnica, potem liczba, która ją domyka. */
       return {
-        promoLabel: "",
+        promoLabel: "CENA STAŁA PRZEZ 24 MIESIĄCE",
         regularPriceNote: offer.priceAfter24
           ? `Od 25. miesiąca: ${offer.priceAfter24} zł/mies.`
           : `Cena obowiązuje przez 24 miesiące.`,
@@ -196,12 +194,18 @@ const OfferCard = memo(function OfferCard({
       )}
 
       <p className="text-sm font-medium text-slate-300">Internet do</p>
-      {/* [MOBILE] Pakiet w osobnej linii poniżej `sm` — "300 Mb/s + TV XS"
-          w jednej linii przy text-2xl nie mieści się na 320px i łamie się
-          w przypadkowym miejscu, np. po samym "+". */}
-      <p className="mt-1 text-xl font-extrabold leading-tight text-white sm:text-2xl">
+      {/* [ZMIANA] "+ TV XS" wraca do tej samej linii co prędkość również na
+          telefonie. Wcześniej poniżej `sm` schodziło do osobnej linii, żeby
+          uniknąć łamania w przypadkowym miejscu — teraz zamiast łamać, cały
+          nagłówek jest po prostu mniejszy na wąskim ekranie (text-lg),
+          a `whitespace-nowrap` na członie z pakietem gwarantuje, że "+ TV"
+          i nazwa nigdy nie rozjadą się na dwie linie między sobą.
+
+          Przy najdłuższym wariancie ("2 Gb/s + TV XS") daje to ~17 znaków
+          w jednej linii — mieści się na 320 px przy p-5 karty. */}
+      <p className="mt-1 text-lg font-extrabold leading-tight text-white sm:text-2xl">
         {offer.speed}{" "}
-        <span className="block text-base font-bold text-slate-300 sm:inline sm:text-lg">
+        <span className="whitespace-nowrap text-base font-bold text-slate-300 sm:text-lg">
           + {offer.pkg}
         </span>
       </p>

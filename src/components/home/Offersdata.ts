@@ -201,15 +201,17 @@ export const offers: Offer[] = [
        pliku i zgadza się z kafelkiem "300 Mb/s + TV M od 55 zł" w
        AdditionalOffers.tsx, więc ta sprzeczność znika sama.
 
-       TODO: `priceAfter24`. Dla XS i S jest 60 zł, ale przy abonamencie
-       55 zł podwyżka o 5 zł wygląda na pomyłkę, a nie na dane z cennika.
-       Bez tego pola karta pokaże "Cena obowiązuje przez 24 miesiące"
-       zamiast konkretnej kwoty od 25. miesiąca — czyli mniej informacji
-       niż dwie sąsiednie karty. Uzupełnij realną wartość z regulaminu. */
+       [UZUPEŁNIONE] priceAfter24 = 60 zł, czyli tyle samo co przy TV XS
+       i TV S. Warto zauważyć, co to znaczy dla klienta: po 24 miesiącach
+       wszystkie trzy pakiety 300 Mb/s kosztują tyle samo, więc różnica
+       30/40/55 zł dotyczy wyłącznie okresu promocyjnego. Karta TV M jest
+       przez to najlepszą z tej trójki w dłuższym horyzoncie — jeśli chcesz
+       to wyeksponować, to jest argument na `badgeLabel`. */
     speed: "300 Mb/s",
     pkg: "TV M",
     price: 55,
     promoMonths: 0,
+    priceAfter24: 60,
     noFreeMonths: true,
     accentColor: ACCENT_300,
     features: buildFeatures300("TV M"),
